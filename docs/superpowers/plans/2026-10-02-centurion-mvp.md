@@ -547,10 +547,10 @@ Scripts obligatoires :
 
 **Consomme :** gate/db T2. **Produit :** createBackup, restoreBackup, catalogue durable et routes, requis en T5/T6/T8.
 
-- [ ] Écrire les tests : backup avec commits encore dans WAL ; SHA/intégrité/FK ; source altérée/inconnue/schéma futur refusés ; pre_restore encore listé après restauration ; échec backup bloque opération ; réalisation après preview rend restore stale ; requêtes pendant installation503.
-- [ ] Implémenter catalogue externe, rétention 20 automatiques + tous manuels, TTL15min et séquence de récupération section 3.
-- [ ] Injecter des arrêts du processus après prepared, old_moved, new_installed, audit avant committed, puis committed avant cleanup. Relancer : base ancienne ou nouvelle complète selon phase, audit cohérent, WAL compatible, anciens previews invalides et jeton renouvelé. Refaire une récupération pour prouver l'idempotence.
-- [ ] Exécuter `npm run test -- tests/integration/backup-restore.test.ts` puis `npm run check`. Consigner et commit `feat: add recoverable local backups`.
+- [x] Écrire les tests : backup avec commits encore dans WAL ; SHA/intégrité/FK ; source altérée/inconnue/schéma futur refusés ; pre_restore encore listé après restauration ; échec backup bloque opération ; réalisation après preview rend restore stale ; requêtes pendant installation503.
+- [x] Implémenter catalogue externe, rétention 20 automatiques + tous manuels, TTL15min et séquence de récupération section 3.
+- [x] Injecter des arrêts du processus après prepared, old_moved, new_installed, audit avant committed, puis committed avant cleanup. Relancer : base ancienne ou nouvelle complète selon phase, audit cohérent, WAL compatible, anciens previews invalides et jeton renouvelé. Refaire une récupération pour prouver l'idempotence.
+- [x] Exécuter `npm run test -- tests/integration/backup-restore.test.ts` puis `npm run check`. Consigner et commit `feat: add recoverable local backups`.
 
 ### T4 — Calendrier, création, duplication et année suivante
 

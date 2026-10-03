@@ -206,3 +206,62 @@ puis prouver la reprise après arrêt réel.
 ### Commit
 
 `c5f6695 feat: secure SQLite lifecycle and audit`.
+
+## T3 — Sauvegarde et restauration récupérable
+
+État : terminé et vérifié le 3 octobre 2026.
+
+### Produit
+
+- `src/server/backups/catalog.ts` : catalogue externe (fichiers `.sqlite` +
+  manifestes JSON versionnés), `sha256File`, `verifySqliteFile`
+  (intégrité/FK/schéma), `listManifests`, `applyRetention` (tous les manuels +
+  dernier `pre_restore` + 20 automatiques).
+- `src/server/backups/backup.ts` : `createBackup` via `better-sqlite3.backup()`,
+  vérification puis manifeste écrit en temp+rename.
+- `src/server/backups/restore.ts` : aperçu 15 min (hash, révisions globales,
+  epoch, pertes), `restoreBackup` avec sauvegarde `pre_restore`, candidate
+  vérifiée/migrée/nettoyée, checkpoint WAL, journal par phase, nouvel epoch et
+  audit `restore_completed`.
+- `src/server/backups/recovery.ts` : journal durable fsync, `recoverOnStartup`
+  déterministe (original, rollback ou nouvelle base), idempotent.
+- `src/server/runtime.ts` : handle de base et epoch mutables après restauration.
+- `src/server/routes/backups.ts` : `GET/POST /api/backups`,
+  `restore-preview`, `restore`.
+- `docs/API.md` : section sauvegarde/restauration.
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run test -- tests/integration/backup-restore.test.ts` | 10/10 passés |
+| `npm run check` | 59/59 tests, typecheck et lint OK |
+| `npm run build` | OK |
+| Vérification HTTP (serveur de production) | `POST /api/backups` sans Origin → 403 ; création/liste/aperçu/restore OK, nouvel `engine_epoch` retourné |
+
+Cas couverts : commits encore dans le WAL inclus dans la sauvegarde, SHA/hash,
+source inconnue/altérée/schéma futur refusés, échec de sauvegarde bloquant,
+`pre_restore` encore listé après restauration, aperçu périmé après changement de
+révision, 503 pendant la maintenance, arrêt après `prepared`/`old_moved`/
+`new_installed` (rollback vers la base ancienne complète) et après `committed`
+(nouvelle base conservée), seconde récupération = `none` (idempotence).
+
+### Limites
+
+- L'injection d'arrêt est simulée par une exception sur le hook de phase après
+  chaque écriture de journal durable ; la reprise est ensuite exercée sur un
+  runtime neuf, ce qui reproduit un redémarrage. Aucun arrêt OS réel n'est
+  revendiqué.
+- Le jeton runtime (`runtime/mcp-token`) et `backend.json` sont créés en T10 ;
+  la restauration renouvelle déjà l'`engine_epoch`.
+- `tests/fixtures/backups/` n'est pas encore peuplé (les fixtures sont générées
+  par les tests).
+
+### Prochaine action
+
+T4 — calendrier (`generateDates`, `translateDefinitionDates`), création,
+duplication et année suivante, avec les tests d'API correspondants.
+
+### Commit
+
+`feat: add recoverable local backups` (voir `git log`).

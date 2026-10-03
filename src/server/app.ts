@@ -3,18 +3,16 @@ import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { Clock } from './clock';
 import type { Config } from './config';
-import type { DatabaseHandle } from './db/database';
 import { registerErrorHandler } from './http/errors';
 import { registerGuards } from './http/guards';
 import { registerSecurityHeaders } from './http/headers';
-import type { OperationGate } from './storage/operation-gate';
+import { registerBackupRoutes } from './routes/backups';
+import type { Runtime } from './runtime';
 
 export type AppDeps = {
   config: Config;
   clock: Clock;
-  db?: DatabaseHandle;
-  gate?: OperationGate;
-  engineEpoch?: string;
+  runtime?: Runtime;
 };
 
 export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
@@ -30,6 +28,10 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   registerErrorHandler(app);
 
   app.get('/health', async () => ({ status: 'ok', schema_version: config.schemaVersion }));
+
+  if (deps.runtime) {
+    registerBackupRoutes(app, deps.runtime);
+  }
 
   if (existsSync(config.webDistDir)) {
     await app.register(fastifyStatic, { root: config.webDistDir, wildcard: false });
