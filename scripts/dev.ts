@@ -1,9 +1,18 @@
-import { type ChildProcess, spawn } from 'node:child_process';
+import { type ChildProcess, execFileSync, spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 const demo = process.argv.includes('--demo');
 const env: NodeJS.ProcessEnv = { ...process.env };
+
 if (demo) {
   env.CENTURION_DEMO = '1';
+  env.CENTURION_DATA_DIR = env.CENTURION_DATA_DIR ?? resolve('data', 'demo');
+  const dbPath = resolve(env.CENTURION_DATA_DIR, 'centurion.sqlite');
+  // Seed only when empty; never reset implicitly.
+  if (!existsSync(dbPath)) {
+    execFileSync('tsx', ['scripts/seed-demo.ts'], { stdio: 'inherit', env });
+  }
 }
 
 const children: ChildProcess[] = [

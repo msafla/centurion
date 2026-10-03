@@ -646,11 +646,11 @@ Scripts obligatoires :
 
 **Consomme :** T0-T11 vérifiées. **Produit :** démo reproductible, preuves et documentation ; publication distincte.
 
-- [ ] Seed2028 avec toutes les fréquences/statuts ; reset hors cible ou instance active refusé ; deux resets confirmés produisent le même état ; dev:demo ne reset pas implicitement ; mode ordinaire utilise aujourd'hui Paris.
-- [ ] Depuis copie propre du code et lockfile : `npm ci`, `npm run check`, `npm run build`, `npm run test:e2e`. Captures réelles Synthèse/Plan/Fiche/Référentiels/Import/approbation MCP ; redémarrage pour persistance ; backup→modifier→restore avec pre_restore encore accessible.
-- [ ] Vérifier absence de DB,WAL,dataDir,backup,token,imports temporaires,exports,données client et secrets dans les fichiers à versionner ; licences des fonts/composants. Consigner audit dependencies séparé en ligne et ses résultats.
+- [x] Seed2028 avec toutes les fréquences/statuts ; reset hors cible ou instance active refusé ; deux resets confirmés produisent le même état ; dev:demo ne reset pas implicitement ; mode ordinaire utilise aujourd'hui Paris.
+- [x] Depuis copie propre du code et lockfile : `npm ci`, `npm run check`, `npm run build`, `npm run test:e2e`. Captures réelles Synthèse/Plan/Fiche/Référentiels/Import/approbation MCP ; redémarrage pour persistance ; backup→modifier→restore avec pre_restore encore accessible.
+- [x] Vérifier absence de DB,WAL,dataDir,backup,token,imports temporaires,exports,données client et secrets dans les fichiers à versionner ; licences des fonts/composants. Consigner audit dependencies séparé en ligne et ses résultats.
 - [ ] CI Windows+Linux pour checks et smoke driver/PDF, Chromium Linux pour parcours. Si une plateforme n'est pas accessible, consigner la limite et laisser son gate décoché.
-- [ ] README : installation Node24/npmci/build/start, MCP exige backend et confirmation UI, stockage/backup/restore, clock/reset démo, mono-utilisateur et hors périmètre, limites de sécurité, indépendance et absence d'opinion d'assurance. Commit `docs: package reproducible local demo`.
+- [x] README : installation Node24/npmci/build/start, MCP exige backend et confirmation UI, stockage/backup/restore, clock/reset démo, mono-utilisateur et hors périmètre, limites de sécurité, indépendance et absence d'opinion d'assurance. Commit `docs: package reproducible local demo`.
 
 ## 13. Gates finaux et point de reprise
 

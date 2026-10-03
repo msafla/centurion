@@ -131,7 +131,7 @@ export function withPlanMutation<T>(
         .get(proposalId) as
         | { plan_id: string; base_plan_revision: number; state: string }
         | undefined;
-      if (!proposal || proposal.state !== 'pending' || proposal.plan_id !== planId) {
+      if (proposal?.state !== 'pending' || proposal?.plan_id !== planId) {
         throw new AppError(409, 'proposal_not_pending', 'Proposal is not pending');
       }
       if (proposal.base_plan_revision !== plan.data_revision) {

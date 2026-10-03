@@ -1,2 +1,9 @@
-// T0 placeholder. Implemented in T12 with the deterministic 2028 demo dataset.
-throw new Error('seed-demo is implemented in T12');
+import { resolve } from 'node:path';
+import { canonicalDataDir, ensurePrivateDir } from '../src/server/storage/paths';
+import { seedDemo } from './demo-data';
+
+const raw = process.env.CENTURION_DATA_DIR ?? resolve('data/demo');
+const dataDir = canonicalDataDir(raw);
+ensurePrivateDir(dataDir);
+seedDemo(dataDir);
+process.stdout.write(`Demo data seeded at ${dataDir}\n`);

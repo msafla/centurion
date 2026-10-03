@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { buildApp } from './app';
 import { recoverOnStartup } from './backups/recovery';
-import { systemClock } from './clock';
+import { fixedClock, systemClock } from './clock';
 import { loadConfig } from './config';
 import { type DatabaseHandle, openDatabase } from './db/database';
 import { bootstrapPlanIfEmpty } from './domain/plans';
@@ -15,7 +15,8 @@ import { canonicalDataDir, ensurePrivateDir } from './storage/paths';
 import { writeRuntimeFiles } from './storage/runtime-files';
 
 const config = loadConfig(process.env);
-const clock = systemClock();
+// The demo mode uses a fixed clock; ordinary mode uses today's Paris date.
+const clock = config.mode === 'demo' ? fixedClock('2028-04-15T10:00:00.000Z') : systemClock();
 
 const dataDir = canonicalDataDir(config.dataDir);
 ensurePrivateDir(dataDir);

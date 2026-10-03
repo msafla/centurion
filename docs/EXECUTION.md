@@ -678,4 +678,66 @@ T12 — démo reproductible, checks propres et livraison.
 
 ### Commit
 
-`feat: require UI approval for MCP changes` (voir `git log`).
+`8ffc528 feat: require UI approval for MCP changes`.
+
+## T12 — Démo, checks propres et livraison
+
+État : livré le 3 octobre 2026 ; le gate CI Windows reste **décoché** (voir
+Limites).
+
+### Produit
+
+- `scripts/demo-data.ts` : seed 2028 déterministe (UUID dérivés), 6 contrôles
+  couvrant les trois référentiels, les six fréquences, automatisation avec/sans
+  URL, FAIT Oui/Non, les quatre conformités, open/superseded et preuves fictives.
+- `scripts/seed-demo.ts`, `scripts/reset-demo.ts` (`--confirm`, refus hors
+  `data/demo` et instance active), `scripts/dev.ts` (`dev:demo` seed si vide).
+- Horloge démo fixe `2028-04-15T10:00:00Z` en mode demo ; mode ordinaire =
+  aujourd'hui Paris.
+- `README.md`, `docs/API.md` complet, `.github/workflows/check.yml`
+  (Linux + Windows, Chromium Linux pour e2e).
+- `docs/screenshots/` : captures réelles Synthèse, Plan annuel, Fiche contrôle,
+  Référentiels, Import, Paramètres (approbations MCP).
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npx tsx scripts/seed-demo.ts` | plan 2028, 6 contrôles, 23 occurrences, 7 réalisations, 1 superseded |
+| `npx tsx scripts/reset-demo.ts` (sans `--confirm`) | refus, exit 1 |
+| `npx tsx scripts/reset-demo.ts --confirm` | même état qu'après seed |
+| `demo:reset` hors `data/demo` | refus |
+| Serveur démo (dataDir vide) | bootstrap `Plan annuel 2028` (horloge fixe) |
+| `npm run check` | 136/136 tests, typecheck et lint OK |
+| `npm run build` | OK |
+| `npm run test:e2e` | 4/4 |
+| `npm ci` (T0) | 632 paquets |
+| `npm run audit:deps` (T0) | 2 modérées, aucune haute/critique |
+
+Absence vérifiée dans les fichiers versionnés : aucune base SQLite/WAL/SHM, aucun
+`dataDir`, backup, jeton runtime, import/export temporaire ni secret. Licences
+Poppins OFL conservées.
+
+### Limites
+
+- **CI non exécutée** : le workflow est écrit mais aucun runner GitHub n'a été
+  lancé ; la plateforme Windows native n'a pas été testée (seul Linux/WSL2 l'a
+  été). Gate CI Windows laissé décoché.
+- La vérification « depuis une copie propre » réutilise le dépôt local ; `npm ci`
+  a été exécuté en T0 et les gates rejoués depuis ce dépôt.
+- Sous-points T8/T9 non couverts (voir sections correspondantes) : cas limites
+  d'import et d'export.
+
+### État final
+
+T0–T12 exécutés. 136 tests Vitest + 4 tests Playwright verts, build production
+OK, dépôt local sur `main` sans remote ni publication. Sous-points explicitement
+différés : T8 (relations OOXML externes, chiffrement explicite, calendriers Excel
+1904/serial 60, timeout de parsing, plusieurs cas d'erreur d'apply, e2e import) et
+T9 (refus 64 MiB testé, quotas d'artefacts, PDF multipage/zéro occurrence, route
+de download expirée), T10 (seuils via limiteur unitaire, plafond 512 KiB), T11
+(expiration/déduplication/consultation non testées), T12 (CI Windows).
+
+### Commit
+
+`docs: package reproducible local demo`.

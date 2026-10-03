@@ -10,6 +10,56 @@ Mutations : `Origin` canonique + en-tête `X-Centurion-Request: 1` +
 | --- | --- |
 | `GET /health` | `{ "status": "ok", "schema_version": 1 }` |
 
+## Plans, contrôles, occurrences
+
+| Route | Entrée | Réponse |
+| --- | --- | --- |
+| `GET /api/plans` | `page`, `page_size` | `Page<PlanDto>` |
+| `POST /api/plans` | `{year,name,perimeter}` | `201 PlanDto` (409 si l'année existe) |
+| `GET /api/plans/:planId` | — | `PlanDto` |
+| `PATCH /api/plans/:planId` | `{name?,perimeter?}` | `PlanDto` |
+| `POST /api/plans/:planId/clone` | `{}` | `201 {plan,controls_created,occurrences_created}` |
+| `GET /api/plans/:planId/controls` | `page`,`page_size`,`status`,`referentiel`,`domain`,`owner_name`,`automated`,`search` | `Page<ControlDto>` |
+| `POST /api/plans/:planId/controls` | `CreateControlInput` | `201 {control,occurrences_generated}` |
+| `GET/PATCH /api/plans/:planId/controls/:controlId` | `UpdateMetadataInput` | `ControlDto` |
+| `POST .../duplicate` | `{new_code}` | `201 {control,occurrences_generated}` |
+| `POST .../archive` | `{effective_date}` | `{control,occurrences_superseded}` |
+| `POST .../schedule-preview` | `{schedule,active_from,active_to,effective_date}` | `201` aperçu |
+| `POST .../schedule-apply` | `{preview_id}` | `{control,delta_counts}` |
+| `GET .../audit-events` | `page`,`page_size` | `Page<AuditDto>` |
+| `GET /api/plans/:planId/occurrences` | `FilterInput` + pagination | `Page<OccurrenceDto>` |
+| `PUT /api/plans/:planId/occurrences/:occurrenceId/status` | `StatusInput` | `OccurrenceDto` (no-op 200) |
+| `GET /api/plans/:planId/summary` | `FilterInput` | `SummaryDto` |
+| `GET /api/plans/:planId/report` | `FilterInput` + pagination | `ReportDto` |
+| `GET /api/plans/:planId/exports/controls.csv` | `FilterInput` | CSV (`attachment`) |
+| `GET /api/plans/:planId/exports/report.pdf` | `FilterInput` | PDF (`attachment`) ou 422 |
+
+## Import
+
+| Route | Entrée | Réponse |
+| --- | --- | --- |
+| `POST /api/plans/:planId/imports` | multipart `file` | `201 {import_id,expires_at,sheets,headers,sample_rows}` |
+| `PUT /api/plans/:planId/imports/:importId/mapping` | `ImportMappingInput` | aperçu persistant |
+| `GET /api/plans/:planId/imports/:importId/preview` | pagination | `ImportPreviewDto` |
+| `POST /api/plans/:planId/imports/:importId/apply` | `{}` | bilan (409 si consommé/obsolète) |
+| `DELETE /api/plans/:planId/imports/:importId` | — | `204` |
+
+## Propositions MCP (UI uniquement)
+
+| Route | Entrée | Réponse |
+| --- | --- | --- |
+| `GET /api/mcp-proposals` | pagination | `Page<ProposalDto>` |
+| `POST /api/mcp-proposals/:proposalId/approve` | `{}` | résultat appliqué |
+| `POST /api/mcp-proposals/:proposalId/reject` | `{}` | proposition refusée |
+
+Ces trois routes ne sont **pas** dispatchables par MCP. L'approbation applique la
+proposition par injection interne sous contexte privé `source=mcp`.
+
+## Artefacts
+
+`GET /exports/:exportId/download` sert un artefact connu et non expiré
+(`attachment`), 404 sinon.
+
 ## Sauvegardes (T3)
 
 Catalogue autoritaire externe : fichiers `backups/<uuid>.sqlite` + manifeste
