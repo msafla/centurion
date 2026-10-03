@@ -144,4 +144,4 @@ T2 — écrire les tests SQLite/scoping/audit/verrou, constater l'échec, puis i
 
 ### Commit
 
-`feat: establish local API boundary` (voir `git log`).
+`383404e feat: establish local API boundary`.
