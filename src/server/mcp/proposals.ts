@@ -121,7 +121,7 @@ function prepare(runtime: Runtime, tool: WriteTool, args: unknown): { planId: st
     if (control.status === 'archived') {
       throw new AppError(409, 'control_archived', 'Archived control cannot be edited');
     }
-    const before = metadataOf(control);
+    const before = metadataOf(db, control);
     const merged = parseInput(ControlMetadataSchema, { ...before, ...parsed.input });
     return {
       planId: parsed.plan_id,

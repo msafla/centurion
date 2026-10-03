@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { usePlan } from '../lib/plan-context';
 
 type FrequencyKind = 'once' | 'monthly' | 'quarterly' | 'semiannual' | 'annual' | 'explicit';
 
@@ -19,7 +20,7 @@ const EMPTY = {
   code: '',
   title: '',
   description: '',
-  referentiel: 'iso_27001',
+  referentials: [] as string[],
   reference: '',
   domain: '',
   owner_name: '',
@@ -55,13 +56,35 @@ export function ControlForm({
   planId: string;
   onCreated: (control: ControlDto) => void;
 }) {
+  const { referentials } = usePlan();
   const [open, setOpen] = useState(false);
   const [state, setState] = useState(EMPTY);
+  const [newReferential, setNewReferential] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [fields, setFields] = useState<Record<string, string[]>>({});
 
   const update = <K extends keyof typeof EMPTY>(key: K, value: (typeof EMPTY)[K]) =>
     setState((current) => ({ ...current, [key]: value }));
+
+  function toggleReferential(slug: string, checked: boolean) {
+    update(
+      'referentials',
+      checked
+        ? [...state.referentials, slug]
+        : state.referentials.filter((entry) => entry !== slug),
+    );
+  }
+
+  function addReferential() {
+    const slug = newReferential
+      .normalize('NFC')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+    if (!slug) return;
+    if (!state.referentials.includes(slug)) update('referentials', [...state.referentials, slug]);
+    setNewReferential('');
+  }
 
   async function submit() {
     setError(null);
@@ -71,7 +94,7 @@ export function ControlForm({
         code: state.code,
         title: state.title,
         description: state.description,
-        referentiel: state.referentiel,
+        referentials: state.referentials,
         reference: state.reference,
         domain: state.domain,
         owner_name: state.owner_name,
@@ -132,18 +155,34 @@ export function ControlForm({
               onChange={(e) => update('description', e.target.value)}
             />
           </div>
-          <div>
-            <Label htmlFor="referentiel">Référentiel</Label>
-            <select
-              id="referentiel"
-              className="w-full rounded-md border border-[var(--color-border-brand)] bg-white px-2 py-2 text-sm"
-              value={state.referentiel}
-              onChange={(e) => update('referentiel', e.target.value)}
-            >
-              <option value="iso_27001">ISO 27001</option>
-              <option value="isae_3402_t2">ISAE 3402 Type 2</option>
-              <option value="iso_27001_isae_3402_t2">ISO 27001 + ISAE 3402 Type 2</option>
-            </select>
+          <div className="sm:col-span-2">
+            <Label>Référentiels</Label>
+            <div className="mt-1 flex flex-wrap gap-3">
+              {referentials.map((entry) => (
+                <label key={entry.slug} className="flex items-center gap-1 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={state.referentials.includes(entry.slug)}
+                    onChange={(event) => toggleReferential(entry.slug, event.target.checked)}
+                  />
+                  {entry.label}
+                </label>
+              ))}
+            </div>
+            <div className="mt-2 flex gap-2">
+              <Input
+                aria-label="Nouveau référentiel"
+                placeholder="Nouveau référentiel (ex. PCI DSS)"
+                value={newReferential}
+                onChange={(event) => setNewReferential(event.target.value)}
+              />
+              <Button type="button" variant="outline" onClick={addReferential}>
+                Ajouter
+              </Button>
+            </div>
+            {fields.referentials ? (
+              <p className="text-xs text-red-700">{fields.referentials.join(', ')}</p>
+            ) : null}
           </div>
           <div>
             <Label htmlFor="domain">Domaine</Label>

@@ -45,7 +45,7 @@ export async function buildReportPdf(report: ReportDto): Promise<Uint8Array> {
     .map(
       (occurrence) =>
         `<tr><td>${escapeHtml(occurrence.control.code)} — ${escapeHtml(occurrence.control.title)}</td>` +
-        `<td>${escapeHtml(occurrence.control.referentiel)}</td>` +
+        `<td>${escapeHtml(occurrence.control.referentials.join(' + '))}</td>` +
         `<td>${escapeHtml(occurrence.occurrence_date)}</td>` +
         `<td>${occurrence.control.automated ? 'Oui' : 'Non'}</td>` +
         `<td>${occurrence.realization ? (occurrence.realization.fait ? 'Oui' : 'Non') : '—'}</td>` +

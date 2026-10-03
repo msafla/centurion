@@ -18,7 +18,6 @@ CREATE TABLE controls (
   code                  TEXT NOT NULL,
   title                 TEXT NOT NULL,
   description           TEXT NOT NULL,
-  referentiel           TEXT NOT NULL CHECK (referentiel IN ('iso_27001','isae_3402_t2','iso_27001_isae_3402_t2')),
   reference             TEXT NOT NULL,
   domain                TEXT NOT NULL,
   owner_name            TEXT NOT NULL DEFAULT '',
@@ -42,6 +41,31 @@ CREATE TABLE controls (
 ) STRICT;
 
 CREATE INDEX controls_plan_status_code ON controls(plan_id, status, code);
+
+-- Dynamic referential catalog and many-to-many links. A control can belong to
+-- several referentials, so combined referentials are native.
+CREATE TABLE referentials (
+  id         TEXT PRIMARY KEY,
+  slug       TEXT NOT NULL UNIQUE,
+  label      TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+) STRICT;
+
+CREATE TABLE control_referentials (
+  control_id     TEXT NOT NULL REFERENCES controls(id) ON DELETE RESTRICT,
+  referential_id TEXT NOT NULL REFERENCES referentials(id) ON DELETE RESTRICT,
+  created_at     TEXT NOT NULL,
+  PRIMARY KEY (control_id, referential_id)
+) STRICT;
+
+CREATE INDEX control_referentials_referential ON control_referentials(referential_id, control_id);
+
+INSERT INTO referentials (id, slug, label, created_at, updated_at) VALUES
+  ('00000000-0000-4000-8000-000000000001', 'iso_27001', 'ISO 27001', '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000000002', 'isae_3402_t2', 'ISAE 3402 Type 2', '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000000003', 'pci_dss', 'PCI DSS', '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z'),
+  ('00000000-0000-4000-8000-000000000004', 'soc_2', 'SOC 2', '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z');
 
 CREATE TABLE occurrences (
   id              TEXT PRIMARY KEY,

@@ -190,7 +190,7 @@ describe('import flow', () => {
   it('refuses apply when any row is invalid, without writing', async () => {
     const { app, runtime } = await makeApp();
     const planId = await createPlan(app);
-    const csv = `${HEADER}\nC1;T;D;bad_referentiel;R;Dom;once;2028-01-01\n`;
+    const csv = `${HEADER}\nC1;T;D;iso_27001;R;Dom;weekly;2028-01-01\n`;
     const importId = await upload(app, planId, csv);
     const preview = await mapAndPreview(app, planId, importId);
     expect((preview.json() as { counts: { invalid: number } }).counts.invalid).toBe(1);

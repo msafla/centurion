@@ -10,6 +10,22 @@ Mutations : `Origin` canonique + en-tête `X-Centurion-Request: 1` +
 | --- | --- |
 | `GET /health` | `{ "status": "ok", "schema_version": 1 }` |
 
+## Référentiels dynamiques
+
+Les référentiels forment un catalogue ouvert (pas d'enum figé). Un contrôle peut
+en relever de plusieurs : `ControlDto.referentials` est une liste de slugs.
+
+| Route | Réponse |
+| --- | --- |
+| `GET /api/referentials` | `ReferentialDto[]` (`id`, `slug`, `label`), triés par libellé |
+
+Le catalogue initial contient `iso_27001`, `isae_3402_t2`, `pci_dss`, `soc_2`.
+À l'import, la colonne `referentiel` accepte plusieurs valeurs séparées par `|`,
+`+`, `,` ou `;` (ex. `ISO 27001 + PCI DSS`) : chaque valeur est normalisée en
+slug, les valeurs connues sont réutilisées, les inconnues sont créées
+automatiquement. L'agrégation `/summary` (`by_referentiel`) et le filtre
+`referentiel` portent sur ce catalogue.
+
 ## Plans, contrôles, occurrences
 
 | Route | Entrée | Réponse |

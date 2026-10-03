@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { OccurrenceDto, Page } from '../../shared/schemas';
 import { api } from '../lib/api';
-import { formatDate, formatPercent, REFERENTIEL_LABELS } from '../lib/format';
+import { formatDate, formatPercent } from '../lib/format';
 import { usePlan } from '../lib/plan-context';
 
 type Summary = {
@@ -31,7 +31,7 @@ function Card({ label, value }: { label: string; value: string }) {
 }
 
 export function Summary() {
-  const { plan } = usePlan();
+  const { plan, labelOf } = usePlan();
   const [summary, setSummary] = useState<Summary | null>(null);
   const [next, setNext] = useState<OccurrenceDto[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -112,7 +112,7 @@ export function Summary() {
                   <td className="px-4 py-2 tabular-nums">{formatDate(occurrence.occurrence_date)}</td>
                   <td className="px-4 py-2 font-medium">{occurrence.control.code}</td>
                   <td className="px-4 py-2">
-                    {REFERENTIEL_LABELS[occurrence.control.referentiel] ?? occurrence.control.referentiel}
+                    {occurrence.control.referentials.map(labelOf).join(" + ")}
                   </td>
                 </tr>
               ))

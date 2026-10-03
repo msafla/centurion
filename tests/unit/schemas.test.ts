@@ -14,7 +14,7 @@ import {
 const metadataBase = {
   title: 'Titre',
   description: 'Description',
-  referentiel: 'iso_27001' as const,
+  referentials: ['iso_27001'] as const,
   reference: 'REF',
   domain: 'Domaine',
   owner_name: '',

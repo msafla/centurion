@@ -17,6 +17,7 @@ import {
   rowToSchedule,
   toControlDto,
 } from './controls';
+import { copyControlReferentials } from './referentials';
 import { generateDates, translateDefinitionDates } from './schedule';
 
 /**
@@ -184,15 +185,16 @@ export function cloneYear(
       const row = insertControl(deps.db.db, {
         planId: newPlanId,
         code: control.code,
-        metadata: metadataOf(control),
+        metadata: metadataOf(deps.db.db, control),
         schedule: translated.schedule,
         active_from: translated.active_from,
         active_to: translated.active_to,
         nowUtc: now,
       });
       insertOccurrences(deps.db.db, row.id, dates, now);
+      copyControlReferentials(deps.db.db, control.id, row.id, now);
       occurrences += dates.length;
-      created.push(toControlDto(row));
+      created.push(toControlDto(deps.db.db, row));
       insertAudit(
         deps.db.db,
         {
@@ -201,7 +203,7 @@ export function cloneYear(
           plan_id: newPlanId,
           control_id: row.id,
           action: 'clone',
-          after: toControlDto(row),
+          after: toControlDto(deps.db.db, row),
         },
         source,
         now,

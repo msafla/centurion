@@ -43,7 +43,7 @@ type CsvRow = {
   code: string;
   title: string;
   description: string;
-  referentiel: string;
+  referentials: string | null;
   reference: string;
   domain: string;
   owner_name: string;
@@ -69,7 +69,11 @@ export function buildCsv(db: BetterSqlite3.Database, planId: string, filter: Fil
   const { where, params } = buildOccurrenceFilter(planId, filter);
   const rows = db
     .prepare(
-      `SELECT c.code, c.title, c.description, c.referentiel, c.reference, c.domain,
+      `SELECT c.code, c.title, c.description,
+              (SELECT GROUP_CONCAT(r.slug, '|') FROM control_referentials cr
+                 JOIN referentials r ON r.id = cr.referential_id
+                WHERE cr.control_id = c.id ORDER BY r.slug) AS referentials,
+              c.reference, c.domain,
               c.owner_name, c.method, c.expected_evidence, c.automated, c.automation_github_url,
               c.frequency_kind, o.occurrence_date, o.state,
               r.fait, r.conformite, r.comment, r.evidence_ref
@@ -93,7 +97,7 @@ export function buildCsv(db: BetterSqlite3.Database, planId: string, filter: Fil
         row.code,
         row.title,
         row.description,
-        row.referentiel,
+        row.referentials ?? '',
         row.reference,
         row.domain,
         row.owner_name,

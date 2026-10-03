@@ -52,7 +52,7 @@ export function toOccurrenceDto(
     state: occurrence.state,
     created_at: occurrence.created_at,
     updated_at: occurrence.updated_at,
-    control: toControlDto(control),
+    control: toControlDto(db, control),
     realization: realization ? toRealizationDto(realization) : null,
   };
 }

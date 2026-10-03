@@ -4,6 +4,8 @@ import type { PlanDto } from '../../shared/schemas';
 export type PlanState = {
   plans: PlanDto[];
   plan: PlanDto | null;
+  referentials: { slug: string; label: string }[];
+  labelOf: (slug: string) => string;
   reloadPlans: () => Promise<void>;
   selectPlan: (id: string) => void;
 };

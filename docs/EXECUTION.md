@@ -741,3 +741,32 @@ de download expirée), T10 (seuils via limiteur unitaire, plafond 512 KiB), T11
 ### Commit
 
 `docs: package reproducible local demo`.
+
+## Post-T12 — référentiels dynamiques (hors plan initial)
+
+État : livré et vérifié le 3 octobre 2026.
+
+Décision utilisateur : référentiels ouverts, auto-créés à l'import, plusieurs
+référentiels par contrôle (combinés), catalogue initial `iso_27001`,
+`isae_3402_t2`, `pci_dss`, `soc_2`. Cela remplace la décision « référentiels
+fermés » du plan.
+
+- Schéma : `referentials` + `control_referentials` (many-to-many), suppression de
+  l'enum `controls.referentiel` ; `ControlDto.referentials: string[]`.
+- `src/server/domain/referentials.ts` : slugification, alias, résolution
+  `|`/`+`/`,`/`;`, `ensureReferential` (auto-création), liens.
+- Import : la colonne `referentiel` accepte une valeur combinée
+  (`ISO 27001 + PCI DSS` → 2 liens) ; inconnus créés automatiquement.
+- Reporting : `by_referentiel` dynamique sur tout le catalogue.
+- Route `GET /api/referentials` ; UI multi-sélection dans `ControlForm`,
+  affichage dans Plan/Synthèse/Fiche/Reporting, Référentiels dynamiques.
+- Démo : ACC-02 → `iso_27001|pci_dss`, ACC-03 → `isae_3402_t2|soc_2`,
+  ACC-04 → `iso_27001|isae_3402_t2`.
+
+Vérifié : `npm run check` 136/136, `npm run build`, `npm run test:e2e` 4/4,
+exploration Playwright temps réel 18/18 (zéro erreur console/HTTP), et import
+réel de `ISO 27001 + PCI DSS` produisant les deux liens.
+
+### Commit
+
+`feat: dynamic referentials with combined import` (voir `git log`).

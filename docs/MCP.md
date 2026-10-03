@@ -37,7 +37,7 @@ Les deux exports écrivent un fichier borné sous `dataDir/exports` et renvoient
 20 artefacts / 128 MiB). Ils ne sont pas marqués `readOnlyHint=true`. Un UUID
 connu est récupérable par `GET /exports/:exportId/download` depuis l'UI.
 
-Les listes renvoient des **résumés** (`id`, `code`, `title`, `referentiel`,
+Les listes renvoient des **résumés** (`id`, `code`, `title`, `referentials`,
 `automated`, `status` ; `fait`/`conformite` pour les occurrences). Les longs
 textes ne sont obtenus que par `get_control`. Résultat JSON plafonné à 512 KiB.
 

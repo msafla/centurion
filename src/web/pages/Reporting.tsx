@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { OccurrenceDto, Page, PlanDto } from '../../shared/schemas';
 import { api } from '../lib/api';
-import { formatDate, formatPercent, REFERENTIEL_LABELS } from '../lib/format';
+import { formatDate, formatPercent } from '../lib/format';
 import { usePlan } from '../lib/plan-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,7 @@ type Report = {
 };
 
 export function Reporting() {
-  const { plan } = usePlan();
+  const { plan, labelOf } = usePlan();
   const [referentiel, setReferentiel] = useState('');
   const [search, setSearch] = useState('');
   const [report, setReport] = useState<Report | null>(null);
@@ -113,7 +113,7 @@ export function Reporting() {
                 {report.rows.items.map((occurrence) => (
                   <tr key={occurrence.id} className="border-t border-[var(--color-border-brand)]">
                     <td className="px-3 py-2">
-                      {REFERENTIEL_LABELS[occurrence.control.referentiel] ?? occurrence.control.referentiel}
+                      {occurrence.control.referentials.map(labelOf).join(" + ")}
                     </td>
                     <td className="px-3 py-2">
                       {occurrence.control.code} — {occurrence.control.title}

@@ -26,7 +26,11 @@ export function buildOccurrenceFilter(planId: string, filter: FilterInput): SqlF
     conditions.push("o.state <> 'superseded'");
   }
   if (filter.referentiel) {
-    conditions.push('c.referentiel = ?');
+    conditions.push(
+      `EXISTS (SELECT 1 FROM control_referentials cr
+                 JOIN referentials ref ON ref.id = cr.referential_id
+                WHERE cr.control_id = c.id AND ref.slug = ?)`,
+    );
     params.push(filter.referentiel);
   }
   if (filter.domain) {

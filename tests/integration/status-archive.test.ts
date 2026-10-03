@@ -68,7 +68,7 @@ function headers(extra: Record<string, string> = {}): Record<string, string> {
 const metadata = {
   title: 'Titre',
   description: 'Description',
-  referentiel: 'iso_27001',
+  referentials: ['iso_27001'],
   reference: 'REF',
   domain: 'Domaine',
   owner_name: '',

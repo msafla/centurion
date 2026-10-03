@@ -4,7 +4,7 @@ import {
   ConformiteSchema,
   type FilterInput,
   OccurrenceStateSchema,
-  ReferentielSchema,
+  ReferentialSlugSchema,
 } from '../../shared/schemas';
 
 const BooleanQuery = z.enum(['true', 'false']).transform((value) => value === 'true');
@@ -18,7 +18,7 @@ export const OccurrenceQuerySchema = z
   .object({
     page: z.coerce.number().int().min(1).default(1),
     page_size: z.coerce.number().int().min(1).max(100).default(50),
-    referentiel: ReferentielSchema.optional(),
+    referentiel: ReferentialSlugSchema.optional(),
     domain: normalized(80).optional(),
     owner_name: normalized(120).optional(),
     automated: BooleanQuery.optional(),

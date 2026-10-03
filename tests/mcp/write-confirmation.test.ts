@@ -89,7 +89,7 @@ const controlInput = {
   code: 'C1',
   title: 'Titre',
   description: 'Description',
-  referentiel: 'iso_27001',
+  referentials: ['iso_27001'],
   reference: 'REF',
   domain: 'Domaine',
   owner_name: '',

@@ -13,6 +13,7 @@ async function createControl(
   await dialog.getByLabel('Description').fill('Description de test');
   await dialog.getByLabel('Référence').fill(fields.reference ?? 'REF');
   await dialog.getByLabel('Domaine').fill('Gouvernance');
+  await dialog.getByRole('checkbox', { name: 'ISO 27001' }).check();
   await dialog.getByLabel('Fréquence').selectOption('quarterly');
   await dialog.getByLabel('Ancre').fill('2026-03-31');
   if (fields.automated) {
@@ -96,6 +97,7 @@ test('core annual tracking flow', async ({ page }) => {
   await dupDialog.getByLabel('Description').fill('Description');
   await dupDialog.getByLabel('Référence').fill('REF');
   await dupDialog.getByLabel('Domaine').fill('Gouvernance');
+  await dupDialog.getByRole('checkbox', { name: 'ISO 27001' }).check();
   await dupDialog.getByLabel('Fréquence').selectOption('quarterly');
   await dupDialog.getByLabel('Ancre').fill('2026-03-31');
   await dupDialog.getByRole('button', { name: 'Créer' }).click();

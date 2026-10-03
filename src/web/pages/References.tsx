@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import { REFERENTIEL_LABELS, formatPercent } from '../lib/format';
+import { formatPercent } from '../lib/format';
 import { usePlan } from '../lib/plan-context';
 
 type Summary = {
   by_referentiel: {
-    referentiel: string;
+    referential: { slug: string; label: string };
     counts: { total: number; open: number; fait_true: number; fait_false: number };
     realization_rate: { value: number | null };
     conformity_rate: { value: number | null };
@@ -43,12 +43,10 @@ export function References() {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {summary.by_referentiel.map((entry) => (
           <article
-            key={entry.referentiel}
+            key={entry.referential.slug}
             className="rounded-lg border border-[var(--color-border-brand)] bg-white p-4"
           >
-            <h2 className="text-lg font-medium">
-              {REFERENTIEL_LABELS[entry.referentiel] ?? entry.referentiel}
-            </h2>
+            <h2 className="text-lg font-medium">{entry.referential.label}</h2>
             <dl className="mt-3 space-y-1 text-sm">
               <div className="flex justify-between">
                 <dt className="text-[var(--color-text-secondary)]">Occurrences</dt>

@@ -1,11 +1,5 @@
 import type BetterSqlite3 from 'better-sqlite3';
-import type {
-  FilterInput,
-  OccurrenceDto,
-  Page,
-  PlanDto,
-  Referentiel,
-} from '../../shared/schemas';
+import type { FilterInput, OccurrenceDto, Page, PlanDto } from '../../shared/schemas';
 import type { Clock } from '../clock';
 import { planInScope } from '../db/scoping';
 import { toPlanDto } from './plans';
@@ -16,6 +10,7 @@ import {
   hasOccurrenceFilter,
   listOccurrences,
 } from './queries';
+import { listReferentials } from './referentials';
 
 export type Counts = {
   total: number;
@@ -30,8 +25,8 @@ export type Counts = {
 
 export type Rate = { numerator: number; denominator: number; value: number | null };
 
-export type ReferentielSummary = {
-  referentiel: Referentiel;
+export type ReferentialSummary = {
+  referential: { slug: string; label: string };
   counts: Counts;
   realization_rate: Rate;
   conformity_rate: Rate;
@@ -42,7 +37,7 @@ export type SummaryDto = {
   realization_rate: Rate;
   conformity_rate: Rate;
   automation_rate: Rate;
-  by_referentiel: ReferentielSummary[];
+  by_referentiel: ReferentialSummary[];
 };
 
 export type ReportDto = {
@@ -53,11 +48,11 @@ export type ReportDto = {
   rows: Page<OccurrenceDto>;
 };
 
-const REFERENTIELS: Referentiel[] = [
-  'iso_27001',
-  'isae_3402_t2',
-  'iso_27001_isae_3402_t2',
-];
+const REFERENTIAL_FROM = `FROM occurrences o
+      JOIN controls c ON c.id = o.control_id
+      LEFT JOIN realizations r ON r.occurrence_id = o.id
+      JOIN control_referentials cr ON cr.control_id = c.id
+      JOIN referentials ref ON ref.id = cr.referential_id`;
 
 const AGGREGATES = `COUNT(*) AS total,
   COALESCE(SUM(CASE WHEN o.state = 'open' THEN 1 ELSE 0 END), 0) AS open,
@@ -88,7 +83,11 @@ function buildControlFilter(planId: string, filter: FilterInput): SqlFilter {
   const conditions = ['c.plan_id = ?', "c.status = 'active'"];
   const params: unknown[] = [planId];
   if (filter.referentiel) {
-    conditions.push('c.referentiel = ?');
+    conditions.push(
+      `EXISTS (SELECT 1 FROM control_referentials cr
+                 JOIN referentials ref ON ref.id = cr.referential_id
+                WHERE cr.control_id = c.id AND ref.slug = ?)`,
+    );
     params.push(filter.referentiel);
   }
   if (filter.domain) {
@@ -152,6 +151,19 @@ function emptyCounts(): Counts {
   };
 }
 
+function cleanCounts(row: Counts): Counts {
+  return {
+    total: row.total,
+    open: row.open,
+    fait_true: row.fait_true,
+    fait_false: row.fait_false,
+    conforme: row.conforme,
+    partiellement_conforme: row.partiellement_conforme,
+    non_conforme: row.non_conforme,
+    non_applicable: row.non_applicable,
+  };
+}
+
 export function buildSummary(
   db: BetterSqlite3.Database,
   planId: string,
@@ -165,30 +177,19 @@ export function buildSummary(
 
   const grouped = db
     .prepare(
-      `SELECT c.referentiel AS referentiel, ${AGGREGATES}
-       ${OCCURRENCE_FROM} WHERE ${where} GROUP BY c.referentiel`,
+      `SELECT ref.slug AS slug, ${AGGREGATES}
+       ${REFERENTIAL_FROM} WHERE ${where} GROUP BY ref.slug`,
     )
-    .all(...params) as (Counts & { referentiel: Referentiel })[];
+    .all(...params) as (Counts & { slug: string })[];
 
-  const byReferentiel = REFERENTIELS.map((referentiel) => {
-    const row = grouped.find((entry) => entry.referentiel === referentiel);
-    const clean: Counts = row
-      ? {
-          total: row.total,
-          open: row.open,
-          fait_true: row.fait_true,
-          fait_false: row.fait_false,
-          conforme: row.conforme,
-          partiellement_conforme: row.partiellement_conforme,
-          non_conforme: row.non_conforme,
-          non_applicable: row.non_applicable,
-        }
-      : emptyCounts();
+  const byReferentiel: ReferentialSummary[] = listReferentials(db).map((referential) => {
+    const row = grouped.find((entry) => entry.slug === referential.slug);
+    const categoryCounts = row ? cleanCounts(row) : emptyCounts();
     return {
-      referentiel,
-      counts: clean,
-      realization_rate: realizationRate(clean),
-      conformity_rate: conformityRate(clean),
+      referential: { slug: referential.slug, label: referential.label },
+      counts: categoryCounts,
+      realization_rate: realizationRate(categoryCounts),
+      conformity_rate: conformityRate(categoryCounts),
     };
   });
 

@@ -13,6 +13,7 @@ import { registerImportRoutes } from './routes/imports';
 import { registerMcpRoutes } from './routes/mcp';
 import { registerOccurrenceRoutes } from './routes/occurrences';
 import { registerPlanRoutes } from './routes/plans';
+import { registerReferentialRoutes } from './routes/referentials';
 import { registerReportingRoutes } from './routes/reporting';
 import type { Runtime } from './runtime';
 
@@ -42,6 +43,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     });
     registerBackupRoutes(app, deps.runtime);
     registerPlanRoutes(app, deps.runtime);
+    registerReferentialRoutes(app, deps.runtime);
     registerControlRoutes(app, deps.runtime);
     registerOccurrenceRoutes(app, deps.runtime);
     registerReportingRoutes(app, deps.runtime);

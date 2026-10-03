@@ -20,6 +20,12 @@ import {
 } from '../db/database';
 import { controlInPlan } from '../db/scoping';
 import { AppError, parseInput } from '../http/errors';
+import {
+  copyControlReferentials,
+  referentialsForControl,
+  setControlReferentials,
+  tokensFromSlugs,
+} from './referentials';
 import { generateDates } from './schedule';
 
 export type ScheduleStorage = {
@@ -60,14 +66,14 @@ export function rowToSchedule(row: ControlRow): Schedule {
   };
 }
 
-export function toControlDto(row: ControlRow): ControlDto {
+export function toControlDto(db: BetterSqlite3.Database, row: ControlRow): ControlDto {
   return {
     id: row.id,
     plan_id: row.plan_id,
     code: row.code,
     title: row.title,
     description: row.description,
-    referentiel: row.referentiel as ControlDto['referentiel'],
+    referentials: referentialsForControl(db, row.id),
     reference: row.reference,
     domain: row.domain,
     owner_name: row.owner_name,
@@ -84,11 +90,11 @@ export function toControlDto(row: ControlRow): ControlDto {
   };
 }
 
-export function metadataOf(row: ControlRow): ControlMetadata {
+export function metadataOf(db: BetterSqlite3.Database, row: ControlRow): ControlMetadata {
   return {
     title: row.title,
     description: row.description,
-    referentiel: row.referentiel as ControlMetadata['referentiel'],
+    referentials: referentialsForControl(db, row.id),
     reference: row.reference,
     domain: row.domain,
     owner_name: row.owner_name,
@@ -133,17 +139,16 @@ export function insertControl(
   const storage = scheduleToStorage(params.schedule);
   db.prepare(
     `INSERT INTO controls
-       (id, plan_id, code, title, description, referentiel, reference, domain, owner_name,
+       (id, plan_id, code, title, description, reference, domain, owner_name,
         method, expected_evidence, automated, automation_github_url, frequency_kind,
         anchor_date, explicit_dates_json, active_from, active_to, status, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`,
   ).run(
     id,
     params.planId,
     params.code,
     params.metadata.title,
     params.metadata.description,
-    params.metadata.referentiel,
     params.metadata.reference,
     params.metadata.domain,
     params.metadata.owner_name,
@@ -239,16 +244,18 @@ export function createControl(
       nowUtc: tx.nowUtc,
     });
     insertOccurrences(tx.db, row.id, dates, tx.nowUtc);
+    setControlReferentials(tx.db, row.id, tokensFromSlugs(tx.db, input.referentials), tx.nowUtc);
+    const dto = toControlDto(tx.db, row);
     tx.audit({
       entity_type: 'control',
       entity_id: row.id,
       plan_id: planId,
       control_id: row.id,
       action: 'create',
-      after: toControlDto(row),
+      after: dto,
     });
     tx.markChanged();
-    return { control: toControlDto(row), occurrences_generated: dates.length };
+    return { control: dto, occurrences_generated: dates.length };
   });
 }
 
@@ -265,18 +272,18 @@ export function updateControlMetadata(
       throw new AppError(409, 'control_archived', 'Archived control cannot be edited');
     }
 
-    const current = metadataOf(row);
+    const current = metadataOf(tx.db, row);
     const merged = parseInput(ControlMetadataSchema, { ...current, ...patch });
     assertDefinitionSize(merged);
 
     if (JSON.stringify(merged) === JSON.stringify(current)) {
-      return { control: toControlDto(row) };
+      return { control: toControlDto(tx.db, row) };
     }
 
     tx.db
       .prepare(
         `UPDATE controls
-            SET title = ?, description = ?, referentiel = ?, reference = ?, domain = ?,
+            SET title = ?, description = ?, reference = ?, domain = ?,
                 owner_name = ?, method = ?, expected_evidence = ?, automated = ?,
                 automation_github_url = ?, updated_at = ?
           WHERE id = ?`,
@@ -284,7 +291,6 @@ export function updateControlMetadata(
       .run(
         merged.title,
         merged.description,
-        merged.referentiel,
         merged.reference,
         merged.domain,
         merged.owner_name,
@@ -295,6 +301,7 @@ export function updateControlMetadata(
         tx.nowUtc,
         row.id,
       );
+    setControlReferentials(tx.db, row.id, tokensFromSlugs(tx.db, merged.referentials), tx.nowUtc);
 
     const updated = tx.db.prepare('SELECT * FROM controls WHERE id = ?').get(row.id) as ControlRow;
     tx.audit({
@@ -303,11 +310,11 @@ export function updateControlMetadata(
       plan_id: planId,
       control_id: row.id,
       action: 'update_metadata',
-      before: toControlDto(row),
-      after: toControlDto(updated),
+      before: toControlDto(tx.db, row),
+      after: toControlDto(tx.db, updated),
     });
     tx.markChanged();
-    return { control: toControlDto(updated) };
+    return { control: toControlDto(tx.db, updated) };
   });
 }
 
@@ -339,23 +346,25 @@ export function duplicateControl(
     const row = insertControl(tx.db, {
       planId,
       code: newCode,
-      metadata: metadataOf(origin),
+      metadata: metadataOf(tx.db, origin),
       schedule,
       active_from: origin.active_from,
       active_to: origin.active_to,
       nowUtc: tx.nowUtc,
     });
     insertOccurrences(tx.db, row.id, dates, tx.nowUtc);
+    copyControlReferentials(tx.db, origin.id, row.id, tx.nowUtc);
+    const dto = toControlDto(tx.db, row);
     tx.audit({
       entity_type: 'control',
       entity_id: row.id,
       plan_id: planId,
       control_id: row.id,
       action: 'duplicate',
-      after: toControlDto(row),
+      after: dto,
     });
     tx.markChanged();
-    return { control: toControlDto(row), occurrences_generated: dates.length };
+    return { control: dto, occurrences_generated: dates.length };
   });
 }
 
@@ -381,7 +390,11 @@ export function listControls(
     params.push(status);
   }
   if (filter.referentiel) {
-    conditions.push('referentiel = ?');
+    conditions.push(
+      `EXISTS (SELECT 1 FROM control_referentials cr
+                 JOIN referentials r ON r.id = cr.referential_id
+                WHERE cr.control_id = controls.id AND r.slug = ?)`,
+    );
     params.push(filter.referentiel);
   }
   if (filter.domain) {
@@ -415,7 +428,7 @@ export function listControls(
     )
     .all(...params, pageSize, (page - 1) * pageSize) as ControlRow[];
 
-  return { items: rows.map(toControlDto), page, page_size: pageSize, total };
+  return { items: rows.map((row) => toControlDto(db, row)), page, page_size: pageSize, total };
 }
 
 export function getControlDto(
@@ -423,7 +436,7 @@ export function getControlDto(
   planId: string,
   controlId: string,
 ): ControlDto {
-  return toControlDto(controlInPlan(db, planId, controlId));
+  return toControlDto(db, controlInPlan(db, planId, controlId));
 }
 
 export type ArchiveResult = { control: ControlDto; occurrences_superseded: number };
@@ -482,10 +495,10 @@ export async function archiveControl(
       plan_id: planId,
       control_id: controlId,
       action: 'archive',
-      before: toControlDto(current),
-      after: toControlDto(updated),
+      before: toControlDto(tx.db, current),
+      after: toControlDto(tx.db, updated),
     });
     tx.markChanged();
-    return { control: toControlDto(updated), occurrences_superseded: superseded };
+    return { control: toControlDto(tx.db, updated), occurrences_superseded: superseded };
   });
 }

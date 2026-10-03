@@ -69,10 +69,10 @@ function seedControl(db: BetterSqlite3.Database, planId: string, code: string): 
   const id = randomUUID();
   db.prepare(
     `INSERT INTO controls
-       (id, plan_id, code, title, description, referentiel, reference, domain, owner_name,
+       (id, plan_id, code, title, description, reference, domain, owner_name,
         method, expected_evidence, automated, automation_github_url, frequency_kind,
         anchor_date, explicit_dates_json, active_from, active_to, status, created_at, updated_at)
-     VALUES (?, ?, ?, 'Titre', 'Description', 'iso_27001', 'REF', 'Domaine', '', '', '',
+     VALUES (?, ?, ?, 'Titre', 'Description', 'REF', 'Domaine', '', '', '',
              0, NULL, 'annual', '2028-01-01', NULL, NULL, NULL, 'active', ?, ?)`,
   ).run(id, planId, code, NOW, NOW);
   return id;

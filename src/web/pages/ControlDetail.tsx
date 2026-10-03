@@ -4,7 +4,7 @@ import type { AuditDto, ControlDto, OccurrenceDto, Page } from '../../shared/sch
 import { SchedulePreview } from '../components/SchedulePreview';
 import { StateBadge } from '../components/StateBadge';
 import { ApiClientError, api } from '../lib/api';
-import { FREQUENCY_LABELS, REFERENTIEL_LABELS, formatDate } from '../lib/format';
+import { FREQUENCY_LABELS, formatDate } from '../lib/format';
 import { usePlan } from '../lib/plan-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ type Tab = 'definition' | 'calendar' | 'realizations' | 'history';
 
 export function ControlDetail() {
   const { controlId } = useParams<{ controlId: string }>();
-  const { plan } = usePlan();
+  const { plan, labelOf } = usePlan();
   const [control, setControl] = useState<ControlDto | null>(null);
   const [occurrences, setOccurrences] = useState<OccurrenceDto[]>([]);
   const [history, setHistory] = useState<AuditDto[]>([]);
@@ -107,7 +107,7 @@ export function ControlDetail() {
         <dl className="grid grid-cols-1 gap-3 rounded-lg border border-[var(--color-border-brand)] bg-white p-4 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-xs uppercase text-[var(--color-text-secondary)]">Référentiel</dt>
-            <dd>{REFERENTIEL_LABELS[control.referentiel] ?? control.referentiel}</dd>
+            <dd>{control.referentials.map(labelOf).join(" + ")}</dd>
           </div>
           <div>
             <dt className="text-xs uppercase text-[var(--color-text-secondary)]">Référence</dt>

@@ -1,0 +1,12 @@
+{
+  "title": "CENTURION — Présentation produit",
+  "language": "fr",
+  "slides": 8,
+  "format": "16:9",
+  "pdf": "CENTURION-presentation.pdf",
+  "validation": "VALIDATION.md",
+  "screenshot_viewport": "1600x900",
+  "screenshot_source": "Chromium / Playwright, serveur de démonstration isolé sur 127.0.0.1:4319",
+  "demo_data_only": true,
+  "partners": ["MS-PRAXIS", "ms-securityconsulting", "msafla"]
+}

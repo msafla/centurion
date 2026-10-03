@@ -257,14 +257,14 @@ export async function applySchedulePreview(
         plan_id: planId,
         control_id: controlId,
         action: 'schedule_change',
-        before: toControlDto(control),
-        after: toControlDto(updated),
+        before: toControlDto(tx.db, control),
+        after: toControlDto(tx.db, updated),
       });
       tx.markChanged();
     }
 
     return {
-      control: toControlDto(updated),
+      control: toControlDto(tx.db, updated),
       delta_counts: {
         keep: delta.keep.length,
         supersede: delta.supersede.length,

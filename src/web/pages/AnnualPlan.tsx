@@ -5,7 +5,7 @@ import { ControlForm } from '../components/ControlForm';
 import { RealizationForm } from '../components/RealizationForm';
 import { StateBadge } from '../components/StateBadge';
 import { api } from '../lib/api';
-import { FREQUENCY_LABELS, REFERENTIEL_LABELS, formatDate } from '../lib/format';
+import { FREQUENCY_LABELS, formatDate } from '../lib/format';
 import { usePlan } from '../lib/plan-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +27,7 @@ const MONTHS = [
 ];
 
 export function AnnualPlan() {
-  const { plan, reloadPlans } = usePlan();
+  const { plan, reloadPlans, labelOf } = usePlan();
   const [params, setParams] = useSearchParams();
   const [rows, setRows] = useState<Page<OccurrenceDto> | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -193,7 +193,7 @@ export function AnnualPlan() {
               {(rows?.items ?? []).map((occurrence) => (
                 <tr key={occurrence.id} className="border-t border-[var(--color-border-brand)]">
                   <td className="px-3 py-2">
-                    {REFERENTIEL_LABELS[occurrence.control.referentiel] ?? occurrence.control.referentiel}
+                    {occurrence.control.referentials.map(labelOf).join(" + ")}
                   </td>
                   <td className="px-3 py-2">{occurrence.control.reference}</td>
                   <td className="px-3 py-2">

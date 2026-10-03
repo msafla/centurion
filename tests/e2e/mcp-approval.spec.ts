@@ -71,7 +71,7 @@ test('an MCP write proposal changes nothing until approved in the UI', async ({ 
       code: 'MCP1',
       title: 'Contrôle proposé',
       description: 'Description',
-      referentiel: 'iso_27001',
+      referentials: ['iso_27001'],
       reference: 'REF',
       domain: 'Domaine',
       owner_name: '',

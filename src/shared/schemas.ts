@@ -121,8 +121,19 @@ export const CodeSchema = z
 // Closed enums
 // ---------------------------------------------------------------------------
 
-export const ReferentielSchema = z.enum(['iso_27001', 'isae_3402_t2', 'iso_27001_isae_3402_t2']);
-export type Referentiel = z.infer<typeof ReferentielSchema>;
+/** A dynamic referential identifier: normalized lowercase slug. */
+export const ReferentialSlugSchema = z
+  .string()
+  .regex(/^[a-z0-9][a-z0-9_-]*$/, { message: 'invalid_referential_slug' })
+  .max(64);
+export type ReferentialSlug = z.infer<typeof ReferentialSlugSchema>;
+
+export const ReferentialDtoSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  label: z.string(),
+});
+export type ReferentialDto = z.infer<typeof ReferentialDtoSchema>;
 
 export const ConformiteSchema = z.enum([
   'conforme',
@@ -217,7 +228,7 @@ const ControlMetadataBase = z
   .object({
     title: requiredText(160),
     description: requiredMultiline(4000),
-    referentiel: ReferentielSchema,
+    referentials: z.array(ReferentialSlugSchema).min(1).max(20),
     reference: requiredText(160),
     domain: requiredText(80),
     owner_name: optionalText(120),
@@ -283,7 +294,7 @@ export type StatusInput = z.infer<typeof StatusInputSchema>;
 
 export const FilterInputSchema = z
   .object({
-    referentiel: ReferentielSchema.optional(),
+    referentiel: ReferentialSlugSchema.optional(),
     domain: requiredText(80).optional(),
     owner_name: optionalText(120).optional(),
     automated: z.boolean().optional(),
@@ -305,7 +316,7 @@ export type FilterInput = z.infer<typeof FilterInputSchema>;
 
 export const ControlListFilterSchema = z
   .object({
-    referentiel: ReferentielSchema.optional(),
+    referentiel: ReferentialSlugSchema.optional(),
     domain: requiredText(80).optional(),
     owner_name: optionalText(120).optional(),
     automated: z.boolean().optional(),
@@ -361,7 +372,7 @@ export const ControlDtoSchema = z.object({
   code: z.string(),
   title: z.string(),
   description: z.string(),
-  referentiel: ReferentielSchema,
+  referentials: z.array(z.string()),
   reference: z.string(),
   domain: z.string(),
   owner_name: z.string(),

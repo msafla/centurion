@@ -26,7 +26,7 @@ type DemoControl = {
   code: string;
   title: string;
   description: string;
-  referentiel: string;
+  referentials: string[];
   reference: string;
   domain: string;
   owner_name: string;
@@ -44,7 +44,7 @@ const CONTROLS: DemoControl[] = [
     code: 'ACC-01',
     title: 'Revue des accès',
     description: 'Revue mensuelle des habilitations et des comptes à privilèges.',
-    referentiel: 'iso_27001',
+    referentials: ['iso_27001'],
     reference: 'A.9.2',
     domain: 'Gouvernance',
     owner_name: 'Alice Martin',
@@ -64,7 +64,7 @@ const CONTROLS: DemoControl[] = [
     code: 'ACC-02',
     title: 'Sauvegardes',
     description: 'Vérification trimestrielle des sauvegardes et des restaurations.',
-    referentiel: 'iso_27001',
+    referentials: ['iso_27001', 'pci_dss'],
     reference: 'A.12.3',
     domain: 'Exploitation',
     owner_name: 'Bob Durand',
@@ -82,7 +82,7 @@ const CONTROLS: DemoControl[] = [
     code: 'ACC-03',
     title: 'Clôture ISAE',
     description: 'Revue de clôture semestrielle des services concernés.',
-    referentiel: 'isae_3402_t2',
+    referentials: ['isae_3402_t2', 'soc_2'],
     reference: 'ISAE-1',
     domain: 'Finance',
     owner_name: 'Carol Neri',
@@ -100,7 +100,7 @@ const CONTROLS: DemoControl[] = [
     code: 'ACC-04',
     title: 'Contrôle automatisé des correctifs',
     description: 'Vérifie l’application des correctifs de sécurité critiques.',
-    referentiel: 'iso_27001_isae_3402_t2',
+    referentials: ['iso_27001', 'isae_3402_t2'],
     reference: 'A.12.6',
     domain: 'Cybersécurité',
     owner_name: 'David Kim',
@@ -118,7 +118,7 @@ const CONTROLS: DemoControl[] = [
     code: 'ACC-05',
     title: 'Audit ponctuel fournisseur',
     description: 'Audit ponctuel d’un fournisseur critique.',
-    referentiel: 'isae_3402_t2',
+    referentials: ['isae_3402_t2'],
     reference: 'ISAE-2',
     domain: 'Achats',
     owner_name: 'Eve Laurent',
@@ -134,7 +134,7 @@ const CONTROLS: DemoControl[] = [
     code: 'ACC-06',
     title: 'Revue de politiques',
     description: 'Revue des politiques de sécurité aux dates clés.',
-    referentiel: 'iso_27001',
+    referentials: ['iso_27001'],
     reference: 'A.5.1',
     domain: 'Gouvernance',
     owner_name: 'Frank Osei',
@@ -168,10 +168,10 @@ export function seedDemo(dataDir: string): void {
       handle.db
         .prepare(
           `INSERT INTO controls
-             (id, plan_id, code, title, description, referentiel, reference, domain, owner_name,
+             (id, plan_id, code, title, description, reference, domain, owner_name,
               method, expected_evidence, automated, automation_github_url, frequency_kind,
               anchor_date, explicit_dates_json, active_from, active_to, status, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, 'active', ?, ?)`,
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, 'active', ?, ?)`,
         )
         .run(
           controlId,
@@ -179,7 +179,6 @@ export function seedDemo(dataDir: string): void {
           control.code,
           control.title,
           control.description,
-          control.referentiel,
           control.reference,
           control.domain,
           control.owner_name,
@@ -193,6 +192,12 @@ export function seedDemo(dataDir: string): void {
           now,
           now,
         );
+
+      const link = handle.db.prepare(
+        `INSERT OR IGNORE INTO control_referentials (control_id, referential_id, created_at)
+         SELECT ?, id, ? FROM referentials WHERE slug = ?`,
+      );
+      for (const slug of control.referentials) link.run(controlId, now, slug);
 
       const dates = generateDates(DEMO_YEAR, control.schedule, {
         active_from: null,

@@ -104,6 +104,7 @@ await step('Création contrôle', async () => {
   await dialog.getByLabel('Description').fill('Créé par le test e2e');
   await dialog.getByLabel('Référence').fill('E2E');
   await dialog.getByLabel('Domaine').fill('Test');
+  await dialog.getByRole('checkbox', { name: 'ISO 27001' }).check();
   await dialog.getByLabel('Fréquence').selectOption('once');
   await dialog.getByLabel('Date').fill('2028-05-01');
   await dialog.getByRole('button', { name: 'Créer' }).click();
@@ -166,7 +167,7 @@ await step('Archivage du contrôle', async () => {
 await step('Référentiels', async () => {
   await page.getByRole('link', { name: 'Référentiels' }).click();
   await page.getByRole('heading', { name: 'Référentiels' }).waitFor();
-  if ((await page.locator('main article').count()) !== 3) throw new Error('catégories != 3');
+  if ((await page.locator('main article').count()) < 4) throw new Error('catégories < 4');
 });
 
 await step('Reporting', async () => {

@@ -28,7 +28,6 @@ export type ControlRow = {
   code: string;
   title: string;
   description: string;
-  referentiel: string;
   reference: string;
   domain: string;
   owner_name: string;

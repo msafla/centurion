@@ -22,14 +22,19 @@ const NAV = [
 
 export function App() {
   const [plans, setPlans] = useState<PlanDto[]>([]);
+  const [referentials, setReferentials] = useState<{ slug: string; label: string }[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(() =>
     localStorage.getItem('centurion.plan'),
   );
   const [error, setError] = useState<string | null>(null);
 
   const reloadPlans = useCallback(async () => {
-    const page = await api.get<Page<PlanDto>>('/api/plans', { page_size: 100 });
+    const [page, catalog] = await Promise.all([
+      api.get<Page<PlanDto>>('/api/plans', { page_size: 100 }),
+      api.get<{ slug: string; label: string }[]>('/api/referentials'),
+    ]);
     setPlans(page.items);
+    setReferentials(catalog);
     setSelectedId((current) => {
       if (current && page.items.some((plan) => plan.id === current)) return current;
       const currentYear = new Date().getFullYear();
@@ -47,7 +52,16 @@ export function App() {
   }, [selectedId]);
 
   const plan = plans.find((entry) => entry.id === selectedId) ?? null;
-  const value: PlanState = { plans, plan, reloadPlans, selectPlan: setSelectedId };
+  const labelBySlug = new Map(referentials.map((entry) => [entry.slug, entry.label]));
+  const labelOf = (slug: string): string => labelBySlug.get(slug) ?? slug;
+  const value: PlanState = {
+    plans,
+    plan,
+    referentials,
+    labelOf,
+    reloadPlans,
+    selectPlan: setSelectedId,
+  };
 
   return (
     <PlanContext.Provider value={value}>
