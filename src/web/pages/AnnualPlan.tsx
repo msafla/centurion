@@ -77,7 +77,8 @@ export function AnnualPlan() {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
     else next.delete(key);
-    next.delete('page');
+    // Changing a filter restarts at page 1; paging only moves `page`.
+    if (key !== 'page') next.delete('page');
     setParams(next);
   }
 
@@ -88,8 +89,10 @@ export function AnnualPlan() {
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-4xl font-light tracking-tight">Plan annuel — {plan.year}</h1>
-        <div className="ml-auto flex items-center gap-2">
+        <h1 className="min-w-0 text-2xl font-light tracking-tight sm:text-4xl">
+          Plan annuel — {plan.year}
+        </h1>
+        <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto sm:justify-end">
           <Button
             variant={view === 'table' ? 'default' : 'outline'}
             onClick={() => setView('table')}
