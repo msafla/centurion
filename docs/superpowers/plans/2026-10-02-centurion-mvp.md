@@ -512,12 +512,12 @@ Scripts obligatoires :
 
 **Produit :** versions exactes et scripts ; backup réel better-sqlite3, PDF multipage avec police locale et handshake MCP modern/legacy. Toutes les tâches en dépendent.
 
-- [ ] Initialiser Git local sur main si absent, sans remote ni push ; licence du code MIT comme dans le plan original. Ignorer node_modules, dist, fichiers .env, data/demo, données d'instance, DB/WAL/SHM, backups, runtime tokens et captures temporaires ; conserver templates fictifs et licences tierces.
-- [ ] Vérifier dans leurs registres/docs les paquets Fastify et plugins compatibles, React/Vite, TypeScript, Tailwind/shadcn, Zod 4, better-sqlite3, csv-parse, ExcelJS, yauzl, proper-lockfile, renderer pdfcn/Takumi, MCP server/client v2, Vitest, Playwright. Commande `npm view <package>@<version> version engines dist.integrity`. Choisir une stable compatible, sans alpha/rc ; save-exact=true ; documenter versions, licences, sources et éventuelles vulnérabilités bloquantes.
-- [ ] Installer une fois les composants shadcn/pdfcn via CLI épinglée ; relire les sources et dépendances, commiter code/lockfile. Le code vendored devient l'autorité, pas une commande de registre mutable au runtime.
-- [ ] Écrire/exécuter le smoke : SQLite WAL→backup→intégrité/FK ; PDF deux pages avec Poppins et accents, extraction de texte/page count ; child MCP `serveStdio` avec un client modern et legacy, outils visibles et stdout réservé au protocole.
-- [ ] Configurer les scripts section 11 ; passer `npm ci`, smoke, typecheck et build. Consigner la plateforme réellement testée. Échec d'une dépendance → diagnostic et blocage de sa tâche dépendante ; aucun moteur alternatif adopté silencieusement.
-- [ ] Enregistrer les preuves et commit `chore: lock compatible toolchain`.
+- [x] Initialiser Git local sur main si absent, sans remote ni push ; licence du code MIT comme dans le plan original. Ignorer node_modules, dist, fichiers .env, data/demo, données d'instance, DB/WAL/SHM, backups, runtime tokens et captures temporaires ; conserver templates fictifs et licences tierces.
+- [x] Vérifier dans leurs registres/docs les paquets Fastify et plugins compatibles, React/Vite, TypeScript, Tailwind/shadcn, Zod 4, better-sqlite3, csv-parse, ExcelJS, yauzl, proper-lockfile, renderer pdfcn/Takumi, MCP server/client v2, Vitest, Playwright. Commande `npm view <package>@<version> version engines dist.integrity`. Choisir une stable compatible, sans alpha/rc ; save-exact=true ; documenter versions, licences, sources et éventuelles vulnérabilités bloquantes.
+- [x] Installer une fois les composants shadcn/pdfcn via CLI épinglée ; relire les sources et dépendances, commiter code/lockfile. Le code vendored devient l'autorité, pas une commande de registre mutable au runtime.
+- [x] Écrire/exécuter le smoke : SQLite WAL→backup→intégrité/FK ; PDF deux pages avec Poppins et accents, extraction de texte/page count ; child MCP `serveStdio` avec un client modern et legacy, outils visibles et stdout réservé au protocole.
+- [x] Configurer les scripts section 11 ; passer `npm ci`, smoke, typecheck et build. Consigner la plateforme réellement testée. Échec d'une dépendance → diagnostic et blocage de sa tâche dépendante ; aucun moteur alternatif adopté silencieusement.
+- [x] Enregistrer les preuves et commit `chore: lock compatible toolchain`.
 
 ### T1 — API locale, contrats et protections navigateur
 

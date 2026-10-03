@@ -75,4 +75,4 @@ puis implémenter `buildApp`, `Clock`, DTO/`ErrorBody` et le shell UI.
 
 ### Commit
 
-`chore: lock compatible toolchain` (voir `git log`).
+`b85cafd chore: lock compatible toolchain`.
