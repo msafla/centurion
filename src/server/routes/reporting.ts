@@ -1,5 +1,7 @@
+import { createReadStream } from 'node:fs';
 import type { FastifyInstance } from 'fastify';
 import { planInScope } from '../db/scoping';
+import { getArtifact } from '../reports/artifacts';
 import { buildReport, buildSummary } from '../domain/report';
 import { OccurrenceQuerySchema, toFilter } from '../http/filters';
 import { parseInput } from '../http/errors';
@@ -68,5 +70,16 @@ export function registerReportingRoutes(app: FastifyInstance, runtime: Runtime):
     reply.header('content-disposition', `attachment; filename="report-${snapshot.year}.pdf"`);
     reply.header('cache-control', 'no-store');
     return reply.send(Buffer.from(pdf));
+  });
+
+  app.get('/exports/:exportId/download', async (request, reply) => {
+    const { exportId } = request.params as { exportId: string };
+    const artifact = runtime.gate.runRead(() =>
+      getArtifact(runtime.dataDir, exportId, runtime.clock.nowUtc()),
+    );
+    reply.header('content-type', artifact.manifest.mime_type);
+    reply.header('content-disposition', `attachment; filename="${artifact.manifest.filename}"`);
+    reply.header('cache-control', 'no-store');
+    return reply.send(createReadStream(artifact.path));
   });
 }

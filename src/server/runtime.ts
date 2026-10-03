@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { Clock } from './clock';
 import type { Config } from './config';
 import type { DatabaseHandle } from './db/database';
+import { McpLimiter } from './mcp/limits';
 import type { OperationGate } from './storage/operation-gate';
 
 /**
@@ -10,6 +11,8 @@ import type { OperationGate } from './storage/operation-gate';
  * captured at build time.
  */
 export class Runtime {
+  readonly mcpLimiter = new McpLimiter();
+
   constructor(
     readonly config: Config,
     readonly clock: Clock,
@@ -17,6 +20,8 @@ export class Runtime {
     readonly gate: OperationGate,
     public db: DatabaseHandle,
     public engineEpoch: string,
+    public mcpToken = '',
+    public mcpWriteEnabled = false,
   ) {}
 
   replaceDatabase(handle: DatabaseHandle): void {

@@ -16,6 +16,7 @@ export type Config = {
   webDistDir: string;
   schemaVersion: number;
   bodyLimitBytes: number;
+  mcpWriteEnabled: boolean;
 };
 
 export function defaultDataDir(env: NodeJS.ProcessEnv = process.env): string {
@@ -66,6 +67,7 @@ export function loadConfig(
     webDistDir: join(process.cwd(), 'dist', 'web'),
     schemaVersion: 1,
     bodyLimitBytes: 64 * 1024,
+    mcpWriteEnabled: env.CENTURION_MCP_WRITE === '1',
     ...overrides,
   };
 }

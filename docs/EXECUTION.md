@@ -576,4 +576,55 @@ T10 — MCP stdio lecture seule et dispatch unique.
 
 ### Commit
 
-`feat: generate bounded annual reports` (voir `git log`).
+`c946289 feat: generate bounded annual reports`.
+
+## T10 — MCP stdio lecture métier et dispatch unique
+
+État : terminé et vérifié le 3 octobre 2026.
+
+### Produit
+
+- `src/server/storage/runtime-files.ts` : `runtime/mcp-token` (32 octets, 0600)
+  et `runtime/backend.json` écrits atomiquement.
+- `src/server/context.ts` : contexte privé `AsyncLocalStorage` (`source=mcp`),
+  impossible à forger par en-tête/corps ; les guards le reconnaissent.
+- `src/server/mcp/policy.ts` : allowlist exacte de 8 outils lecture + 3 écriture,
+  schémas d'arguments stricts, résolution vers les mêmes routes `/api`.
+- `src/server/mcp/dispatch.ts` + `routes/mcp.ts` : `POST /internal/mcp/dispatch`
+  (jeton, sans Origin ni Sec-Fetch), `app.inject()` sous contexte privé.
+- `src/server/mcp/limits.ts` : 120 appels/min, 30 écritures/min, 5 exports/min,
+  4 en cours, circuit 10 s après 10 5xx.
+- `src/server/reports/artifacts.ts` + `GET /exports/:exportId/download` :
+  artefacts bornés (20 / 128 MiB, TTL 24 h).
+- `src/mcp/{server,backend-client,tools,sanitize,rate-limit}.ts` : `serveStdio`,
+  client REST via `node:http`, projection Cf/VS/tags + contrôle de taille 512 KiB.
+- `docs/MCP.md`.
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run test -- tests/mcp/read-only.test.ts tests/mcp/stdio.test.ts` | 11/11 passés |
+| `npm run check` | 130/130 tests, typecheck et lint OK |
+| `npm run build` | OK (`dist/mcp/server.js`) |
+| `npm run test:e2e` | 3/3 |
+
+Vérifié : liste exacte des 8 outils lecture et absence d'outil write ; erreur
+`backend_unavailable` sans pollution de stdout ; aucun endpoint MCP HTTP
+(`/sse` 404) ; arguments inconnus rejetés ; schéma de sortie validé ; sanitation
+signalée ; limites et circuit ; vrais processus enfants legacy **et** modern ;
+jeton manquant/incorrect 403 ; source publique falsifiée refusée.
+
+### Limites
+
+- Les seuils 121e appel/min et 6e export/min sont vérifiés au niveau du limiteur
+  unitaire, pas via 121 appels réels.
+- Le plafond 512 KiB est implémenté mais non couvert par un test dédié.
+
+### Prochaine action
+
+T11 — écritures MCP proposées puis confirmées dans l'UI.
+
+### Commit
+
+`feat: expose constrained read-only MCP` (voir `git log`).

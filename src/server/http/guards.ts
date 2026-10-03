@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { Config } from '../config';
+import { privateContext } from '../context';
 import { AppError } from './errors';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
@@ -11,6 +12,10 @@ const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
  */
 export function registerGuards(app: FastifyInstance, config: Config): void {
   app.addHook('onRequest', async (request) => {
+    // In-process dispatch carries an unforgeable private context; no header or
+    // body can create it, so it bypasses the browser boundary.
+    if (privateContext.getStore()) return;
+
     const host = request.headers.host;
     if (!host || !config.allowedHosts.includes(host)) {
       throw new AppError(403, 'host_not_allowed', 'Host not allowed');

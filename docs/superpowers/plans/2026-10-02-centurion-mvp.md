@@ -624,10 +624,10 @@ Scripts obligatoires :
 
 **Consomme :** API/report/export et jeton runtime. **Produit :** exactement huit tools de lecture métier, médiation et aucun accès SQLite de l'adaptateur.
 
-- [ ] Tests : liste exacte read-only et absence write ; backend absent→erreur typée sans stdout pollué ; aucun endpoint MCP HTTP ; arguments inconnus/scoping invalides rejetés ; schéma output validé ; descriptions statiques ; sanitation signalée et SQLite inchangée ; limites communes à plusieurs adaptateurs.
-- [ ] Implémenter SDK v2/serveStdio, client REST local authentifié, dispatch allowlist et app.inject avec contexte privé ; listes résumées,512KiBcap et annotations exactes pour exports.
-- [ ] Tester de vrais child processes legacy et modern ; shell/SQL/fetch/import/restore absents ; source publique falsifiée refusée ; jeton manquant/incorrect403 ;121e call/min et6e export/min429 ; circuit après10erreurs5xx pendant10s ; Cf/VS/tags neutralisés en projection seulement.
-- [ ] Exécuter `npm run test -- tests/mcp/read-only.test.ts tests/mcp/stdio.test.ts`. Documenter lancement backend puis adapter, versions/protocole, stockage et limites. Consigner et commit `feat: expose constrained read-only MCP`.
+- [x] Tests : liste exacte read-only et absence write ; backend absent→erreur typée sans stdout pollué ; aucun endpoint MCP HTTP ; arguments inconnus/scoping invalides rejetés ; schéma output validé ; descriptions statiques ; sanitation signalée et SQLite inchangée ; limites communes à plusieurs adaptateurs.
+- [x] Implémenter SDK v2/serveStdio, client REST local authentifié, dispatch allowlist et app.inject avec contexte privé ; listes résumées,512KiBcap et annotations exactes pour exports.
+- [x] Tester de vrais child processes legacy et modern ; shell/SQL/fetch/import/restore absents ; source publique falsifiée refusée ; jeton manquant/incorrect403 ;121e call/min et6e export/min429 ; circuit après10erreurs5xx pendant10s ; Cf/VS/tags neutralisés en projection seulement.
+- [x] Exécuter `npm run test -- tests/mcp/read-only.test.ts tests/mcp/stdio.test.ts`. Documenter lancement backend puis adapter, versions/protocole, stockage et limites. Consigner et commit `feat: expose constrained read-only MCP`.
 
 ### T11 — Écritures MCP proposées, puis confirmées dans CENTURION
 

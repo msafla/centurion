@@ -6,10 +6,13 @@ import { systemClock } from './clock';
 import { loadConfig } from './config';
 import { type DatabaseHandle, openDatabase } from './db/database';
 import { bootstrapPlanIfEmpty } from './domain/plans';
+import { cleanupExpiredImports } from './imports/upload';
+import { cleanupExpiredArtifacts } from './reports/artifacts';
 import { Runtime } from './runtime';
 import { acquireInstanceLock, type InstanceLock } from './storage/instance-lock';
 import { OperationGate } from './storage/operation-gate';
 import { canonicalDataDir, ensurePrivateDir } from './storage/paths';
+import { writeRuntimeFiles } from './storage/runtime-files';
 
 const config = loadConfig(process.env);
 const clock = systemClock();
@@ -39,8 +42,16 @@ try {
 
   db = openDatabase(join(dataDir, 'centurion.sqlite'));
   bootstrapPlanIfEmpty(db, clock);
+  cleanupExpiredImports(db.db, dataDir, clock.nowUtc());
+  cleanupExpiredArtifacts(dataDir, clock.nowUtc());
 
   const runtime = new Runtime(config, clock, dataDir, new OperationGate(), db, randomUUID());
+  runtime.mcpWriteEnabled = config.mcpWriteEnabled;
+  runtime.mcpToken = writeRuntimeFiles(dataDir, {
+    origin: config.canonicalOrigin,
+    epoch: runtime.engineEpoch,
+    mcp_write_enabled: config.mcpWriteEnabled,
+  });
   const app = await buildApp({ config, clock, runtime });
 
   process.on('SIGTERM', () => void shutdown(0));

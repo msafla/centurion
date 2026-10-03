@@ -10,6 +10,7 @@ import { registerSecurityHeaders } from './http/headers';
 import { registerBackupRoutes } from './routes/backups';
 import { registerControlRoutes } from './routes/controls';
 import { registerImportRoutes } from './routes/imports';
+import { registerMcpRoutes } from './routes/mcp';
 import { registerOccurrenceRoutes } from './routes/occurrences';
 import { registerPlanRoutes } from './routes/plans';
 import { registerReportingRoutes } from './routes/reporting';
@@ -45,6 +46,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     registerOccurrenceRoutes(app, deps.runtime);
     registerReportingRoutes(app, deps.runtime);
     registerImportRoutes(app, deps.runtime);
+    registerMcpRoutes(app, deps.runtime);
   }
 
   if (existsSync(config.webDistDir)) {
