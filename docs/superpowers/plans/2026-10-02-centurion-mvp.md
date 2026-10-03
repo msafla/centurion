@@ -525,10 +525,10 @@ Scripts obligatoires :
 
 **Consomme :** T0. **Produit :** buildApp, Clock, DTO/ErrorBody, frontière HTTP et shell UI avec Poppins.
 
-- [ ] Écrire les assertions : Host hostile403 ; Origin mutation étranger/absent/null403 ; Fetch cross-site403 ; champ inconnu422 ; JSON illisible400 ; Content-Type interdit415 ; JSON>64KiB413 ; méthode connue405+Allow ; API inconnue404JSON ; erreur sans stack/path ni payload.
-- [ ] Implémenter guards, headers, erreurs et schémas/normalisation ; proxy Vite en dev, statics dist/web en production. Le shell UI sert uniquement à vérifier assets locaux et composants accessibles.
-- [ ] Exécuter `npm run test -- tests/security/http.test.ts tests/unit/schemas.test.ts`. Vérifier le listener réel sur 127.0.0.1, et l'échec d'accès par l'IP LAN ; pas uniquement l'objet de configuration.
-- [ ] Ouvrir le build production et un dialogue shadcn : CSP, focus et absence de CDN. Consigner et commit `feat: establish local API boundary`.
+- [x] Écrire les assertions : Host hostile403 ; Origin mutation étranger/absent/null403 ; Fetch cross-site403 ; champ inconnu422 ; JSON illisible400 ; Content-Type interdit415 ; JSON>64KiB413 ; méthode connue405+Allow ; API inconnue404JSON ; erreur sans stack/path ni payload.
+- [x] Implémenter guards, headers, erreurs et schémas/normalisation ; proxy Vite en dev, statics dist/web en production. Le shell UI sert uniquement à vérifier assets locaux et composants accessibles.
+- [x] Exécuter `npm run test -- tests/security/http.test.ts tests/unit/schemas.test.ts`. Vérifier le listener réel sur 127.0.0.1, et l'échec d'accès par l'IP LAN ; pas uniquement l'objet de configuration.
+- [x] Ouvrir le build production et un dialogue shadcn : CSP, focus et absence de CDN. Consigner et commit `feat: establish local API boundary`.
 
 ### T2 — SQLite, scoping, audit et propriétaire unique
 

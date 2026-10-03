@@ -1,10 +1,16 @@
-import Fastify from 'fastify';
+import { buildApp } from './app';
+import { systemClock } from './clock';
+import { loadConfig } from './config';
 
-const HOST = '127.0.0.1';
-const PORT = 4317;
+const config = loadConfig(process.env);
+const app = await buildApp({ config, clock: systemClock() });
 
-const app = Fastify({ logger: false, trustProxy: false });
+async function shutdown(): Promise<void> {
+  await app.close();
+  process.exit(0);
+}
 
-app.get('/health', async () => ({ status: 'ok', schema_version: 1 }));
+process.on('SIGTERM', () => void shutdown());
+process.on('SIGINT', () => void shutdown());
 
-await app.listen({ host: HOST, port: PORT });
+await app.listen({ host: config.host, port: config.port });

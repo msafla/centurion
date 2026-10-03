@@ -76,3 +76,72 @@ puis implémenter `buildApp`, `Clock`, DTO/`ErrorBody` et le shell UI.
 ### Commit
 
 `b85cafd chore: lock compatible toolchain`.
+
+## T1 — API locale, contrats et protections navigateur
+
+État : terminé et vérifié le 3 octobre 2026.
+
+### Produit
+
+- `src/shared/schemas.ts` : dates civiles (sans `new Date('YYYY-MM-DD')`), normalisation
+  NFC/trim, politique C0/C1/DEL, bornes en code points, enums fermés, `Schedule`
+  discriminé strict, `ControlMetadata`, `CreateControlInput`, `UpdateMetadataInput`,
+  `StatusInput` (FAIT Non force N/A + preuve nulle), `FilterInput`, `ControlListFilter`,
+  `PageInput`, `ErrorBody`, `ImportMappingInput`, règles d'URL GitHub (HTTPS, hôte exact,
+  sans userinfo/port/fragment, ≥2 segments).
+- `src/server/config.ts` : `dataDir` par plateforme, mode production/development/demo,
+  origines et hôtes autorisés, limite de corps 64 KiB.
+- `src/server/clock.ts` : `Clock` avec `todayParis()` via `Intl.DateTimeFormat`
+  `Europe/Paris` ; horloge fixe pour les tests.
+- `src/server/http/errors.ts` : `AppError`, `parseInput` (Zod → 422 avec champs),
+  gestionnaire d'erreurs génériques (400/413/415/4xx/500 sans fuite), 405 + `Allow`
+  via `hasRoute`, 404 JSON.
+- `src/server/http/guards.ts` : Host exact, refus cross-site/Origin étranger, mutations
+  `/api` exigeant Origin + `X-Centurion-Request: 1` + JSON/multipart.
+- `src/server/http/headers.ts` : nosniff, no-referrer, DENY, Permissions-Policy,
+  no-store API/downloads, CSP production (self, sans unsafe-eval/script-inline).
+- `src/server/storage/paths.ts` : `canonicalDataDir`, dossiers privés 0700,
+  `resolveManagedFile` (UUID obligatoire, pas de chemin client).
+- `src/server/app.ts` / `index.ts` : `buildApp(deps)` sans listen implicite, statics
+  `dist/web`, `/health`.
+- Shell UI (`src/web/App.tsx`) avec Poppins locale et dialogue shadcn.
+- Tests : `tests/unit/schemas.test.ts`, `tests/unit/paths.test.ts`,
+  `tests/security/http.test.ts`, `tests/e2e/shell.spec.ts`.
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run test -- tests/security/http.test.ts tests/unit/schemas.test.ts tests/unit/paths.test.ts` | 34/34 passés (4 fichiers) |
+| `npm run test:e2e` | 1/1 passé (shell production, focus dialogue, aucun CDN, zéro erreur console) |
+| `npm run check` | typecheck + lint + tests OK |
+| `npm run build` | Vite + esbuild OK |
+
+Vérifications de frontière observées :
+
+- Host hostile → 403 ; mutation sans Origin / Origin étranger / Origin `null` → 403 ;
+  `Sec-Fetch-Site: cross-site` → 403 ; absence de `X-Centurion-Request` → 403 ;
+  `text/plain` → 415 ; JSON illisible → 400 ; champ inconnu → 422 ; corps > 64 KiB → 413 ;
+  `PUT /health` → 405 avec `Allow: GET, HEAD` ; `/api/unknown` → 404 JSON ; 500 sans
+  stack/chemin/payload.
+- Listener réel : `127.0.0.1` répond, l'adresse LAN est refusée.
+- Build production servi : en-têtes de sécurité et CSP présents, `index.html` ne
+  référence que `/assets/*` et `/fonts/*`, police locale servie (200).
+
+### Limites
+
+- Le shell UI est un squelette de vérification ; les pages métier arrivent en T7.
+- Pas de fallback SPA profond à ce stade (l'API inconnue reste en 404 JSON, jamais
+  servie comme SPA) ; le routage UI complet est ajouté en T7.
+- `storage/paths.ts` couvre la canonicalisation et l'identifiant ; le verrou, les
+  quotas et le catalogue arrivent en T2/T3.
+
+### Prochaine action
+
+T2 — écrire les tests SQLite/scoping/audit/verrou, constater l'échec, puis implémenter
+`database.ts`, `migrate.ts`, `001_initial.sql`, `scoping.ts`, `audit.ts`,
+`instance-lock.ts`, `operation-gate.ts`.
+
+### Commit
+
+`feat: establish local API boundary` (voir `git log`).
