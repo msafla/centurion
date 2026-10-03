@@ -525,4 +525,55 @@ T9 — exports CSV/PDF bornés et artefacts.
 
 ### Commit
 
-`feat: import reviewed control definitions` (voir `git log`).
+`ce9c950 feat: import reviewed control definitions`.
+
+## T9 — CSV/PDF, snapshots et artefacts bornés
+
+État : implémentation livrée et partiellement vérifiée le 3 octobre 2026. Les
+cases du plan restent **non cochées** : plusieurs sous-points ne sont pas encore
+couverts (voir Limites).
+
+### Produit
+
+- `src/server/reports/csv.ts` : export d'occurrences filtrées (toutes les pages,
+  pagination ignorée), BOM, séparateur `;`, CRLF, quoting doublé, neutralisation
+  des formules à l'export uniquement (SQLite inchangée), plafond 64 MiB.
+- `src/server/reports/report-pdf.ts` : PDF via `takumi-pdf` (import paresseux,
+  aucune lecture DB pendant le rendu), Poppins locale, HTML échappé (aucune
+  insertion utilisateur), mention d'assurance, plafond 1 000 occurrences / 64 MiB.
+- `src/server/routes/reporting.ts` : `GET .../exports/controls.csv` et
+  `.../exports/report.pdf` avec `Content-Disposition: attachment` et `no-store`.
+- Boutons d'export dans `web/pages/Reporting.tsx`.
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run test -- tests/integration/exports.test.ts` | 3/3 passés |
+| `npm run check` | 119/119 tests, typecheck et lint OK |
+| `npm run build` | OK |
+| `npm run test:e2e` | 3/3 |
+
+Vérifié : CSV BOM `\uFEFF`, séparateur `;`, quoting, toutes les lignes filtrées,
+open vide, `Non`/`N/A`, aucune ligne d'un autre plan, formule `=SUM(A1)`
+neutralisée par apostrophe à l'export et titre stocké inchangé ; PDF `%PDF`,
+extraction de `CENTURION` et de la mention d'assurance, 1 001 lignes → 422
+`report_too_large`.
+
+### Limites (sous-points non vérifiés)
+
+- Refus > 64 MiB non testé (génération de 64 MiB non réalisée) ; pas de fichier
+  `tests/security/export-data.test.ts` séparé.
+- Réservations de quotas d'artefacts MCP (20 / 128 MiB) et route
+  `GET /exports/:exportId/download` non implémentées (prévues en T10).
+- PDF multipage non exercé ; zéro occurrence, réseau bloqué, timeout et nettoyage
+  des fichiers partiels non testés.
+- Pas de limite de débit « opérations lourdes » (5/min) branchée sur le PDF.
+
+### Prochaine action
+
+T10 — MCP stdio lecture seule et dispatch unique.
+
+### Commit
+
+`feat: generate bounded annual reports` (voir `git log`).
