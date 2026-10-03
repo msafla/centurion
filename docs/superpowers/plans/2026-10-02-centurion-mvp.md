@@ -558,10 +558,10 @@ Scripts obligatoires :
 
 **Consomme :** DTO et DomainTx. **Produit :** generateDates/translateDefinitionDates et contrôles calendaires, utilisés en T5/T8.
 
-- [ ] Assertions calendrier : trimestriel31/03/2028→31/03,30/06,30/09,31/12 ; mensuel31/01/2028→29/02 puis31/03 ; annuel29/02 cloné2029→28/02 ; explicit tri/dédup ; fenêtre inclusive ; aucun backfill avant ancre ; date inexistante/out-of-year422 ; zéro occurrence valide.
-- [ ] Implémenter helpers civils, validation URL sans fetch et transactions création/duplication/clone. Traduire aussi bornes d'activité et dates explicites du clone.
-- [ ] Tests API : création201, mauvais plan404, code collision409, URL interdite lorsque automated=false422, true sans URL valide ; userinfo/domain lookalike refusés et zéro fetch. Clone année existante409 ; 100000 occurrences admises,100001 refusées sans écriture ; duplication sans réalisation/audit source copiés.
-- [ ] Exécuter `npm run test -- tests/unit/calendar.test.ts tests/integration/controls.test.ts`. Consigner et commit `feat: create annual control schedules`.
+- [x] Assertions calendrier : trimestriel31/03/2028→31/03,30/06,30/09,31/12 ; mensuel31/01/2028→29/02 puis31/03 ; annuel29/02 cloné2029→28/02 ; explicit tri/dédup ; fenêtre inclusive ; aucun backfill avant ancre ; date inexistante/out-of-year422 ; zéro occurrence valide.
+- [x] Implémenter helpers civils, validation URL sans fetch et transactions création/duplication/clone. Traduire aussi bornes d'activité et dates explicites du clone.
+- [x] Tests API : création201, mauvais plan404, code collision409, URL interdite lorsque automated=false422, true sans URL valide ; userinfo/domain lookalike refusés et zéro fetch. Clone année existante409 ; 100000 occurrences admises,100001 refusées sans écriture ; duplication sans réalisation/audit source copiés.
+- [x] Exécuter `npm run test -- tests/unit/calendar.test.ts tests/integration/controls.test.ts`. Consigner et commit `feat: create annual control schedules`.
 
 ### T5 — Aperçus et changement de planning
 

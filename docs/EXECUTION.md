@@ -264,4 +264,58 @@ duplication et année suivante, avec les tests d'API correspondants.
 
 ### Commit
 
-`feat: add recoverable local backups` (voir `git log`).
+`9110954 feat: add recoverable local backups`.
+
+## T4 — Calendrier, création, duplication et année suivante
+
+État : terminé et vérifié le 3 octobre 2026.
+
+### Produit
+
+- `src/server/domain/civil-date.ts` : parsing/formatage, `addMonthsClamped`,
+  comparaison, `translateCivilDate` (29/02 → 28/02).
+- `src/server/domain/schedule.ts` : `generateDates` (ponctuel, mensuel/
+  trimestriel/semestriel à partir de l'ancre, annuel, explicite trié/dédupliqué,
+  fenêtre inclusive, pas de backfill), `translateSchedule`,
+  `translateDefinitionDates`.
+- `src/shared/limits.ts`, DTO `PlanDto`/`ControlDto`/`RealizationDto`/
+  `OccurrenceDto` dans `src/shared/schemas.ts`.
+- `src/server/domain/controls.ts` : création, PATCH de métadonnées, duplication,
+  comptage/plafond 100 000, validation d'année de définition.
+- `src/server/domain/plans.ts` : DTO, liste, création, PATCH, `cloneYear`
+  (contrôles actifs traduits, occurrences régénérées, `year_exists`/
+  `year_out_of_range`).
+- `src/server/routes/{plans,controls}.ts` et enregistrement dans `buildApp`.
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run test -- tests/unit/calendar.test.ts tests/integration/controls.test.ts` | 20/20 passés |
+| `npm run check` | 79/79 tests, typecheck et lint OK |
+| `npm run build` | OK |
+
+Cas couverts : trimestriel 31/03→31/03,30/06,30/09,31/12 ; mensuel 31/01→29/02→
+31/03 ; annuel 29/02 cloné 2029→28/02 ; explicite tri/dédup ; fenêtre inclusive ;
+pas de backfill ; date hors année → 422 ; zéro occurrence valide ; création 201 ;
+plan inconnu 404 ; collision de code normalisé 409 ; URL interdite si
+`automated=false` 422 ; URL invalide (http, userinfo, port, lookalike, un seul
+segment) 422 **sans appel réseau** ; clone d'année existante 409 ; 100 000
+occurrences admises / 100 001 refusées sans écriture ; duplication sans
+réalisation ni audit d'origine.
+
+### Limites
+
+- L'archivage, les aperçus de planning et la saisie de réalisations arrivent en
+  T5/T6 ; `PATCH` ne touche ni code, ni planning, ni statut.
+- La liste des contrôles filtre par définition et statut ; les filtres
+  d'occurrences/reporting arrivent en T7.
+
+### Prochaine action
+
+T5 — aperçus de planning (`schedule-preview`/`schedule-apply`) avec delta,
+TTL 15 min, révision de base et sauvegarde préalable.
+
+### Commit
+
+`feat: create annual control schedules` (voir `git log`).

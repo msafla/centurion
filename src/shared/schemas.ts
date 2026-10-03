@@ -342,6 +342,68 @@ export const ErrorBodySchema = z.object({
 export type ErrorBody = z.infer<typeof ErrorBodySchema>;
 
 // ---------------------------------------------------------------------------
+// Output DTOs
+// ---------------------------------------------------------------------------
+
+export const PlanDtoSchema = z.object({
+  id: z.string(),
+  year: z.number().int(),
+  name: z.string(),
+  perimeter: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+export type PlanDto = z.infer<typeof PlanDtoSchema>;
+
+export const ControlDtoSchema = z.object({
+  id: z.string(),
+  plan_id: z.string(),
+  code: z.string(),
+  title: z.string(),
+  description: z.string(),
+  referentiel: ReferentielSchema,
+  reference: z.string(),
+  domain: z.string(),
+  owner_name: z.string(),
+  method: z.string(),
+  expected_evidence: z.string(),
+  automated: z.boolean(),
+  automation_github_url: z.string().nullable(),
+  schedule: ScheduleSchema,
+  active_from: CivilDateSchema.nullable(),
+  active_to: CivilDateSchema.nullable(),
+  status: ControlStatusSchema,
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+export type ControlDto = z.infer<typeof ControlDtoSchema>;
+
+export const RealizationDtoSchema = z.object({
+  id: z.string(),
+  occurrence_id: z.string(),
+  completed_date: CivilDateSchema,
+  fait: z.boolean(),
+  conformite: ConformiteSchema,
+  comment: z.string(),
+  evidence_ref: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+export type RealizationDto = z.infer<typeof RealizationDtoSchema>;
+
+export const OccurrenceDtoSchema = z.object({
+  id: z.string(),
+  control_id: z.string(),
+  occurrence_date: CivilDateSchema,
+  state: OccurrenceStateSchema,
+  created_at: z.string(),
+  updated_at: z.string(),
+  control: ControlDtoSchema,
+  realization: RealizationDtoSchema.nullable(),
+});
+export type OccurrenceDto = z.infer<typeof OccurrenceDtoSchema>;
+
+// ---------------------------------------------------------------------------
 // Import mapping
 // ---------------------------------------------------------------------------
 

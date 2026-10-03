@@ -1,0 +1,9 @@
+export const MAX_OCCURRENCES_PER_PLAN = 100_000;
+export const DEFINITION_MAX_BYTES = 48 * 1024;
+export const BODY_LIMIT_BYTES = 64 * 1024;
+export const UPLOAD_LIMIT_BYTES = 5 * 1024 * 1024;
+export const PAGE_SIZE_MAX = 100;
+export const DEFAULT_PAGE_SIZE = 50;
+export const PREVIEW_TTL_MS = 15 * 60 * 1000;
+export const IMPORT_TTL_MS = 30 * 60 * 1000;
+export const MAX_PENDING_PROPOSALS = 20;

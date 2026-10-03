@@ -7,6 +7,8 @@ import { registerErrorHandler } from './http/errors';
 import { registerGuards } from './http/guards';
 import { registerSecurityHeaders } from './http/headers';
 import { registerBackupRoutes } from './routes/backups';
+import { registerControlRoutes } from './routes/controls';
+import { registerPlanRoutes } from './routes/plans';
 import type { Runtime } from './runtime';
 
 export type AppDeps = {
@@ -31,6 +33,8 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
 
   if (deps.runtime) {
     registerBackupRoutes(app, deps.runtime);
+    registerPlanRoutes(app, deps.runtime);
+    registerControlRoutes(app, deps.runtime);
   }
 
   if (existsSync(config.webDistDir)) {
