@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Instance data (never version DB, WAL, backups, artifacts or tokens)
+data/
+!data/.gitkeep
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
+backups/
+imports/
+exports/
+restores/
+runtime/
+restore-journal.json
+mcp-token
+
+# Test / coverage / reports
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.vitest/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary captures
+/tmp-captures/
+
+# Local tooling
+.cache/
