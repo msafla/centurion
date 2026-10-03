@@ -185,7 +185,7 @@ function assertCap(db: BetterSqlite3.Database, planId: string, added: number): v
   }
 }
 
-function assertDefinitionInYear(
+export function assertDefinitionInYear(
   year: number,
   schedule: Schedule,
   window: { active_from: string | null; active_to: string | null },

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { addMonthsClamped, translateCivilDate } from '../../src/server/domain/civil-date';
-import { generateDates, translateDefinitionDates } from '../../src/server/domain/schedule';
+import {
+  computeScheduleDelta,
+  generateDates,
+  translateDefinitionDates,
+} from '../../src/server/domain/schedule';
 
 const noWindow = { active_from: null, active_to: null };
 
@@ -79,6 +83,66 @@ describe('civil date helpers', () => {
   it('translates 29/02 to 28/02', () => {
     expect(translateCivilDate('2028-02-29', 2029)).toBe('2029-02-28');
     expect(translateCivilDate('2028-02-29', 2032)).toBe('2032-02-29');
+  });
+});
+
+describe('computeScheduleDelta', () => {
+  const occurrences = [
+    { id: 'past-open', date: '2028-01-31', state: 'open' as const },
+    { id: 'future-completed', date: '2028-10-31', state: 'completed' as const },
+    { id: 'future-common', date: '2028-07-31', state: 'open' as const },
+    { id: 'future-gone', date: '2028-08-31', state: 'open' as const },
+    { id: 'old-superseded', date: '2028-06-30', state: 'superseded' as const },
+  ];
+
+  it('keeps completed, past open and surviving future open; supersedes the rest', () => {
+    const delta = computeScheduleDelta({
+      year: 2028,
+      occurrences,
+      newSchedule: { kind: 'explicit', dates: ['2028-07-31', '2028-09-30'] },
+      newWindow: { active_from: null, active_to: null },
+      effectiveDate: '2028-07-01',
+    });
+    expect(delta.keep).toEqual(['past-open', 'future-completed', 'future-common']);
+    expect(delta.supersede).toEqual(['future-gone']);
+    expect(delta.create).toEqual(['2028-09-30']);
+  });
+
+  it('treats the effective date as inclusive', () => {
+    const sameDay = [{ id: 'on-date', date: '2028-07-31', state: 'open' as const }];
+    const kept = computeScheduleDelta({
+      year: 2028,
+      occurrences: sameDay,
+      newSchedule: { kind: 'explicit', dates: ['2028-07-31'] },
+      newWindow: { active_from: null, active_to: null },
+      effectiveDate: '2028-07-31',
+    });
+    expect(kept.keep).toEqual(['on-date']);
+    expect(kept.supersede).toEqual([]);
+
+    const dropped = computeScheduleDelta({
+      year: 2028,
+      occurrences: sameDay,
+      newSchedule: { kind: 'explicit', dates: ['2028-09-30'] },
+      newWindow: { active_from: null, active_to: null },
+      effectiveDate: '2028-07-31',
+    });
+    expect(dropped.supersede).toEqual(['on-date']);
+    expect(dropped.create).toEqual(['2028-09-30']);
+  });
+
+  it('never recycles a superseded row', () => {
+    const delta = computeScheduleDelta({
+      year: 2028,
+      occurrences,
+      newSchedule: { kind: 'explicit', dates: ['2028-06-30'] },
+      newWindow: { active_from: null, active_to: null },
+      effectiveDate: '2028-07-01',
+    });
+    expect(delta.keep).not.toContain('old-superseded');
+    expect(delta.supersede).not.toContain('old-superseded');
+    // 2028-06-30 is before the effect, so it is not created either.
+    expect(delta.create).toEqual([]);
   });
 });
 

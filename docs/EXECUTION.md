@@ -318,4 +318,51 @@ TTL 15 min, révision de base et sauvegarde préalable.
 
 ### Commit
 
-`feat: create annual control schedules` (voir `git log`).
+`9cc6b3b feat: create annual control schedules`.
+
+## T5 — Aperçus et changement de planning
+
+État : terminé et vérifié le 3 octobre 2026.
+
+### Produit
+
+- `src/server/domain/schedule.ts` : `computeScheduleDelta` pur (completed et open
+  antérieurs conservés, open futurs survivants conservés, open futurs disparus
+  superseded, nouvelles dates ≥ effet sans collision active, superseded jamais
+  recyclé, cutoff inclusif).
+- `src/server/domain/schedule-preview.ts` : `createSchedulePreview` (TTL 15 min,
+  `base_plan_revision`, `engine_epoch`, delta complet + échantillon ≤ 100 par
+  catégorie, plafond projeté) et `applySchedulePreview` (revalidation sous
+  transaction, sauvegarde `pre_schedule_change` uniquement si effet, application
+  par ID, consommation atomique, audit `schedule_change`).
+- Routes `schedule-preview` / `schedule-apply` dans `routes/controls.ts`.
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run test -- tests/unit/calendar.test.ts tests/integration/schedule-preview.test.ts` | 21/21 passés |
+| `npm run check` | 89/89 tests, typecheck et lint OK |
+| `npm run build` | OK |
+
+Cas couverts : fixture completed futur / open passé / open futur commun / open
+futur disparu / ancien superseded → keep 4, supersede 1, create 1, IDs conservés,
+réalisation non écrasée ; révision +1 et un seul audit ; rejeu → 409 ; réalisation
+entre aperçu et apply → 409 sans perte ; aperçu d'un autre contrôle → 404 ; delta
+injecté par le client → 422 ; expiration et changement d'epoch → 409 ; no-op sans
+backup ni révision ; panne de sauvegarde → aucune occurrence modifiée ; cutoff
+inclusif exact.
+
+### Limites
+
+- L'échantillon affiché est borné à 100 dates par catégorie ; l'application
+  utilise toujours le delta complet stocké côté serveur.
+- L'archivage et la saisie de réalisations arrivent en T6.
+
+### Prochaine action
+
+T6 — métadonnées, archivage, réalisations et historique.
+
+### Commit
+
+`feat: apply versioned schedule previews` (voir `git log`).

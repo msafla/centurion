@@ -569,10 +569,10 @@ Scripts obligatoires :
 
 **Consomme :** calendrier T4, backup T3 et révisions T2. **Produit :** preview immuable et apply transactionnel.
 
-- [ ] Fixture : completed futur, open passé, open futur commun, open futur disparu, ancien superseded. Assertions : IDs conservés pour completed/passé/commun ; seul disparu superseded ; nouvelles dates >=effet sans doublon ; aucune réalisation écrasée.
-- [ ] Implémenter TTL15min, epoch/base_plan_revision, delta complet et échantillon pour affichage ; application par ID uniquement, avec backup avant effet et vérification du plafond projeté.
-- [ ] Tests : réalisation entre preview/apply→409 sans perte ; deux applications→une seule consommation/audit ; expiration/restart/stale→409 ; mauvais parent404 ; delta injecté par client422 ; panne backup→zéro changement ; no-op sans backup ; cutoff inclusif exact.
-- [ ] Exécuter `npm run test -- tests/integration/schedule-preview.test.ts`. Consigner et commit `feat: apply versioned schedule previews`.
+- [x] Fixture : completed futur, open passé, open futur commun, open futur disparu, ancien superseded. Assertions : IDs conservés pour completed/passé/commun ; seul disparu superseded ; nouvelles dates >=effet sans doublon ; aucune réalisation écrasée.
+- [x] Implémenter TTL15min, epoch/base_plan_revision, delta complet et échantillon pour affichage ; application par ID uniquement, avec backup avant effet et vérification du plafond projeté.
+- [x] Tests : réalisation entre preview/apply→409 sans perte ; deux applications→une seule consommation/audit ; expiration/restart/stale→409 ; mauvais parent404 ; delta injecté par client422 ; panne backup→zéro changement ; no-op sans backup ; cutoff inclusif exact.
+- [x] Exécuter `npm run test -- tests/integration/schedule-preview.test.ts`. Consigner et commit `feat: apply versioned schedule previews`.
 
 ### T6 — Métadonnées, archivage, réalisations et historique
 
