@@ -3,17 +3,19 @@ import type { FilterInput, OccurrenceDto, Page } from '../../shared/schemas';
 import type { OccurrenceRow } from '../db/database';
 import { toOccurrenceDto } from './realizations';
 
+export type SqlFilter = { where: string; params: unknown[] };
+
+const OCCURRENCE_FILTERS = ['fait', 'conformite', 'state', 'date_from', 'date_to'] as const;
+
+export function hasOccurrenceFilter(filter: FilterInput): boolean {
+  return OCCURRENCE_FILTERS.some((key) => filter[key] !== undefined);
+}
+
 /**
- * Lists occurrences for one plan. Superseded rows are excluded unless
- * `state=superseded` is requested explicitly. All filters combine with AND.
+ * Builds the AND-combined WHERE clause shared by lists, metrics and exports.
+ * Superseded rows are excluded unless `state=superseded` is requested.
  */
-export function listOccurrences(
-  db: BetterSqlite3.Database,
-  planId: string,
-  filter: FilterInput,
-  page: number,
-  pageSize: number,
-): Page<OccurrenceDto> {
+export function buildOccurrenceFilter(planId: string, filter: FilterInput): SqlFilter {
   const conditions = ['c.plan_id = ?'];
   const params: unknown[] = [planId];
 
@@ -67,17 +69,31 @@ export function listOccurrences(
     params.push(pattern, pattern, pattern);
   }
 
-  const where = conditions.join(' AND ');
-  const from = `FROM occurrences o
-      JOIN controls c ON c.id = o.control_id
-      LEFT JOIN realizations r ON r.occurrence_id = o.id
-     WHERE ${where}`;
+  return { where: conditions.join(' AND '), params };
+}
 
-  const total = (db.prepare(`SELECT COUNT(*) AS n ${from}`).get(...params) as { n: number }).n;
+const OCCURRENCE_FROM = `FROM occurrences o
+      JOIN controls c ON c.id = o.control_id
+      LEFT JOIN realizations r ON r.occurrence_id = o.id`;
+
+export function listOccurrences(
+  db: BetterSqlite3.Database,
+  planId: string,
+  filter: FilterInput,
+  page: number,
+  pageSize: number,
+): Page<OccurrenceDto> {
+  const { where, params } = buildOccurrenceFilter(planId, filter);
+  const total = (
+    db.prepare(`SELECT COUNT(*) AS n ${OCCURRENCE_FROM} WHERE ${where}`).get(...params) as {
+      n: number;
+    }
+  ).n;
   const rows = db
     .prepare(
       `SELECT o.id, o.control_id, o.occurrence_date, o.state, o.created_at, o.updated_at
-       ${from}
+       ${OCCURRENCE_FROM}
+       WHERE ${where}
        ORDER BY o.occurrence_date, c.code, o.id
        LIMIT ? OFFSET ?`,
     )
@@ -85,3 +101,5 @@ export function listOccurrences(
 
   return { items: rows.map((row) => toOccurrenceDto(db, row)), page, page_size: pageSize, total };
 }
+
+export { OCCURRENCE_FROM };

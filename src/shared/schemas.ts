@@ -391,6 +391,16 @@ export const RealizationDtoSchema = z.object({
 });
 export type RealizationDto = z.infer<typeof RealizationDtoSchema>;
 
+export const BackupDtoSchema = z.object({
+  id: z.string(),
+  reason: z.enum(['manual', 'pre_import', 'pre_schedule_change', 'pre_archive', 'pre_restore']),
+  created_at: z.string(),
+  sha256: z.string(),
+  size_bytes: z.number().int(),
+  schema_version: z.number().int(),
+});
+export type BackupDto = z.infer<typeof BackupDtoSchema>;
+
 export const AuditDtoSchema = z.object({
   id: z.string(),
   entity_type: z.string(),

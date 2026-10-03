@@ -415,4 +415,54 @@ T7 — requêtes, métriques (`buildReport`) et interface de suivi.
 
 ### Commit
 
-`feat: record control outcomes and archival` (voir `git log`).
+`2b65a8b feat: record control outcomes and archival`.
+
+## T7 — Requêtes, métriques et interface de suivi
+
+État : terminé et vérifié le 3 octobre 2026.
+
+### Produit
+
+- `src/server/domain/queries.ts` : `buildOccurrenceFilter` partagé, `listOccurrences`.
+- `src/server/domain/report.ts` : `buildSummary` (counts, trois taux, agrégation
+  par référentiel, automatisation en contrôles actifs distincts avec/sans filtre
+  d'occurrence) et `buildReport` (snapshot cohérent plan + summary + lignes).
+- `src/server/routes/reporting.ts` : `GET /summary`, `GET /report`.
+- UI React (`react-router-dom`) : `App` + pages Synthèse, Plan annuel, Fiche
+  contrôle, Référentiels, Reporting, Paramètres ; client API, contexte de plan,
+  formulaires `ControlForm`, `RealizationForm`, `SchedulePreview` ; filtres dans
+  l'URL, pagination, vue douze mois, lien GitHub `target=_blank
+  rel="noopener noreferrer"`, fallback SPA limité aux routes de page.
+- `docs/mockups/` : maquettes Synthèse et Référentiels.
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run test -- tests/integration/reporting.test.ts` | 5/5 passés |
+| `npm run check` | 105/105 tests, typecheck et lint OK |
+| `npm run test:e2e` (production) | 3/3 passés (core-flow, shell/focus, 390/1440 + reduced-motion) |
+| `npm run build` | OK |
+
+Cas couverts : fixture 2 open + 3 FAIT Oui + 1 FAIT Non + 1 superseded → total 6,
+réalisés 3, N/A 1, réalisation 50 %, conformité 50 % ; taux null si vide ou tout
+N/A ; synthèse identique sur deux pages ; autre plan exclu ; LIKE littéral ;
+automatisation 2/3 sans filtre et filtrée avec occurrence ; parcours Playwright
+complet (créer trimestriel → 4 lignes, FAIT Oui puis Non, modifier via aperçu,
+archiver, sélectionner un autre plan), 409 visible, XSS rendu comme texte, lien
+GitHub sûr, focus clavier, 390/1440 px et `prefers-reduced-motion`.
+
+### Limites
+
+- La vue douze mois regroupe les lignes de la page courante (plafonnée à 100) ;
+  une agrégation serveur dédiée n'est pas ajoutée.
+- Les exports CSV/PDF sont implémentés en T9 ; les boutons pointent déjà vers les
+  routes.
+
+### Prochaine action
+
+T8 — import CSV/XLSX (upload, mapping, aperçu, apply atomique).
+
+### Commit
+
+`feat: deliver annual control tracking UI` (voir `git log`).

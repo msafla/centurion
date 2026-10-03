@@ -16,7 +16,7 @@ export default defineConfig({
     reuseExistingServer: false,
     timeout: 30_000,
     env: {
-      CENTURION_DATA_DIR: './data/e2e-tmp',
+      CENTURION_DATA_DIR: `./data/e2e-${Date.now()}`,
     },
   },
 });

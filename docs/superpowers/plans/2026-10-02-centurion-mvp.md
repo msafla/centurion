@@ -591,10 +591,10 @@ Scripts obligatoires :
 
 **Consomme :** T4-T6. **Produit :** filtres uniques, buildReport et UI réelle ; requis T8/T9.
 
-- [ ] Fixture : 2 open,3 FAIT Oui(conforme,nonconforme,N/A),1 FAIT Non,1 superseded →total6,réalisés3,nonréalisés1,N/A1,réalisation50%,conformité50%. Aucun ou tout N/A→taux conformité null ; deux pages donnent la même synthèse globale ; autre plan exclu ; contrôle sans occurrence compte dans automatisation sans filtre occurrence ; caractères LIKE recherchés littéralement.
-- [ ] Implémenter queries préparées, ordre stable et report snapshot cohérent ; maquettes puis pages section 10 avec filtres dans l'URL et métriques exclusivement serveur.
-- [ ] Parcours Playwright : créer trimestriel→4 lignes ; FAIT Oui puis Non ; modifier via aperçu ; archiver ; sélectionner autre plan. Vérifier UI/API, conflit409 visible, cohérence vue douze mois, lien GitHub sûr et XSS rendu comme texte.
-- [ ] Exécuter `npm run test -- tests/integration/reporting.test.ts` et `npm run test:e2e -- tests/e2e/core-flow.spec.ts` contre production. Vérifier clavier/focus,390/1440px et reduced-motion. Consigner et commit `feat: deliver annual control tracking UI`.
+- [x] Fixture : 2 open,3 FAIT Oui(conforme,nonconforme,N/A),1 FAIT Non,1 superseded →total6,réalisés3,nonréalisés1,N/A1,réalisation50%,conformité50%. Aucun ou tout N/A→taux conformité null ; deux pages donnent la même synthèse globale ; autre plan exclu ; contrôle sans occurrence compte dans automatisation sans filtre occurrence ; caractères LIKE recherchés littéralement.
+- [x] Implémenter queries préparées, ordre stable et report snapshot cohérent ; maquettes puis pages section 10 avec filtres dans l'URL et métriques exclusivement serveur.
+- [x] Parcours Playwright : créer trimestriel→4 lignes ; FAIT Oui puis Non ; modifier via aperçu ; archiver ; sélectionner autre plan. Vérifier UI/API, conflit409 visible, cohérence vue douze mois, lien GitHub sûr et XSS rendu comme texte.
+- [x] Exécuter `npm run test -- tests/integration/reporting.test.ts` et `npm run test:e2e -- tests/e2e/core-flow.spec.ts` contre production. Vérifier clavier/focus,390/1440px et reduced-motion. Consigner et commit `feat: deliver annual control tracking UI`.
 
 ### T8 — Import upload, mapping, aperçu et apply atomique
 
