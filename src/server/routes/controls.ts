@@ -4,23 +4,26 @@ import {
   CivilDateSchema,
   CodeSchema,
   CreateControlInputSchema,
+  PageInputSchema,
   ReferentielSchema,
   ScheduleSchema,
   UpdateMetadataInputSchema,
 } from '../../shared/schemas';
-import {
-  applySchedulePreview,
-  createSchedulePreview,
-} from '../domain/schedule-preview';
+import { listAuditEvents } from '../db/audit';
 import type { MutationDeps } from '../db/database';
 import { planInScope } from '../db/scoping';
 import {
+  archiveControl,
   createControl,
   duplicateControl,
   getControlDto,
   listControls,
   updateControlMetadata,
 } from '../domain/controls';
+import {
+  applySchedulePreview,
+  createSchedulePreview,
+} from '../domain/schedule-preview';
 import { parseInput } from '../http/errors';
 import type { Runtime } from '../runtime';
 
@@ -61,6 +64,7 @@ const ScheduleChangeSchema = z
   });
 
 const ApplySchema = z.object({ preview_id: z.string().uuid() }).strict();
+const ArchiveSchema = z.object({ effective_date: CivilDateSchema }).strict();
 const UpdatePatchSchema = UpdateMetadataInputSchema.refine(
   (value) => Object.keys(value).length > 0,
   { message: 'empty_patch' },
@@ -142,4 +146,21 @@ export function registerControlRoutes(app: FastifyInstance, runtime: Runtime): v
       applySchedulePreview(runtime, planId, controlId, preview_id, 'api'),
     );
   });
+
+  app.post('/api/plans/:planId/controls/:controlId/archive', async (request) => {
+    const { planId, controlId } = request.params as { planId: string; controlId: string };
+    const { effective_date } = parseInput(ArchiveSchema, request.body);
+    return runtime.gate.runExclusive(() =>
+      archiveControl(runtime, planId, controlId, effective_date, 'api'),
+    );
+  });
+
+  app.get('/api/plans/:planId/controls/:controlId/audit-events', async (request) =>
+    runtime.gate.runRead(() => {
+      const { planId, controlId } = request.params as { planId: string; controlId: string };
+      const { page, page_size } = parseInput(PageInputSchema, request.query);
+      getControlDto(runtime.db.db, planId, controlId);
+      return listAuditEvents(runtime.db.db, planId, controlId, page, page_size);
+    }),
+  );
 }

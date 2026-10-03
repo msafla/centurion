@@ -365,4 +365,54 @@ T6 — métadonnées, archivage, réalisations et historique.
 
 ### Commit
 
-`feat: apply versioned schedule previews` (voir `git log`).
+`c01d91e feat: apply versioned schedule previews`.
+
+## T6 — Métadonnées, archivage, réalisations et historique
+
+État : terminé et vérifié le 3 octobre 2026.
+
+### Produit
+
+- `src/server/domain/controls.ts` : `archiveControl` (completed et open
+  antérieurs conservés, open ≥ effet superseded, sauvegarde `pre_archive` si
+  effet, ré-archivage 409).
+- `src/server/domain/realizations.ts` : `setOccurrenceStatus` (occurrence +
+  réalisation + état + audit + révision dans une transaction, correction à UUID
+  stable, no-op sans écriture, FAIT Non force N/A/preuve nulle, dates bornées à
+  aujourd'hui Paris), `toOccurrenceDto`/`toRealizationDto`.
+- `src/server/domain/queries.ts` : `listOccurrences` (filtres AND, superseded
+  exclus par défaut, recherche LIKE échappée).
+- `src/server/db/audit.ts` : `listAuditEvents` paginé.
+- Routes : `PUT .../occurrences/:id/status`, `GET .../occurrences`,
+  `POST .../controls/:id/archive`, `GET .../controls/:id/audit-events`.
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run test -- tests/integration/status-archive.test.ts` | 11/11 passés |
+| `npm run check` | 100/100 tests, typecheck et lint OK |
+| `npm run build` | OK |
+
+Cas couverts : PATCH code/planning/status/id → 422 ; metadata sur archivé → 409 ;
+archivage conserve completed et open antérieurs, supersede open ≥ effet ; saisie
+sur open conservé permise ; superseded → 409 ; FAIT Non force N/A/preuve nulle ;
+quatre conformités avec FAIT Oui ; date tardive hors année autorisée, future 422 ;
+correction à UUID stable avec before/after audités ; no-op sans audit ni révision ;
+historique paginé incluant les réalisations ; contrôle d'un autre plan → 404 ;
+persistance après fermeture/réouverture de la base.
+
+### Limites
+
+- `GET .../occurrences` couvre les filtres de définition/occurrence ; les
+  métriques, la synthèse et le reporting sont en T7.
+- L'archivage ne stocke pas la date d'effet sur le contrôle : les occurrences
+  `open` restantes d'un contrôle archivé sont exactement celles conservées.
+
+### Prochaine action
+
+T7 — requêtes, métriques (`buildReport`) et interface de suivi.
+
+### Commit
+
+`feat: record control outcomes and archival` (voir `git log`).

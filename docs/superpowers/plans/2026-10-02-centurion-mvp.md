@@ -580,10 +580,10 @@ Scripts obligatoires :
 
 **Consomme :** audit/révisions T2 et backup T3. **Produit :** mutations métier et historique complet pour UI/reporting.
 
-- [ ] Écrire les tests : patch code/planning/status/id refusé ; contrôle archivé metadata409 ; archivage conserve completed et open antérieurs, supplante open à partir d'effet ; saisie sur archived+open conservé permise ; superseded409 ; FAIT Non force N/A/preuve nulle ; Oui accepte quatre conformités.
-- [ ] Ajouter les assertions : date tardive hors année autorisée jusqu'à aujourd'hui, future422 ; correction UUID stable et avant/après audités ; no-op sans audit ; historique inclut réalisations du contrôle et refuse autre plan.
-- [ ] Implémenter fusion métadonnées avant validation, archive avec backup, réalisation+état+audit dans une transaction et DTO publics paginés.
-- [ ] Exécuter `npm run test -- tests/integration/status-archive.test.ts` ; fermer/rouvrir la base et vérifier persistance. Consigner et commit `feat: record control outcomes and archival`.
+- [x] Écrire les tests : patch code/planning/status/id refusé ; contrôle archivé metadata409 ; archivage conserve completed et open antérieurs, supplante open à partir d'effet ; saisie sur archived+open conservé permise ; superseded409 ; FAIT Non force N/A/preuve nulle ; Oui accepte quatre conformités.
+- [x] Ajouter les assertions : date tardive hors année autorisée jusqu'à aujourd'hui, future422 ; correction UUID stable et avant/après audités ; no-op sans audit ; historique inclut réalisations du contrôle et refuse autre plan.
+- [x] Implémenter fusion métadonnées avant validation, archive avec backup, réalisation+état+audit dans une transaction et DTO publics paginés.
+- [x] Exécuter `npm run test -- tests/integration/status-archive.test.ts` ; fermer/rouvrir la base et vérifier persistance. Consigner et commit `feat: record control outcomes and archival`.
 
 ### T7 — Requêtes, métriques et interface de suivi
 

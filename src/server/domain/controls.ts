@@ -9,7 +9,9 @@ import {
   type UpdateMetadataInput,
 } from '../../shared/schemas';
 import { DEFINITION_MAX_BYTES, MAX_OCCURRENCES_PER_PLAN } from '../../shared/limits';
+import { createBackup } from '../backups/backup';
 import type { AuditSource } from '../db/audit';
+import type { Runtime } from '../runtime';
 import {
   type ControlRow,
   type MutationDeps,
@@ -422,4 +424,68 @@ export function getControlDto(
   controlId: string,
 ): ControlDto {
   return toControlDto(controlInPlan(db, planId, controlId));
+}
+
+export type ArchiveResult = { control: ControlDto; occurrences_superseded: number };
+
+/**
+ * Archives a control. Completed occurrences and open occurrences strictly
+ * before the effective date are kept; other open occurrences become
+ * superseded. A backup is taken only when the archive has an occurrence effect.
+ */
+export async function archiveControl(
+  runtime: Runtime,
+  planId: string,
+  controlId: string,
+  effectiveDate: string,
+  source: AuditSource,
+): Promise<ArchiveResult> {
+  const db = runtime.db.db;
+  const plan = db.prepare('SELECT * FROM plans WHERE id = ?').get(planId) as PlanRow | undefined;
+  if (!plan) throw new AppError(404, 'not_found', 'Plan not found');
+  const control = controlInPlan(db, planId, controlId);
+  if (control.status === 'archived') {
+    throw new AppError(409, 'control_archived', 'Control already archived');
+  }
+  if (Number(effectiveDate.slice(0, 4)) !== plan.year) {
+    throw new AppError(422, 'date_out_of_year', 'Effective date must be in the plan year');
+  }
+
+  const openFrom = (
+    db
+      .prepare(
+        `SELECT COUNT(*) AS n FROM occurrences
+          WHERE control_id = ? AND state = 'open' AND occurrence_date >= ?`,
+      )
+      .get(controlId, effectiveDate) as { n: number }
+  ).n;
+  if (openFrom > 0) await createBackup(runtime, 'pre_archive');
+
+  return withPlanMutation({ db: runtime.db, clock: runtime.clock }, planId, source, (tx) => {
+    const current = controlInPlan(tx.db, planId, controlId);
+    if (current.status === 'archived') {
+      throw new AppError(409, 'control_archived', 'Control already archived');
+    }
+    const superseded = tx.db
+      .prepare(
+        `UPDATE occurrences SET state = 'superseded', updated_at = ?
+          WHERE control_id = ? AND state = 'open' AND occurrence_date >= ?`,
+      )
+      .run(tx.nowUtc, controlId, effectiveDate).changes;
+    tx.db
+      .prepare("UPDATE controls SET status = 'archived', updated_at = ? WHERE id = ?")
+      .run(tx.nowUtc, controlId);
+    const updated = tx.db.prepare('SELECT * FROM controls WHERE id = ?').get(controlId) as ControlRow;
+    tx.audit({
+      entity_type: 'control',
+      entity_id: controlId,
+      plan_id: planId,
+      control_id: controlId,
+      action: 'archive',
+      before: toControlDto(current),
+      after: toControlDto(updated),
+    });
+    tx.markChanged();
+    return { control: toControlDto(updated), occurrences_superseded: superseded };
+  });
 }

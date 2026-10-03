@@ -391,6 +391,18 @@ export const RealizationDtoSchema = z.object({
 });
 export type RealizationDto = z.infer<typeof RealizationDtoSchema>;
 
+export const AuditDtoSchema = z.object({
+  id: z.string(),
+  entity_type: z.string(),
+  entity_id: z.string(),
+  action: z.string(),
+  at_utc: z.string(),
+  source: z.enum(['api', 'mcp', 'import', 'system']),
+  before: z.unknown().nullable(),
+  after: z.unknown().nullable(),
+});
+export type AuditDto = z.infer<typeof AuditDtoSchema>;
+
 export const OccurrenceDtoSchema = z.object({
   id: z.string(),
   control_id: z.string(),
