@@ -603,7 +603,7 @@ Scripts obligatoires :
 **Consomme :** validations, calendrier/delta et backup. **Produit :** parcours CSV/XLSX complet et templates.
 
 - [ ] Fixtures : CSV avec BOM,quotes,newlines et texte de formule préservé ; formule XLSX dans feuille non sélectionnée refusée ; archive décompressée>25MiB,entries dupliquées/traversal/macros/relations externes/encryption refusés ; >5MiB413 ; dépassement lignes/colonnes/feuilles rejeté ; calendrier Excel1900/1904 et serial60 ; timeout parsing et cleanup.
-- [ ] Implémenter quotas/upload confiné, choix feuille/séparateur/mapping, validation de toutes les lignes, preview paginé TTL30min ; aucun apply avant mapping valide.
+- [x] Implémenter quotas/upload confiné, choix feuille/séparateur/mapping, validation de toutes les lignes, preview paginé TTL30min ; aucun apply avant mapping valide.
 - [ ] Tests apply : doublon code normalisé invalide ; code archivé invalide ; une ligne invalide→aucun commit ; ligne absente ne touche rien ; optionnel absent efface avec diff ; completed conservé ; hash/source altérés refusés ; mauvais plan404 ; status après aperçu409 ; backup échoué et cap100001→zéro écriture ; rejeu409 ; audit rollback atomique ; crash après commit nettoyé au redémarrage.
 - [ ] Exécuter `npm run test -- tests/security/import.test.ts tests/integration/import-flow.test.ts` et parcours UI upload→mapping→aperçu→apply. Consigner et commit `feat: import reviewed control definitions`.
 

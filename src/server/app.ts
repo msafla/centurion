@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { Clock } from './clock';
@@ -8,6 +9,7 @@ import { registerGuards } from './http/guards';
 import { registerSecurityHeaders } from './http/headers';
 import { registerBackupRoutes } from './routes/backups';
 import { registerControlRoutes } from './routes/controls';
+import { registerImportRoutes } from './routes/imports';
 import { registerOccurrenceRoutes } from './routes/occurrences';
 import { registerPlanRoutes } from './routes/plans';
 import { registerReportingRoutes } from './routes/reporting';
@@ -34,11 +36,15 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   app.get('/health', async () => ({ status: 'ok', schema_version: config.schemaVersion }));
 
   if (deps.runtime) {
+    await app.register(multipart, {
+      limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 10, fieldSize: 16 * 1024 },
+    });
     registerBackupRoutes(app, deps.runtime);
     registerPlanRoutes(app, deps.runtime);
     registerControlRoutes(app, deps.runtime);
     registerOccurrenceRoutes(app, deps.runtime);
     registerReportingRoutes(app, deps.runtime);
+    registerImportRoutes(app, deps.runtime);
   }
 
   if (existsSync(config.webDistDir)) {
@@ -49,7 +55,14 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     app.get('/fonts/*', (request, reply) =>
       reply.sendFile(decodeURIComponent(String((request.params as Record<string, unknown>)['*']))),
     );
-    for (const path of ['/plan', '/references', '/reporting', '/settings', '/control/:controlId']) {
+    for (const path of [
+      '/plan',
+      '/references',
+      '/reporting',
+      '/import',
+      '/settings',
+      '/control/:controlId',
+    ]) {
       app.get(path, (_request, reply) => reply.sendFile('index.html'));
     }
   }

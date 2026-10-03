@@ -5,6 +5,7 @@ import { api } from './lib/api';
 import { PlanContext, type PlanState } from './lib/plan-context';
 import { AnnualPlan } from './pages/AnnualPlan';
 import { ControlDetail } from './pages/ControlDetail';
+import { Import } from './pages/Import';
 import { References } from './pages/References';
 import { Reporting } from './pages/Reporting';
 import { Settings } from './pages/Settings';
@@ -15,6 +16,7 @@ const NAV = [
   { to: '/plan', label: 'Plan annuel' },
   { to: '/references', label: 'Référentiels' },
   { to: '/reporting', label: 'Reporting' },
+  { to: '/import', label: 'Import' },
   { to: '/settings', label: 'Paramètres' },
 ];
 
@@ -106,6 +108,7 @@ export function App() {
               <Route path="/control/:controlId" element={<ControlDetail />} />
               <Route path="/references" element={<References />} />
               <Route path="/reporting" element={<Reporting />} />
+              <Route path="/import" element={<Import />} />
               <Route path="/settings" element={<Settings />} />
             </Routes>
           </main>

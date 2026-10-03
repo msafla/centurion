@@ -454,7 +454,7 @@ export const ImportMappingInputSchema = z
   .object({
     sheet: optionalText(120).optional(),
     separator: z.enum([',', ';']).optional(),
-    columns: z.record(z.enum(IMPORT_COLUMNS), z.number().int().min(0).max(99)),
+    columns: z.partialRecord(z.enum(IMPORT_COLUMNS), z.number().int().min(0).max(99)),
     effective_date: CivilDateSchema,
   })
   .strict();

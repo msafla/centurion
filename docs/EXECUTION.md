@@ -465,4 +465,64 @@ T8 — import CSV/XLSX (upload, mapping, aperçu, apply atomique).
 
 ### Commit
 
-`feat: deliver annual control tracking UI` (voir `git log`).
+`3fc3318 feat: deliver annual control tracking UI`.
+
+## T8 — Import upload, mapping, aperçu et apply atomique
+
+État : implémentation livrée et partiellement vérifiée le 3 octobre 2026. Les
+cases « fixtures » et « tests apply » du plan restent **non cochées** : plusieurs
+sous-points ne sont pas encore couverts (voir Limites).
+
+### Produit
+
+- `src/server/imports/zip-preflight.ts` : préflight `yauzl` lazy comptant les
+  octets réellement décompressés (≤ 25 MiB), ≤ 2 000 entrées, refus traversal,
+  noms dupliqués, `vbaProject`, chiffrement.
+- `src/server/imports/parse-csv.ts` / `parse-xlsx.ts` : CSV `csv-parse` (BOM,
+  quotes, newlines, ≤ 100 colonnes, record ≤ 64 KiB) ; XLSX `exceljs` refusant
+  toute formule dans **toutes** les feuilles, dates natives converties en UTC.
+- `src/server/imports/upload.ts` : upload confiné sous `dataDir`, ≤ 5 MiB,
+  quotas (3 temporaires / 15 MiB), TTL 30 min, hash SHA-256.
+- `src/server/imports/preview.ts` : normalisation complète, classification
+  create/update/unchanged/invalid, diff de métadonnées, delta de planning,
+  `normalized_preview_json` interne, DTO paginé.
+- `src/server/imports/apply.ts` : apply atomique (revalidation epoch/TTL/révision,
+  `invalid > 0 → 422`, sauvegarde `pre_import` si changement, plafond, audit,
+  suppression de l'upload après commit).
+- `src/server/routes/imports.ts`, `examples/import/*`, page `Import.tsx`.
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run test -- tests/security/import.test.ts tests/integration/import-flow.test.ts` | 11/11 passés |
+| `npm run check` | 116/116 tests, typecheck et lint OK |
+| `npm run build` | OK |
+| `npm run test:e2e` | 3/3 (non étendu au parcours d'import) |
+
+Vérifié : CSV BOM/quotes/newlines/formule conservée ; XLSX formule (feuille non
+sélectionnée) refusée ; ZIP > 25 MiB décompressés, traversal, doublons, macro,
+trop d'entrées refusés ; upload → mapping → aperçu → apply créant 2 contrôles et
+5 occurrences ; rejeu 409 ; mauvais plan 404 ; une ligne invalide → 422 sans
+écriture ; champ optionnel absent efface la valeur ; occurrence `completed`
+conservée lors d'un changement de planning.
+
+### Limites (sous-points non vérifiés)
+
+- Pas de test automatisé pour : relations externes OOXML, chiffrement explicite,
+  calendriers Excel 1900/1904 et serial 60, dépassement lignes/colonnes/feuilles,
+  timeout de parsing et nettoyage des temporaires, code archivé invalide,
+  hash/source altéré, statut modifié après aperçu, panne de sauvegarde et plafond
+  100 001 au niveau import, audit rollback atomique, crash après commit.
+- Le parcours UI upload→mapping→aperçu→apply n'est pas couvert par un test
+  Playwright ; il est présent dans la page `Import` mais non exercé en E2E.
+- XLSX : parsing synchrone dans la transaction de mapping ; pas de worker ni de
+  timeout dédié.
+
+### Prochaine action
+
+T9 — exports CSV/PDF bornés et artefacts.
+
+### Commit
+
+`feat: import reviewed control definitions` (voir `git log`).

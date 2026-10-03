@@ -1,0 +1,4 @@
+code;title;description;referentiel;reference;domain;frequency_kind;anchor_date
+BAD-1;Référentiel inconnu;Ligne invalide;pas_un_referentiel;R;Dom;once;2028-01-01
+DUP-1;Doublon;Première occurrence;iso_27001;R;Dom;once;2028-01-01
+DUP-1;Doublon;Deuxième occurrence du même code;iso_27001;R;Dom;once;2028-02-01
