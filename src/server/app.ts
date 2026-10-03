@@ -50,12 +50,18 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   }
 
   if (existsSync(config.webDistDir)) {
-    await app.register(fastifyStatic, { root: config.webDistDir, wildcard: false });
+    // Wildcard serves index.html at `/` and every static file; the explicit
+    // asset/font routes are more specific and prefix the managed subfolder.
+    await app.register(fastifyStatic, { root: config.webDistDir });
     app.get('/assets/*', (request, reply) =>
-      reply.sendFile(decodeURIComponent(String((request.params as Record<string, unknown>)['*']))),
+      reply.sendFile(
+        `assets/${decodeURIComponent(String((request.params as Record<string, unknown>)['*']))}`,
+      ),
     );
     app.get('/fonts/*', (request, reply) =>
-      reply.sendFile(decodeURIComponent(String((request.params as Record<string, unknown>)['*']))),
+      reply.sendFile(
+        `fonts/${decodeURIComponent(String((request.params as Record<string, unknown>)['*']))}`,
+      ),
     );
     for (const path of [
       '/plan',

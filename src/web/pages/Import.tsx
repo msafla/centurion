@@ -141,6 +141,7 @@ export function Import() {
                   {REQUIRED.includes(column) ? ' *' : ''}
                 </span>
                 <select
+                  aria-label={`Colonne ${column}`}
                   className="rounded-md border border-[var(--color-border-brand)] bg-white px-2 py-1 text-sm"
                   value={mapping[column] ?? ''}
                   onChange={(event) =>
