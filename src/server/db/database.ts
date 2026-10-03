@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3';
 import type { Clock } from '../clock';
+import { privateContext } from '../context';
 import { AppError } from '../http/errors';
 import { type AuditEvent, type AuditSource, insertAudit } from './audit';
 import { CURRENT_SCHEMA_VERSION, migrate } from './migrate';
@@ -114,21 +115,41 @@ export function withPlanMutation<T>(
 ): T {
   const { db: handle, clock } = deps;
   const nowUtc = clock.nowUtc();
+  const context = privateContext.getStore();
+  const effectiveSource: AuditSource = context?.source ?? source;
+  const proposalId = context?.proposalId;
+
   const run = handle.db.transaction((): T => {
-    const plan = handle.db.prepare('SELECT id FROM plans WHERE id = ?').get(planId);
+    const plan = handle.db
+      .prepare('SELECT id, data_revision FROM plans WHERE id = ?')
+      .get(planId) as { id: string; data_revision: number } | undefined;
     if (!plan) throw new AppError(404, 'not_found', 'Plan not found');
+
+    if (proposalId) {
+      const proposal = handle.db
+        .prepare('SELECT plan_id, base_plan_revision, state FROM mcp_proposals WHERE id = ?')
+        .get(proposalId) as
+        | { plan_id: string; base_plan_revision: number; state: string }
+        | undefined;
+      if (!proposal || proposal.state !== 'pending' || proposal.plan_id !== planId) {
+        throw new AppError(409, 'proposal_not_pending', 'Proposal is not pending');
+      }
+      if (proposal.base_plan_revision !== plan.data_revision) {
+        throw new AppError(409, 'proposal_stale', 'Business data changed since proposal');
+      }
+    }
 
     const tx: DomainTx = {
       db: handle.db,
       planId,
-      source,
+      source: effectiveSource,
       nowUtc,
       changed: false,
       markChanged() {
         tx.changed = true;
       },
       audit(event) {
-        insertAudit(handle.db, event, source, nowUtc);
+        insertAudit(handle.db, event, effectiveSource, nowUtc);
       },
     };
 
@@ -137,6 +158,11 @@ export function withPlanMutation<T>(
       handle.db
         .prepare('UPDATE plans SET data_revision = data_revision + 1, updated_at = ? WHERE id = ?')
         .run(nowUtc, planId);
+    }
+    if (proposalId) {
+      handle.db
+        .prepare("UPDATE mcp_proposals SET state = 'applied', result_json = ?, updated_at = ? WHERE id = ?")
+        .run(JSON.stringify(result ?? null), nowUtc, proposalId);
     }
     return result;
   });

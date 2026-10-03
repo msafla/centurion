@@ -56,7 +56,8 @@ const ExportArgs = z.object({ plan_id: PlanId, filters: FilterInputSchema.option
 export type ResolvedCall =
   | { kind: 'api'; method: 'GET'; url: string }
   | { kind: 'artifact'; artifact: 'csv' | 'pdf'; planId: string; filter: FilterInput }
-  | { kind: 'proposal'; tool: WriteTool; planId: string; payload: unknown };
+  | { kind: 'proposal'; tool: WriteTool; planId: string; payload: unknown }
+  | { kind: 'consult'; tool: WriteTool; proposalId: string };
 
 function query(params: Record<string, unknown>): string {
   const search = new URLSearchParams();
@@ -133,11 +134,17 @@ export function resolveTool(tool: string, args: unknown, runtime: Runtime): Reso
       };
     }
     default: {
-      // Write tools are resolved in T11; until then they are refused.
       if (!runtime.mcpWriteEnabled) {
         throw new AppError(403, 'write_disabled', 'MCP write tools are disabled');
       }
-      throw new AppError(501, 'not_implemented', 'Write tool not implemented');
+      const record = (args ?? {}) as Record<string, unknown>;
+      if (typeof record.proposal_id === 'string') {
+        return { kind: 'consult', tool: tool as WriteTool, proposalId: record.proposal_id };
+      }
+      if (typeof record.plan_id !== 'string') {
+        throw new AppError(422, 'validation_error', 'plan_id is required');
+      }
+      return { kind: 'proposal', tool: tool as WriteTool, planId: record.plan_id, payload: args };
     }
   }
 }

@@ -63,6 +63,27 @@ const SummarySchema = z.object({
 
 const PaginationInput = { page: z.number().int().min(1).optional(), page_size: z.number().int().min(1).max(100).optional() };
 
+const ProposalSchema = z.object({
+  id: z.string(),
+  tool: z.string(),
+  plan_id: z.string(),
+  target_id: z.string().nullable(),
+  state: z.string(),
+  expires_at: z.string(),
+  diff: z.object({ before: z.unknown(), after: z.unknown() }),
+  result: z.unknown().nullable(),
+});
+
+const WriteInput = z
+  .object({
+    plan_id: z.string().uuid().optional(),
+    control_id: z.string().uuid().optional(),
+    occurrence_id: z.string().uuid().optional(),
+    input: z.unknown().optional(),
+    proposal_id: z.string().uuid().optional(),
+  })
+  .strict();
+
 function controlSummary(control: ControlDto) {
   return {
     id: control.id,
@@ -276,5 +297,60 @@ export function registerReadTools(
         const { data, sanitized_fields } = projectMcpOutput(raw, ArtifactSchema);
         return envelope(data, sanitized_fields);
       }),
+  );
+}
+
+function proposalEnvelope(raw: unknown) {
+  const record = raw as { status?: string; data_origin?: string; trust?: string; data: unknown };
+  const { data, sanitized_fields } = projectMcpOutput(record.data, ProposalSchema);
+  const body = {
+    status: record.status ?? 'ok',
+    data_origin: 'centurion_data',
+    trust: 'untrusted_data',
+    data,
+    ...(sanitized_fields.length > 0 ? { sanitized_fields } : {}),
+  };
+  const text = JSON.stringify(body);
+  if (Buffer.byteLength(text, 'utf8') > MAX_RESULT_BYTES) throw new Error('result_too_large');
+  return { content: [{ type: 'text' as const, text }] };
+}
+
+/**
+ * Write tools are exposed only when the backend flag and the adapter flag are
+ * both set. Their first call creates a proposal; it never mutates business data.
+ */
+export function registerWriteTools(
+  server: McpServer,
+  client: BackendClient,
+  limiter: AdapterLimiter,
+): void {
+  const write = (tool: string, description: string) => {
+    server.registerTool(
+      tool,
+      {
+        description,
+        inputSchema: WriteInput,
+        annotations: { readOnlyHint: false },
+      },
+      async (args) =>
+        guard(async () => {
+          limiter.check(false);
+          const raw = await client.dispatch(tool, args);
+          return proposalEnvelope(raw);
+        }),
+    );
+  };
+
+  write(
+    'create_control',
+    'Propose creating a control. Returns a proposal that must be approved in the CENTURION UI before any data changes. Pass { proposal_id } to consult a proposal of this tool.',
+  );
+  write(
+    'update_control_metadata',
+    'Propose updating a control definition (code, planning and status are refused). Returns a proposal approved in the CENTURION UI. Pass { proposal_id } to consult it.',
+  );
+  write(
+    'set_occurrence',
+    'Propose recording an occurrence outcome. Returns a proposal approved in the CENTURION UI. Pass { proposal_id } to consult it.',
   );
 }

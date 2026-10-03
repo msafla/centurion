@@ -11,8 +11,12 @@ export function Settings() {
   const [name, setName] = useState(plan?.name ?? '');
   const [perimeter, setPerimeter] = useState(plan?.perimeter ?? '');
   const [backups, setBackups] = useState<BackupDto[]>([]);
+  const [proposals, setProposals] = useState<
+    { id: string; tool: string; state: string; expires_at: string; diff: unknown }[]
+  >([]);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const pendingCount = proposals.filter((proposal) => proposal.state === 'pending').length;
 
   useEffect(() => {
     setName(plan?.name ?? '');
@@ -24,9 +28,17 @@ export function Settings() {
     setBackups(page.items);
   }, []);
 
+  const loadProposals = useCallback(async () => {
+    const page = await api.get<
+      Page<{ id: string; tool: string; state: string; expires_at: string; diff: unknown }>
+    >('/api/mcp-proposals', { page_size: 50 });
+    setProposals(page.items);
+  }, []);
+
   useEffect(() => {
     loadBackups().catch((cause: unknown) => setError(String(cause)));
-  }, [loadBackups]);
+    loadProposals().catch(() => undefined);
+  }, [loadBackups, loadProposals]);
 
   async function run(action: () => Promise<void>, success: string) {
     setError(null);
@@ -157,11 +169,62 @@ export function Settings() {
         </table>
       </div>
 
-      <div className="rounded-lg border border-[var(--color-border-brand)] bg-white p-4">
-        <h2 className="text-lg font-medium">Approbations MCP</h2>
+      <div className="space-y-3 rounded-lg border border-[var(--color-border-brand)] bg-white p-4">
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-medium">Approbations MCP</h2>
+          {pendingCount > 0 ? (
+            <span className="rounded-full bg-[var(--color-brand-accent)] px-2 py-0.5 text-xs text-[var(--color-ink)]">
+              {pendingCount} en attente
+            </span>
+          ) : null}
+        </div>
         <p className="text-sm text-[var(--color-text-secondary)]">
-          Les écritures proposées par un client IA apparaissent ici pour validation explicite.
+          Les écritures proposées par un client IA ne modifient rien avant validation ici. Une
+          approbation qui modifie le plan rend les autres propositions de ce plan obsolètes.
         </p>
+        <ul className="space-y-3">
+          {proposals.map((proposal) => (
+            <li
+              key={proposal.id}
+              className="rounded-md border border-[var(--color-border-brand)] p-3 text-sm"
+            >
+              <p className="font-medium">
+                {proposal.tool} · {proposal.state} · expire {proposal.expires_at}
+              </p>
+              <pre className="mt-2 max-h-40 overflow-auto rounded bg-[var(--color-surface-soft)] p-2 text-xs">
+                {JSON.stringify(proposal.diff, null, 2)}
+              </pre>
+              {proposal.state === 'pending' ? (
+                <div className="mt-2 flex gap-2">
+                  <Button
+                    onClick={() =>
+                      run(async () => {
+                        await api.post(`/api/mcp-proposals/${proposal.id}/approve`, {});
+                        await loadProposals();
+                      }, 'Proposition approuvée.')
+                    }
+                  >
+                    Approuver
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      run(async () => {
+                        await api.post(`/api/mcp-proposals/${proposal.id}/reject`, {});
+                        await loadProposals();
+                      }, 'Proposition refusée.')
+                    }
+                  >
+                    Refuser
+                  </Button>
+                </div>
+              ) : null}
+            </li>
+          ))}
+          {proposals.length === 0 ? (
+            <li className="text-sm text-[var(--color-text-secondary)]">Aucune proposition.</li>
+          ) : null}
+        </ul>
       </div>
     </section>
   );

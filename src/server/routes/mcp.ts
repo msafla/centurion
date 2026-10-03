@@ -1,8 +1,10 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+import { PageInputSchema } from '../../shared/schemas';
 import { AppError, parseInput } from '../http/errors';
 import { dispatchMcp } from '../mcp/dispatch';
 import type { McpToolName } from '../mcp/policy';
+import { approveProposal, listProposals, rejectProposal } from '../mcp/proposals';
 import type { Runtime } from '../runtime';
 
 const DispatchBody = z.object({ tool: z.string(), arguments: z.unknown().optional() }).strict();
@@ -24,5 +26,23 @@ export function registerMcpRoutes(app: FastifyInstance, runtime: Runtime): void 
     }
     const body = parseInput(DispatchBody, request.body);
     return dispatchMcp(app, runtime, body.tool as McpToolName, body.arguments ?? {});
+  });
+
+  // UI-only routes: not reachable through the MCP dispatch allowlist.
+  app.get('/api/mcp-proposals', async (request) =>
+    runtime.gate.runRead(() => {
+      const { page, page_size } = parseInput(PageInputSchema, request.query);
+      return listProposals(runtime, page, page_size);
+    }),
+  );
+
+  app.post('/api/mcp-proposals/:proposalId/approve', async (request) => {
+    const { proposalId } = request.params as { proposalId: string };
+    return approveProposal(runtime, app, proposalId);
+  });
+
+  app.post('/api/mcp-proposals/:proposalId/reject', async (request) => {
+    const { proposalId } = request.params as { proposalId: string };
+    return runtime.gate.runExclusive(() => rejectProposal(runtime, proposalId));
   });
 }

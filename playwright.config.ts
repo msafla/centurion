@@ -1,5 +1,8 @@
 import { defineConfig } from '@playwright/test';
 
+const e2eDataDir = `./data/e2e-${Date.now()}`;
+process.env.CENTURION_E2E_DIR = e2eDataDir;
+
 export default defineConfig({
   testDir: './tests/e2e',
   timeout: 30_000,
@@ -16,7 +19,8 @@ export default defineConfig({
     reuseExistingServer: false,
     timeout: 30_000,
     env: {
-      CENTURION_DATA_DIR: `./data/e2e-${Date.now()}`,
+      CENTURION_DATA_DIR: e2eDataDir,
+      CENTURION_MCP_WRITE: '1',
     },
   },
 });

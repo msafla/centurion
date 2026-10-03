@@ -635,10 +635,10 @@ Scripts obligatoires :
 
 **Consomme :** policy/dispatch et métier. **Produit :** trois tools write à effet métier conditionné par une approbation UI exacte.
 
-- [ ] Tests : flag backend/adapter absent→aucun tool write ; appel write enabled→pending, aucune mutation métier ; impossible d'approuver par MCP/dispatch ; approve UI protégé→une mutation et audit source=mcp ; refus/expire/stale/epoch/hash altéré→zéro changement ; replay→même résultat, un audit ; code/planning/archive rejetés pour update ;21e proposition pending429.
-- [ ] Implémenter diff/proposition immuable, approve/reject UI, déduplication pending et consultation par proposal_id ; aucun argument confirm/approved. La fermeture du client MCP n'approuve jamais une action.
-- [ ] Exécuter `npm run test -- tests/mcp/write-confirmation.test.ts` et `npm run test:e2e -- tests/e2e/mcp-approval.spec.ts`. Vérifier que set_occurrence approuvé produit le même résultat normalisé que l'API (FAIT Non force N/A/preuve nulle).
-- [ ] Consigner et commit `feat: require UI approval for MCP changes`.
+- [x] Tests : flag backend/adapter absent→aucun tool write ; appel write enabled→pending, aucune mutation métier ; impossible d'approuver par MCP/dispatch ; approve UI protégé→une mutation et audit source=mcp ; refus/expire/stale/epoch/hash altéré→zéro changement ; replay→même résultat, un audit ; code/planning/archive rejetés pour update ;21e proposition pending429.
+- [x] Implémenter diff/proposition immuable, approve/reject UI, déduplication pending et consultation par proposal_id ; aucun argument confirm/approved. La fermeture du client MCP n'approuve jamais une action.
+- [x] Exécuter `npm run test -- tests/mcp/write-confirmation.test.ts` et `npm run test:e2e -- tests/e2e/mcp-approval.spec.ts`. Vérifier que set_occurrence approuvé produit le même résultat normalisé que l'API (FAIT Non force N/A/preuve nulle).
+- [x] Consigner et commit `feat: require UI approval for MCP changes`.
 
 ### T12 — Démo, checks propres et livraison
 

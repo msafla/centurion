@@ -627,4 +627,55 @@ T11 — écritures MCP proposées puis confirmées dans l'UI.
 
 ### Commit
 
-`feat: expose constrained read-only MCP` (voir `git log`).
+`b834aa3 feat: expose constrained read-only MCP`.
+
+## T11 — Écritures MCP proposées, puis confirmées dans CENTURION
+
+État : terminé et vérifié le 3 octobre 2026.
+
+### Produit
+
+- `src/server/mcp/proposals.ts` : proposition immuable (arguments normalisés,
+  hash SHA-256, diff before/after, `base_plan_revision`, epoch, TTL 15 min),
+  déduplication des pending identiques, plafond 20, consultation par
+  `proposal_id`, `approveProposal`/`rejectProposal`.
+- `withPlanMutation` consomme la proposition dans la **même transaction** que la
+  mutation et l'audit ; la source d'audit devient `mcp` via le contexte privé.
+- `OperationGate` ré-entrant : l'approbation acquiert la garde puis injecte la
+  route cible sans seconde acquisition.
+- Routes UI `GET /api/mcp-proposals`, `POST .../approve`, `POST .../reject`
+  (non dispatchables par MCP).
+- `src/mcp/tools.ts` : trois tools write exposés uniquement si flag backend **et**
+  `CENTURION_MCP_WRITE=1` ; premier appel = proposition, jamais de mutation.
+- `web/pages/Settings.tsx` : badge pending, diff, approuver/refuser.
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run test -- tests/mcp/write-confirmation.test.ts` | 6/6 passés |
+| `npm run test:e2e -- tests/e2e/mcp-approval.spec.ts` | 1/1 (parcours UI complet) |
+| `npm run check` | 136/136 tests, typecheck et lint OK |
+| `npm run test:e2e` | 4/4 |
+
+Vérifié : write désactivé → refusé ; appel write → pending sans mutation ;
+impossible d'approuver par dispatch (outil inconnu) ; approbation UI → une
+mutation, audit `source=mcp` ; stale/tampered/epoch → 409 sans changement ;
+replay → même résultat, un seul audit ; code/planning/status rejetés en update ;
+21e pending → 429 ; `set_occurrence` approuvé = même normalisation que l'API
+(FAIT Non → N/A, preuve nulle) ; e2e : proposition → approbation UI → contrôle créé.
+
+### Limites
+
+- Expiration TTL et déduplication des pending sont implémentées mais non couvertes
+  par un test dédié ; consultation par `proposal_id` idem.
+- L'arrêt d'un client MCP ne peut jamais approuver (aucune route d'approbation
+  n'est dispatchable) — vérifié par construction et par le test d'outil inconnu.
+
+### Prochaine action
+
+T12 — démo reproductible, checks propres et livraison.
+
+### Commit
+
+`feat: require UI approval for MCP changes` (voir `git log`).

@@ -8,6 +8,7 @@ import { buildCsv } from '../reports/csv';
 import { PDF_MAX_ROWS, buildReportPdf } from '../reports/report-pdf';
 import type { Runtime } from '../runtime';
 import { type McpToolName, resolveTool } from './policy';
+import { createProposal, getProposal } from './proposals';
 
 async function generateArtifact(
   runtime: Runtime,
@@ -51,7 +52,27 @@ export async function dispatchMcp(
       return await generateArtifact(runtime, call);
     }
     if (call.kind === 'proposal') {
-      throw new AppError(501, 'not_implemented', 'Write tool not implemented');
+      const dto = await runtime.gate.runExclusive(() =>
+        createProposal(runtime, call.tool, call.payload),
+      );
+      return {
+        status: 'human_confirmation_required',
+        data_origin: 'centurion_data',
+        trust: 'untrusted_data',
+        data: dto,
+      };
+    }
+    if (call.kind === 'consult') {
+      const dto = getProposal(runtime, call.proposalId);
+      if (dto.tool !== call.tool) {
+        throw new AppError(404, 'not_found', 'Proposal does not belong to this tool');
+      }
+      return {
+        status: 'ok',
+        data_origin: 'centurion_data',
+        trust: 'untrusted_data',
+        data: dto,
+      };
     }
     const response = await runWithPrivateContext({ source: 'mcp', operationId: randomUUID() }, () =>
       app.inject({
