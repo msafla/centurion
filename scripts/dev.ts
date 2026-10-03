@@ -15,8 +15,27 @@ if (demo) {
   }
 }
 
+const esbuildBin = resolve('node_modules', '.bin', 'esbuild');
+const buildArgs = [
+  'src/server/index.ts',
+  '--bundle',
+  '--platform=node',
+  '--format=esm',
+  '--packages=external',
+  '--jsx=automatic',
+  '--target=node24',
+  '--sourcemap',
+  '--outfile=dist/server/index.js',
+];
+
+// The server uses JSX (pdfcn report components). esbuild's automatic runtime is
+// required; tsx would compile JSX to the classic runtime and break rendering.
+execFileSync('node', ['scripts/copy-assets.mjs'], { stdio: 'inherit', env });
+execFileSync(esbuildBin, buildArgs, { stdio: 'inherit', env });
+
 const children: ChildProcess[] = [
-  spawn('tsx', ['watch', 'src/server/index.ts'], { stdio: 'inherit', env }),
+  spawn(esbuildBin, [...buildArgs, '--watch'], { stdio: 'inherit', env }),
+  spawn('node', ['--watch', 'dist/server/index.js'], { stdio: 'inherit', env }),
   spawn('vite', [], { stdio: 'inherit', env }),
 ];
 

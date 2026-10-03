@@ -769,4 +769,58 @@ réel de `ISO 27001 + PCI DSS` produisant les deux liens.
 
 ### Commit
 
-`feat: dynamic referentials with combined import` (voir `git log`).
+`feat: dynamic referentials with combined import`.
+
+## Post-T12 — refonte du rapport PDF avec pdfcn
+
+État : livré et vérifié le 3 octobre 2026.
+
+Le rapport PDF n'est plus assemblé en HTML : il est construit avec les composants
+pdfcn vendored (`Table`, `Text`, `PageNumber`, `PdfcnThemeProvider`) et un thème
+CENTURION, rendu par Takumi. `buildReportPdf(report: ReportDto)` et
+`PDF_MAX_ROWS = 1000` sont inchangés.
+
+- `src/server/reports/lib/pdf-themes/centurion.ts` : thème (Poppins, `#451DC7`,
+  `#360058`, `#04F06A`, `#111111`, `#FFFFFF`, `#E5E0F0`, A4 paysage).
+- `src/server/reports/components/pdf/report/{report-document,report-header,report-summary,report-table,report-details}.tsx`.
+- `src/server/reports/lib/report-labels.ts` : libellés français (conformité,
+  référentiels, FAIT), sans altérer les valeurs canoniques.
+- `src/server/reports/report-pdf.tsx` : arbre React + entête/pied de page répétés
+  (`Page {page} / {total}`), mention légale, plafonds inchangés.
+- Les exclusions TypeScript larges des sources pdfcn sont retirées ; seule une
+  correction de typage minimale a été appliquée à `page-number.tsx`.
+- `scripts/dev.ts` compile le serveur avec esbuild (`--jsx=automatic`) + `node
+  --watch` : tsx compile le JSX en runtime classique et cassait le rendu PDF en
+  développement.
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run test -- tests/unit/reports/pdf-theme.test.ts` | 5/5 |
+| `npm run test -- tests/integration/exports.test.ts` | 10/10 (3 tests PDF) |
+| `npm run check` | 143/143 |
+| `npm run build` | OK |
+| `npm run smoke` | 3/3 |
+| Rapport démo réel (build production) | 5 pages, 27 367 octets, structure + en-tête/pied + numéros de page par page |
+
+Vérifié : structure (titre, plan, synthèse, tableau, détails), libellés français,
+accents/Unicode, texte long replié sans omission, `<script>`/`<b>`/`<>&` rendus
+littéralement, PDF vide valide, multipage avec entête/pied et `Page n / total`
+exacts, 1 000 occurrences admises et 1 001 refusées avant rendu, aucune requête
+réseau (`fetch` non appelé).
+
+### Limites
+
+- **Inspection visuelle PNG non réalisée** : aucun rasteriseur PDF local
+  (poppler/mutool/ghostscript/ImageMagick/pdf.js/canvas) n'est disponible et le
+  plan interdit d'ajouter une dépendance de rendu. La preuve fournie est
+  l'extraction par page (5 pages, en-tête/pied/numéros présents partout) et
+  l'artefact `docs/presentation/pdf-preview/centurion-report-sample.pdf`. Ouvrir
+  ce PDF localement pour la revue visuelle finale.
+- Aucun plafond de 250 pages ajouté (seuls 1 000 occurrences et 64 MiB, conformes
+  au plan de refonte).
+
+### Commit
+
+`feat: render the PDF report with pdfcn components` (voir `git log`).

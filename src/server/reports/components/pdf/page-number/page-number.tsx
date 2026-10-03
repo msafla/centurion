@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import {
   PageNumber as PageNumberPrimitive,
   TotalPages as TotalPagesPrimitive,
@@ -113,7 +114,7 @@ export const PageNumber = ({
           return (
             <PageNumberPrimitive
               key={`page-${index}`}
-              style={flatten(textStyles)}
+              style={flatten(textStyles) as CSSProperties | undefined}
             />
           );
         }
@@ -121,7 +122,7 @@ export const PageNumber = ({
           return (
             <TotalPagesPrimitive
               key={`total-${index}`}
-              style={flatten(textStyles)}
+              style={flatten(textStyles) as CSSProperties | undefined}
             />
           );
         }

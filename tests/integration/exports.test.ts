@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import type BetterSqlite3 from 'better-sqlite3';
 import type { FastifyInstance } from 'fastify';
 import { extractText, getDocumentProxy } from 'unpdf';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildApp } from '../../src/server/app';
 import { fixedClock } from '../../src/server/clock';
 import { loadConfig } from '../../src/server/config';
@@ -196,29 +196,118 @@ function allDaysOf2028(): string[] {
 }
 
 describe('PDF export', () => {
-  it('renders a valid PDF with the required mention and rejects over 1000 rows', async () => {
-    const { app } = await makeApp();
+  it('renders a structured, paginated PDF and rejects over 1000 rows', async () => {
+    const { app, runtime } = await makeApp();
     const planId = await createPlan(app);
-    await createControl(app, planId, 'C1', ['2028-01-01', '2028-02-01']);
+    const controlId = await createControl(app, planId, 'C1', ['2028-01-01', '2028-02-01']);
+    runtime.db.db
+      .prepare(
+        `INSERT INTO realizations (id, occurrence_id, completed_date, fait, conformite, comment, evidence_ref, created_at, updated_at)
+         VALUES (?, ?, '2028-01-01', 1, 'conforme', ?, ?, ?, ?)`,
+      )
+      .run(
+        randomUUID(),
+        occId(runtime.db.db, controlId, '2028-01-01'),
+        '<script>alert(1)</script> éàç',
+        '<b>preuve</b> & données',
+        CLOCK,
+        CLOCK,
+      );
 
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
     const ok = await app.inject({
       method: 'GET',
       url: `/api/plans/${planId}/exports/report.pdf`,
       headers: { host: HOST },
     });
+    expect(fetchSpy).not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
     expect(ok.statusCode).toBe(200);
     expect(ok.headers['content-type']).toContain('application/pdf');
     expect(ok.rawPayload.subarray(0, 4).toString('latin1')).toBe('%PDF');
 
     const document = await getDocumentProxy(new Uint8Array(ok.rawPayload));
     const { text } = await extractText(document, { mergePages: true });
-    expect(text).toContain('CENTURION');
-    expect(text).toContain("ne constitue pas une opinion d'assurance");
+    const flat = text.replace(/\s+/g, ' ');
+    // Structure and summary
+    expect(text).toContain('Rapport CENTURION');
+    expect(text).toContain('Plan annuel 2028');
+    expect(text).toContain('Synthèse');
+    expect(text).toContain('Occurrences');
+    expect(text).toContain('Référentiel');
+    expect(text).toContain('Code / titre');
+    expect(text).toContain('Conformité');
+    expect(text).toContain('Conforme');
+    // Details, accents and pagination
+    expect(text).toContain('Détails des réalisations');
+    expect(text).toContain('éàç');
+    expect(text).toMatch(/Page\s*1\s*\/\s*\d+/);
+    // User values are literal text, not interpreted markup
+    expect(text).toContain('<script>alert(1)</script>');
+    expect(text).toContain('<b>preuve</b> & données');
+    expect(flat).toContain("ne constitue pas une opinion d'assurance");
+    expect(document.numPages).toBeGreaterThanOrEqual(2);
+  }, 120_000);
 
+  it('renders an empty report and preserves long, Unicode and markup text', async () => {
+    const { app, runtime } = await makeApp();
+    const planId = await createPlan(app);
+    const controlId = await createControl(app, planId, 'C1', ['2028-01-01']);
+    const longComment = `${'mot '.repeat(450)}${'éàçüö '.repeat(50)}fin-de-commentaire`;
+    runtime.db.db
+      .prepare(
+        `INSERT INTO realizations (id, occurrence_id, completed_date, fait, conformite, comment, evidence_ref, created_at, updated_at)
+         VALUES (?, ?, '2028-01-01', 1, 'partiellement_conforme', ?, ?, ?, ?)`,
+      )
+      .run(randomUUID(), occId(runtime.db.db, controlId, '2028-01-01'), longComment, '<>& <b>preuve</b>', CLOCK, CLOCK);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/plans/${planId}/exports/report.pdf`,
+      headers: { host: HOST },
+    });
+    expect(res.statusCode).toBe(200);
+    const document = await getDocumentProxy(new Uint8Array(res.rawPayload));
+    const { text } = await extractText(document, { mergePages: true });
+    const compact = text.replace(/\s+/g, '');
+    expect(compact).toContain('mot'.repeat(200));
+    expect(compact).toContain('éàçüö');
+    expect(compact).toContain('fin-de-commentaire');
+    expect(text).toContain('<>&');
+    expect(text).toContain('Partiellement conforme');
+    expect(document.numPages).toBeGreaterThanOrEqual(2);
+
+    const empty = await app.inject({
+      method: 'GET',
+      url: `/api/plans/${planId}/exports/report.pdf`,
+      headers: { host: HOST },
+      query: { search: 'zzzzz' },
+    });
+    expect(empty.statusCode).toBe(200);
+    const emptyDocument = await getDocumentProxy(new Uint8Array(empty.rawPayload));
+    const { text: emptyText } = await extractText(emptyDocument, { mergePages: true });
+    expect(emptyText).toContain('Aucune occurrence pour ces filtres');
+    expect(emptyText.replace(/\s+/g, ' ')).toContain("ne constitue pas une opinion d'assurance");
+    expect(emptyDocument.numPages).toBeGreaterThanOrEqual(1);
+  }, 180_000);
+
+  it('admits 1000 occurrences and rejects 1001 before rendering', async () => {
+    const { app } = await makeApp();
+    const planId = await createPlan(app);
     const days = allDaysOf2028();
-    for (const code of ['BIG1', 'BIG2', 'BIG3']) {
-      await createControl(app, planId, code, days);
-    }
+    await createControl(app, planId, 'BIG1', days);
+    await createControl(app, planId, 'BIG2', days);
+    await createControl(app, planId, 'BIG3', days.slice(0, 268));
+
+    const admitted = await app.inject({
+      method: 'GET',
+      url: `/api/plans/${planId}/exports/report.pdf`,
+      headers: { host: HOST },
+    });
+    expect(admitted.statusCode).toBe(200);
+    expect(admitted.rawPayload.byteLength).toBeLessThanOrEqual(64 * 1024 * 1024);
+
+    await createControl(app, planId, 'OVER', ['2028-01-01']);
     const tooLarge = await app.inject({
       method: 'GET',
       url: `/api/plans/${planId}/exports/report.pdf`,
@@ -226,5 +315,5 @@ describe('PDF export', () => {
     });
     expect(tooLarge.statusCode).toBe(422);
     expect((tooLarge.json() as { error: { code: string } }).error.code).toBe('report_too_large');
-  }, 120_000);
+  }, 300_000);
 });
