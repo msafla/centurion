@@ -14,7 +14,7 @@
     "dev:demo": "tsx scripts/dev.ts --demo",
     "build": "npm run typecheck && npm run build:web && npm run build:api",
     "build:web": "vite build",
-    "build:api": "esbuild src/server/index.ts src/mcp/server.ts --bundle --platform=node --format=esm --packages=external --jsx=automatic --target=node24 --sourcemap --outdir=dist",
+    "build:api": "esbuild src/server/index.ts src/mcp/server.ts --bundle --platform=node --format=esm --packages=external --jsx=automatic --target=node24 --sourcemap --outdir=dist && node scripts/copy-assets.mjs",
     "start": "node dist/server/index.js",
     "mcp": "node dist/mcp/server.js",
     "demo:reset": "tsx scripts/reset-demo.ts",

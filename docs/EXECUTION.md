@@ -145,3 +145,64 @@ T2 — écrire les tests SQLite/scoping/audit/verrou, constater l'échec, puis i
 ### Commit
 
 `383404e feat: establish local API boundary`.
+
+## T2 — SQLite, scoping, audit et propriétaire unique
+
+État : terminé et vérifié le 3 octobre 2026.
+
+### Produit
+
+- `src/server/db/migrations/001_initial.sql` : schéma STRICT complet (plans, controls,
+  occurrences, realizations, schedule_previews, import_runs, restore_previews,
+  mcp_proposals, audit_events), FK RESTRICT, index partiel unique sur les occurrences
+  actives, contraintes d'enums/dates/forme de planning, triggers append-only et
+  invariants de réalisation.
+- `src/server/db/migrate.ts` : migration transactionnelle idempotente via
+  `PRAGMA user_version`.
+- `src/server/db/database.ts` : `openDatabase` (WAL, FK ON, busy_timeout 5000),
+  `DatabaseHandle`, types de lignes, `DomainTx`, `withPlanMutation` (révision
+  incrémentée une seule fois, seulement si changement réel).
+- `src/server/db/audit.ts` : `insertAudit` avec snapshots bornés à 64 KiB.
+- `src/server/db/scoping.ts` : `planInScope`, `controlInPlan`, `occurrenceInPlan` (404).
+- `src/server/storage/instance-lock.ts` : verrou `proper-lockfile` (stale 30 s,
+  update 5 s, retries 0, détection de compromission).
+- `src/server/storage/operation-gate.ts` : mutations exclusives, fenêtre de
+  maintenance, lectures refusées 503 pendant l'installation.
+- `src/server/domain/plans.ts` : bootstrap du plan de l'année Paris courante
+  uniquement si aucun plan n'existe.
+- `scripts/copy-assets.mjs` : copie des migrations dans `dist/server/migrations`
+  pour le bundle de production.
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run test -- tests/integration/database.test.ts tests/integration/instance-lock.test.ts` | 15/15 passés |
+| `npm run check` | 49/49 tests, typecheck et lint OK |
+| `npm run build` | Vite + esbuild + copie des migrations OK |
+| Démarrage production (`node dist/server/index.js`, dataDir temporaire) | `/health` 200, `user_version=1`, plan `2026` créé, verrou libéré au SIGTERM (second démarrage 200) |
+
+Points couverts : migration rejouée, WAL/FK/busy_timeout, index partiel (un actif +
+un superseded même date, deux actifs refusés), code unique, SQL hostile stocké inerte,
+réalisation → occurrence `completed`, refus sur `superseded`, refus de quitter
+`completed`/de compléter sans réalisation, DELETE réalisation interdit, audit
+UPDATE/DELETE interdits, rollback mutation+audit, révision une seule fois et no-op,
+bootstrap à la frontière d'année Paris (22:30 UTC → 2027, 23:30 UTC → 2028), verrou
+sur deux processus réels.
+
+### Limites
+
+- `AppDeps` porte encore `db`/`gate`/`engineEpoch` en optionnel ; ils deviendront
+  obligatoires quand les routes métier les consommeront (T4+).
+- `files` (gestion des fichiers d'instance) arrive en T3.
+- Aucune route métier n'est encore exposée ; l'API reste `/health`.
+
+### Prochaine action
+
+T3 — écrire les tests sauvegarde/restauration (WAL, intégrité, panne par phase du
+journal), implémenter `backups/{catalog,backup,restore,recovery}.ts` et les routes,
+puis prouver la reprise après arrêt réel.
+
+### Commit
+
+`feat: secure SQLite lifecycle and audit` (voir `git log`).

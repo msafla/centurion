@@ -536,10 +536,10 @@ Scripts obligatoires :
 
 **Consomme :** DTO/config/Clock T1. **Produit :** DatabaseHandle, DomainTx, scopes, révisions et exclusivité pour T3+.
 
-- [ ] Écrire les tests : migrations répétées idempotentes ; FK/WAL/busy_timeout ; index partiel autorisant ancien superseded mais refusant deux dates actives identiques ; code unique après normalisation ; SQL hostile conservé comme donnée ; invariants réalisation/état ; audit UPDATE/DELETE refusés ; rollback audit annule mutation ; bootstrap à frontière d'année Paris.
-- [ ] Implémenter section 4, withPlanMutation et accès nested404 ; gate, verrou exclusif et lifecycle propre. Un no-op n'incrémente pas la révision.
-- [ ] Exécuter `npm run test -- tests/integration/database.test.ts tests/integration/instance-lock.test.ts`. Le test de verrou lance deux processus réels sur un dataDir temporaire : un propriétaire, second refusé sans écriture. Couvrir perte de verrou et arrêt propre.
-- [ ] Consigner et commit `feat: secure SQLite lifecycle and audit`.
+- [x] Écrire les tests : migrations répétées idempotentes ; FK/WAL/busy_timeout ; index partiel autorisant ancien superseded mais refusant deux dates actives identiques ; code unique après normalisation ; SQL hostile conservé comme donnée ; invariants réalisation/état ; audit UPDATE/DELETE refusés ; rollback audit annule mutation ; bootstrap à frontière d'année Paris.
+- [x] Implémenter section 4, withPlanMutation et accès nested404 ; gate, verrou exclusif et lifecycle propre. Un no-op n'incrémente pas la révision.
+- [x] Exécuter `npm run test -- tests/integration/database.test.ts tests/integration/instance-lock.test.ts`. Le test de verrou lance deux processus réels sur un dataDir temporaire : un propriétaire, second refusé sans écriture. Couvrir perte de verrou et arrêt propre.
+- [x] Consigner et commit `feat: secure SQLite lifecycle and audit`.
 
 ### T3 — Sauvegarde et restauration récupérable
 
