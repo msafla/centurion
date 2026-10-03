@@ -205,4 +205,4 @@ puis prouver la reprise après arrêt réel.
 
 ### Commit
 
-`feat: secure SQLite lifecycle and audit` (voir `git log`).
+`c5f6695 feat: secure SQLite lifecycle and audit`.
