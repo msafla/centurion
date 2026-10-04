@@ -6,6 +6,23 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+type McpPolicy = {
+  read_enabled: boolean;
+  exports_enabled: boolean;
+  write_create_enabled: boolean;
+  write_update_enabled: boolean;
+  write_set_occurrence_enabled: boolean;
+  updated_at: string;
+};
+
+const POLICY_FIELDS: { key: keyof McpPolicy; label: string; hint: string }[] = [
+  { key: 'read_enabled', label: 'Lecture', hint: 'listes, fiches et synthèse' },
+  { key: 'exports_enabled', label: 'Exports', hint: 'CSV et PDF' },
+  { key: 'write_create_enabled', label: 'Écriture — créer un contrôle', hint: 'proposition à approuver' },
+  { key: 'write_update_enabled', label: 'Écriture — modifier un contrôle', hint: 'proposition à approuver' },
+  { key: 'write_set_occurrence_enabled', label: 'Écriture — réalisation', hint: 'proposition à approuver' },
+];
+
 export function Settings() {
   const { plan, reloadPlans } = usePlan();
   const [name, setName] = useState(plan?.name ?? '');
@@ -14,6 +31,7 @@ export function Settings() {
   const [proposals, setProposals] = useState<
     { id: string; tool: string; state: string; expires_at: string; diff: unknown }[]
   >([]);
+  const [policy, setPolicy] = useState<McpPolicy | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const pendingCount = proposals.filter((proposal) => proposal.state === 'pending').length;
@@ -35,10 +53,21 @@ export function Settings() {
     setProposals(page.items);
   }, []);
 
+  const loadPolicy = useCallback(async () => {
+    setPolicy(await api.get<McpPolicy>('/api/mcp-policy'));
+  }, []);
+
   useEffect(() => {
     loadBackups().catch((cause: unknown) => setError(String(cause)));
     loadProposals().catch(() => undefined);
-  }, [loadBackups, loadProposals]);
+    loadPolicy().catch(() => undefined);
+  }, [loadBackups, loadProposals, loadPolicy]);
+
+  async function togglePermission(key: keyof McpPolicy, enabled: boolean) {
+    await run(async () => {
+      setPolicy(await api.put<McpPolicy>('/api/mcp-policy', { [key]: enabled }));
+    }, 'Permissions MCP mises à jour.');
+  }
 
   async function run(action: () => Promise<void>, success: string) {
     setError(null);
@@ -167,6 +196,36 @@ export function Settings() {
             ) : null}
           </tbody>
         </table>
+      </div>
+
+      <div className="space-y-3 rounded-lg border border-[var(--color-border-brand)] bg-white p-4">
+        <h2 className="text-lg font-medium">Permissions MCP</h2>
+        <p className="text-sm text-[var(--color-text-secondary)]">
+          Choisissez ce que l'adaptateur MCP est autorisé à faire. Le backend revalide chaque appel ;
+          une modification s'applique immédiatement à l'adaptateur. Les écritures restent des
+          propositions à approuver ci-dessous.
+        </p>
+        {policy ? (
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {POLICY_FIELDS.map((field) => (
+              <label key={field.key} className="flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={policy[field.key] as boolean}
+                  onChange={(event) => void togglePermission(field.key, event.target.checked)}
+                />
+                <span>
+                  {field.label}
+                  <span className="block text-xs text-[var(--color-text-secondary)]">
+                    {field.hint}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-[var(--color-text-secondary)]">Chargement…</p>
+        )}
       </div>
 
       <div className="space-y-3 rounded-lg border border-[var(--color-border-brand)] bg-white p-4">

@@ -239,3 +239,19 @@ BEGIN
     THEN RAISE(ABORT, 'occurrence_completed_without_realization')
   END;
 END;
+
+-- MCP permissions chosen in the CENTURION UI. Single row, authoritative for
+-- both the backend dispatch and the stdio adapter exposure.
+CREATE TABLE mcp_policy (
+  id                          INTEGER PRIMARY KEY CHECK (id = 1),
+  read_enabled                INTEGER NOT NULL DEFAULT 1 CHECK (read_enabled IN (0,1)),
+  exports_enabled             INTEGER NOT NULL DEFAULT 1 CHECK (exports_enabled IN (0,1)),
+  write_create_enabled        INTEGER NOT NULL DEFAULT 0 CHECK (write_create_enabled IN (0,1)),
+  write_update_enabled        INTEGER NOT NULL DEFAULT 0 CHECK (write_update_enabled IN (0,1)),
+  write_set_occurrence_enabled INTEGER NOT NULL DEFAULT 0 CHECK (write_set_occurrence_enabled IN (0,1)),
+  updated_at                  TEXT NOT NULL
+) STRICT;
+
+INSERT INTO mcp_policy
+  (id, read_enabled, exports_enabled, write_create_enabled, write_update_enabled, write_set_occurrence_enabled, updated_at)
+VALUES (1, 1, 1, 0, 0, 0, '2026-01-01T00:00:00.000Z');

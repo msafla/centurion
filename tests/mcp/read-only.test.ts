@@ -7,10 +7,8 @@ import { BackendClient } from '../../src/mcp/backend-client';
 import { AppError } from '../../src/server/http/errors';
 import { McpLimiter } from '../../src/server/mcp/limits';
 import { ALL_TOOLS, READ_TOOLS, resolveTool, WRITE_TOOLS } from '../../src/server/mcp/policy';
-import type { Runtime } from '../../src/server/runtime';
+import { defaultMcpPolicy, isToolEnabled } from '../../src/server/mcp/policy-store';
 import { projectMcpOutput, sanitizeText } from '../../src/mcp/sanitize';
-
-const runtime = { mcpWriteEnabled: false } as unknown as Runtime;
 
 describe('MCP policy', () => {
   it('exposes exactly the eight read tools and no write tool in read mode', () => {
@@ -30,28 +28,30 @@ describe('MCP policy', () => {
   });
 
   it('rejects unknown tools and unknown arguments', () => {
-    expect(() => resolveTool('shell', {}, runtime)).toThrow(AppError);
-    expect(() => resolveTool('list_plans', { unexpected: 1 }, runtime)).toThrow(AppError);
+    expect(() => resolveTool('shell', {})).toThrow(AppError);
+    expect(() => resolveTool('list_plans', { unexpected: 1 })).toThrow(AppError);
   });
 
   it('maps read tools to the same API routes', () => {
-    expect(resolveTool('list_plans', {}, runtime)).toEqual({
+    expect(resolveTool('list_plans', {})).toEqual({
       kind: 'api',
       method: 'GET',
       url: '/api/plans?page=1&page_size=50',
     });
-    expect(resolveTool('get_plan', { plan_id: '123e4567-e89b-42d3-a456-426614174000' }, runtime)).toEqual(
+    expect(resolveTool('get_plan', { plan_id: '123e4567-e89b-42d3-a456-426614174000' })).toEqual(
       { kind: 'api', method: 'GET', url: '/api/plans/123e4567-e89b-42d3-a456-426614174000' },
     );
   });
 
-  it('refuses write tools when the backend flag is off', () => {
-    try {
-      resolveTool('create_control', { plan_id: 'x' }, runtime);
-      expect.unreachable('write tool should be refused');
-    } catch (error) {
-      expect((error as AppError).code).toBe('write_disabled');
-    }
+  it('gates tools through the persisted MCP policy', () => {
+    expect(isToolEnabled(defaultMcpPolicy(), 'list_plans')).toBe(true);
+    expect(isToolEnabled(defaultMcpPolicy(), 'create_control')).toBe(false);
+    expect(isToolEnabled({ ...defaultMcpPolicy(), write_create_enabled: true }, 'create_control')).toBe(
+      true,
+    );
+    expect(isToolEnabled({ ...defaultMcpPolicy(), exports_enabled: false }, 'export_controls_csv')).toBe(
+      false,
+    );
   });
 });
 

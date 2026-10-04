@@ -6,6 +6,7 @@ import { fixedClock, systemClock } from './clock';
 import { loadConfig } from './config';
 import { type DatabaseHandle, openDatabase } from './db/database';
 import { bootstrapPlanIfEmpty } from './domain/plans';
+import { getMcpPolicy } from './mcp/policy-store';
 import { cleanupExpiredImports } from './imports/upload';
 import { cleanupExpiredArtifacts } from './reports/artifacts';
 import { Runtime } from './runtime';
@@ -47,11 +48,10 @@ try {
   cleanupExpiredArtifacts(dataDir, clock.nowUtc());
 
   const runtime = new Runtime(config, clock, dataDir, new OperationGate(), db, randomUUID());
-  runtime.mcpWriteEnabled = config.mcpWriteEnabled;
   runtime.mcpToken = writeRuntimeFiles(dataDir, {
     origin: config.canonicalOrigin,
     epoch: runtime.engineEpoch,
-    mcp_write_enabled: config.mcpWriteEnabled,
+    policy: getMcpPolicy(db.db),
   });
   const app = await buildApp({ config, clock, runtime });
 

@@ -21,7 +21,6 @@ export class Runtime {
     public db: DatabaseHandle,
     public engineEpoch: string,
     public mcpToken = '',
-    public mcpWriteEnabled = false,
   ) {}
 
   replaceDatabase(handle: DatabaseHandle): void {

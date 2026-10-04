@@ -13,8 +13,9 @@ import { loadConfig } from '../../src/server/config';
 import { openDatabase } from '../../src/server/db/database';
 import { Runtime } from '../../src/server/runtime';
 import { OperationGate } from '../../src/server/storage/operation-gate';
+import { getMcpPolicy } from '../../src/server/mcp/policy-store';
 import { canonicalDataDir, ensurePrivateDir } from '../../src/server/storage/paths';
-import { writeRuntimeFiles } from '../../src/server/storage/runtime-files';
+import { writeBackendInfo, writeRuntimeFiles } from '../../src/server/storage/runtime-files';
 import { READ_TOOLS } from '../../src/server/mcp/policy';
 
 const tsxBin = resolve('node_modules', '.bin', 'tsx');
@@ -39,11 +40,10 @@ beforeAll(async () => {
     db,
     randomUUID(),
   );
-  runtime.mcpWriteEnabled = false;
   runtime.mcpToken = writeRuntimeFiles(dataDir, {
     origin: 'http://127.0.0.1:4317',
     epoch: runtime.engineEpoch,
-    mcp_write_enabled: false,
+    policy: getMcpPolicy(runtime.db.db),
   });
   app = await buildApp({ config: runtime.config, clock: runtime.clock, runtime });
   await app.listen({ host: '127.0.0.1', port: 4317 });
@@ -112,6 +112,80 @@ describe('MCP stdio read-only', () => {
     const body = textOf(result);
     expect(body.status).toBe('error');
     expect((body.error as { code: string }).code).toBe('backend_unavailable');
+    await client.close();
+  }, 60_000);
+});
+
+const controlInput = {
+  code: 'MCP1',
+  title: 'Contrôle proposé',
+  description: 'Description',
+  referentials: ['iso_27001'],
+  reference: 'REF',
+  domain: 'Domaine',
+  owner_name: '',
+  method: '',
+  expected_evidence: '',
+  automated: false,
+  automation_github_url: null,
+  schedule: { kind: 'once', date: '2028-06-01' },
+  active_from: null,
+  active_to: null,
+};
+
+async function expectToolError(client: Client, name: string, args: unknown): Promise<void> {
+  try {
+    const result = await client.callTool({ name, arguments: args as Record<string, unknown> });
+    expect((result as { isError?: boolean }).isError).toBe(true);
+  } catch {
+    // SDK-level schema rejection is an acceptable refusal.
+  }
+}
+
+describe('MCP stdio write tools', () => {
+  it('exposes write tools only when the policy enables them and enforces strict inputs', async () => {
+    const readOnly = await connect('modern', dataDir);
+    expect((await readOnly.listTools()).tools.some((tool) => tool.name === 'create_control')).toBe(false);
+    await readOnly.close();
+
+    runtime.db.db
+      .prepare(
+        'UPDATE mcp_policy SET write_create_enabled = 1, write_update_enabled = 1, write_set_occurrence_enabled = 1 WHERE id = 1',
+      )
+      .run();
+    writeBackendInfo(dataDir, {
+      origin: 'http://127.0.0.1:4317',
+      epoch: runtime.engineEpoch,
+      policy: getMcpPolicy(runtime.db.db),
+    });
+
+    const client = await connect('modern', dataDir);
+    const names = (await client.listTools()).tools.map((tool) => tool.name);
+    expect(names).toContain('create_control');
+    expect(names).toContain('update_control_metadata');
+    expect(names).toContain('set_occurrence');
+
+    const plans = textOf(await client.callTool({ name: 'list_plans', arguments: {} }));
+    const planId = (plans.data as { items: { id: string }[] }).items[0]?.id;
+    expect(planId).toBeTruthy();
+
+    const valid = await client.callTool({
+      name: 'create_control',
+      arguments: { plan_id: planId, input: controlInput },
+    });
+    expect(textOf(valid).status).toBe('human_confirmation_required');
+
+    await expectToolError(client, 'create_control', { plan_id: planId, input: {} });
+    await expectToolError(client, 'create_control', {
+      plan_id: planId,
+      input: { ...controlInput, extra: 1 },
+    });
+    await expectToolError(client, 'create_control', {
+      plan_id: planId,
+      input: controlInput,
+      confirm: true,
+    });
+
     await client.close();
   }, 60_000);
 });

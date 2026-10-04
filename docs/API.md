@@ -71,6 +71,17 @@ automatiquement. L'agrégation `/summary` (`by_referentiel`) et le filtre
 Ces trois routes ne sont **pas** dispatchables par MCP. L'approbation applique la
 proposition par injection interne sous contexte privé `source=mcp`.
 
+## Permissions MCP
+
+| Route | Entrée | Réponse |
+| --- | --- | --- |
+| `GET /api/mcp-policy` | — | politique courante |
+| `PUT /api/mcp-policy` | au moins un des booléens `read_enabled`, `exports_enabled`, `write_create_enabled`, `write_update_enabled`, `write_set_occurrence_enabled` | politique mise à jour |
+
+Le backend revalide chaque appel MCP contre cette politique (`403
+mcp_tool_disabled`) et réécrit `runtime/backend.json` pour que l'adaptateur
+n'expose que les outils autorisés.
+
 ## Artefacts
 
 `GET /exports/:exportId/download` sert un artefact connu et non expiré

@@ -5,18 +5,20 @@ import {
   type FilterInput,
 } from '../../shared/schemas';
 import { AppError, parseInput } from '../http/errors';
-import type { Runtime } from '../runtime';
 
-export const READ_TOOLS = [
+
+export const READ_ONLY_TOOLS = [
   'list_plans',
   'get_plan',
   'list_controls',
   'get_control',
   'list_occurrences',
   'get_summary',
-  'export_controls_csv',
-  'generate_report_pdf',
 ] as const;
+
+export const EXPORT_TOOLS = ['export_controls_csv', 'generate_report_pdf'] as const;
+
+export const READ_TOOLS = [...READ_ONLY_TOOLS, ...EXPORT_TOOLS] as const;
 
 export const WRITE_TOOLS = ['create_control', 'update_control_metadata', 'set_occurrence'] as const;
 
@@ -73,7 +75,7 @@ function filterQuery(filter: FilterInput | undefined, page: number, pageSize: nu
   return query({ ...(filter ?? {}), page, page_size: pageSize });
 }
 
-export function resolveTool(tool: string, args: unknown, runtime: Runtime): ResolvedCall {
+export function resolveTool(tool: string, args: unknown): ResolvedCall {
   if (!ALL_TOOLS.includes(tool as McpToolName)) {
     throw new AppError(422, 'unknown_tool', 'Unknown tool');
   }
@@ -134,9 +136,6 @@ export function resolveTool(tool: string, args: unknown, runtime: Runtime): Reso
       };
     }
     default: {
-      if (!runtime.mcpWriteEnabled) {
-        throw new AppError(403, 'write_disabled', 'MCP write tools are disabled');
-      }
       const record = (args ?? {}) as Record<string, unknown>;
       if (typeof record.proposal_id === 'string') {
         return { kind: 'consult', tool: tool as WriteTool, proposalId: record.proposal_id };

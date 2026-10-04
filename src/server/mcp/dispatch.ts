@@ -8,6 +8,7 @@ import { buildCsv } from '../reports/csv';
 import { PDF_MAX_ROWS, buildReportPdf } from '../reports/report-pdf';
 import type { Runtime } from '../runtime';
 import { type McpToolName, resolveTool } from './policy';
+import { getMcpPolicy, isToolEnabled } from './policy-store';
 import { createProposal, getProposal } from './proposals';
 
 async function generateArtifact(
@@ -42,7 +43,11 @@ export async function dispatchMcp(
   tool: McpToolName,
   args: unknown,
 ): Promise<unknown> {
-  const call = resolveTool(tool, args, runtime);
+  const call = resolveTool(tool, args);
+  const policy = getMcpPolicy(runtime.db.db);
+  if (!isToolEnabled(policy, tool)) {
+    throw new AppError(403, 'mcp_tool_disabled', 'Tool disabled by the MCP policy');
+  }
   const kind = call.kind === 'artifact' ? 'export' : call.kind === 'proposal' ? 'write' : 'call';
   runtime.mcpLimiter.check(kind, runtime.clock.monotonicMs());
   let serverError = false;

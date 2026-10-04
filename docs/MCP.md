@@ -60,9 +60,25 @@ par des espaces ; les données canoniques restent inchangées.
   en cours, 1 job lourd ; circuit ouvert 10 s après 10 erreurs 5xx consécutives.
   L'adaptateur ajoute ses propres limites, sans les substituer.
 
-## Écritures (T11)
+## Permissions MCP (Paramètres)
 
-Désactivées par défaut. Les outils `create_control`, `update_control_metadata`
-et `set_occurrence` ne sont exposés que si le flag backend **et**
-`CENTURION_MCP_WRITE=1` côté adaptateur sont présents. Leur premier appel ne
-modifie aucune donnée : il crée une proposition confirmée dans l'UI CENTURION.
+Les permissions sont choisies dans l'UI CENTURION (Paramètres → Permissions MCP)
+et persistées en base. Elles remplacent les anciens flags d'environnement.
+
+| Permission | Outils |
+| --- | --- |
+| Lecture | `list_plans`, `get_plan`, `list_controls`, `get_control`, `list_occurrences`, `get_summary` |
+| Exports | `export_controls_csv`, `generate_report_pdf` |
+| Écriture — créer un contrôle | `create_control` |
+| Écriture — modifier un contrôle | `update_control_metadata` |
+| Écriture — réalisation | `set_occurrence` |
+
+Lecture et exports sont actifs par défaut ; les écritures sont désactivées par
+défaut. Le backend revalide chaque appel contre la politique persistée
+(`403 mcp_tool_disabled` sinon) et réécrit `runtime/backend.json` à chaque
+changement : l'adaptateur n'expose que les outils autorisés au moment de la
+connexion. `GET/PUT /api/mcp-policy` portent ces permissions (routes UI, non
+dispatchables par MCP).
+
+Un appel d'écriture autorisé ne modifie aucune donnée : il crée une proposition
+confirmée dans l'UI CENTURION.

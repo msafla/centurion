@@ -20,7 +20,6 @@ export default defineConfig({
     timeout: 30_000,
     env: {
       CENTURION_DATA_DIR: e2eDataDir,
-      CENTURION_MCP_WRITE: '1',
     },
   },
 });

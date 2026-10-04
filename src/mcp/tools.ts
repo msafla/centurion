@@ -5,11 +5,15 @@ import {
   ControlDtoSchema,
   ControlListFilterSchema,
   type ControlDto,
+  CreateControlInputSchema,
   FilterInputSchema,
   type OccurrenceDto,
   OccurrenceStateSchema,
   PlanDtoSchema,
+  StatusInputSchema,
+  UpdateMetadataInputSchema,
 } from '../shared/schemas';
+import type { McpPolicy } from '../server/mcp/policy-store';
 import type { BackendClient } from './backend-client';
 import { McpBackendError } from './backend-client';
 import type { AdapterLimiter } from './rate-limit';
@@ -84,15 +88,39 @@ const ProposalSchema = z.object({
   result: z.unknown().nullable(),
 });
 
-const WriteInput = z
-  .object({
-    plan_id: z.string().uuid().optional(),
-    control_id: z.string().uuid().optional(),
-    occurrence_id: z.string().uuid().optional(),
-    input: z.unknown().optional(),
-    proposal_id: z.string().uuid().optional(),
-  })
-  .strict();
+const ProposalConsultInput = z.object({ proposal_id: z.string().uuid() }).strict();
+
+const CreateControlInput = z.union([
+  ProposalConsultInput,
+  z.object({ plan_id: z.string().uuid(), input: CreateControlInputSchema }).strict(),
+]);
+
+const UpdateMetadataPatchSchema = UpdateMetadataInputSchema.refine(
+  (value) => Object.keys(value).length > 0,
+  { message: 'empty_patch' },
+);
+
+const UpdateControlMetadataInput = z.union([
+  ProposalConsultInput,
+  z
+    .object({
+      plan_id: z.string().uuid(),
+      control_id: z.string().uuid(),
+      input: UpdateMetadataPatchSchema,
+    })
+    .strict(),
+]);
+
+const SetOccurrenceInput = z.union([
+  ProposalConsultInput,
+  z
+    .object({
+      plan_id: z.string().uuid(),
+      occurrence_id: z.string().uuid(),
+      input: StatusInputSchema,
+    })
+    .strict(),
+]);
 
 function controlSummary(control: ControlDto) {
   return {
@@ -163,7 +191,7 @@ async function guard(handler: Handler) {
   }
 }
 
-export function registerReadTools(
+function registerReadOnly(
   server: McpServer,
   client: BackendClient,
   limiter: AdapterLimiter,
@@ -176,7 +204,7 @@ export function registerReadTools(
     },
     async (args) =>
       guard(async () => {
-        limiter.check(false);
+        limiter.check('call');
         const raw = await client.dispatch('list_plans', args);
         const { data, sanitized_fields } = projectMcpOutput(raw, PageSchema(PlanDtoSchema));
         return envelope(data, sanitized_fields);
@@ -191,7 +219,7 @@ export function registerReadTools(
     },
     async (args) =>
       guard(async () => {
-        limiter.check(false);
+        limiter.check('call');
         const raw = await client.dispatch('get_plan', args);
         const { data, sanitized_fields } = projectMcpOutput(raw, PlanDtoSchema);
         return envelope(data, sanitized_fields);
@@ -208,7 +236,7 @@ export function registerReadTools(
     },
     async (args) =>
       guard(async () => {
-        limiter.check(false);
+        limiter.check('call');
         const raw = (await client.dispatch('list_controls', args)) as {
           items: ControlDto[];
           page: number;
@@ -232,7 +260,7 @@ export function registerReadTools(
     },
     async (args) =>
       guard(async () => {
-        limiter.check(false);
+        limiter.check('call');
         const raw = await client.dispatch('get_control', args);
         const { data, sanitized_fields } = projectMcpOutput(raw, ControlDtoSchema);
         return envelope(data, sanitized_fields);
@@ -249,7 +277,7 @@ export function registerReadTools(
     },
     async (args) =>
       guard(async () => {
-        limiter.check(false);
+        limiter.check('call');
         const raw = (await client.dispatch('list_occurrences', args)) as {
           items: OccurrenceDto[];
           page: number;
@@ -273,13 +301,20 @@ export function registerReadTools(
     },
     async (args) =>
       guard(async () => {
-        limiter.check(false);
+        limiter.check('call');
         const raw = await client.dispatch('get_summary', args);
         const { data, sanitized_fields } = projectMcpOutput(raw, SummarySchema);
         return envelope(data, sanitized_fields);
       }),
   );
 
+}
+
+function registerExports(
+  server: McpServer,
+  client: BackendClient,
+  limiter: AdapterLimiter,
+): void {
   server.registerTool(
     'export_controls_csv',
     {
@@ -290,7 +325,7 @@ export function registerReadTools(
     },
     async (args) =>
       guard(async () => {
-        limiter.check(true);
+        limiter.check('export');
         const raw = await client.dispatch('export_controls_csv', args);
         const { data, sanitized_fields } = projectMcpOutput(raw, ArtifactSchema);
         return envelope(data, sanitized_fields);
@@ -307,7 +342,7 @@ export function registerReadTools(
     },
     async (args) =>
       guard(async () => {
-        limiter.check(true);
+        limiter.check('export');
         const raw = await client.dispatch('generate_report_pdf', args);
         const { data, sanitized_fields } = projectMcpOutput(raw, ArtifactSchema);
         return envelope(data, sanitized_fields);
@@ -331,41 +366,63 @@ function proposalEnvelope(raw: unknown) {
 }
 
 /**
- * Write tools are exposed only when the backend flag and the adapter flag are
- * both set. Their first call creates a proposal; it never mutates business data.
+ * Write tools are exposed only when the persisted MCP policy enables them.
+ * Their first call creates a proposal; it never mutates business data.
  */
-export function registerWriteTools(
+function registerWrites(
   server: McpServer,
   client: BackendClient,
   limiter: AdapterLimiter,
+  policy: McpPolicy,
 ): void {
-  const write = (tool: string, description: string) => {
+  const write = (tool: string, description: string, inputSchema: z.ZodType) => {
     server.registerTool(
       tool,
       {
         description,
-        inputSchema: WriteInput,
+        inputSchema,
         annotations: { readOnlyHint: false },
       },
       async (args) =>
         guard(async () => {
-          limiter.check(false);
+          limiter.check('write');
           const raw = await client.dispatch(tool, args);
           return proposalEnvelope(raw);
         }),
     );
   };
 
-  write(
-    'create_control',
-    'Propose creating a control. Returns a proposal that must be approved in the CENTURION UI before any data changes. Pass { proposal_id } to consult a proposal of this tool.',
-  );
-  write(
-    'update_control_metadata',
-    'Propose updating a control definition (code, planning and status are refused). Returns a proposal approved in the CENTURION UI. Pass { proposal_id } to consult it.',
-  );
-  write(
-    'set_occurrence',
-    'Propose recording an occurrence outcome. Returns a proposal approved in the CENTURION UI. Pass { proposal_id } to consult it.',
-  );
+  if (policy.write_create_enabled) {
+    write(
+      'create_control',
+      'Propose creating a control. Returns a proposal that must be approved in the CENTURION UI before any data changes. Pass { proposal_id } to consult a proposal of this tool.',
+      CreateControlInput,
+    );
+  }
+  if (policy.write_update_enabled) {
+    write(
+      'update_control_metadata',
+      'Propose updating a control definition (code, planning and status are refused). Returns a proposal approved in the CENTURION UI. Pass { proposal_id } to consult it.',
+      UpdateControlMetadataInput,
+    );
+  }
+  if (policy.write_set_occurrence_enabled) {
+    write(
+      'set_occurrence',
+      'Propose recording an occurrence outcome. Returns a proposal approved in the CENTURION UI. Pass { proposal_id } to consult it.',
+      SetOccurrenceInput,
+    );
+  }
+}
+
+/** Registers exactly the tools permitted by the persisted MCP policy. */
+export function registerTools(
+  server: McpServer,
+  client: BackendClient,
+  limiter: AdapterLimiter,
+  policy: McpPolicy,
+): void {
+  if (policy.read_enabled) registerReadOnly(server, client, limiter);
+  if (policy.exports_enabled) registerExports(server, client, limiter);
+  registerWrites(server, client, limiter, policy);
 }

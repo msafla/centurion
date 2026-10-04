@@ -65,6 +65,17 @@ test('an MCP write proposal changes nothing until approved in the UI', async ({ 
   });
   const planId = ((await plan.json()) as { id: string }).id;
 
+  const grant = await request.put(`${origin}/api/mcp-policy`, {
+    headers: {
+      origin,
+      'x-centurion-request': '1',
+      'content-type': 'application/json',
+      host: '127.0.0.1:4317',
+    },
+    data: { write_create_enabled: true },
+  });
+  expect(grant.ok()).toBe(true);
+
   const proposed = await dispatch(origin, token, 'create_control', {
     plan_id: planId,
     input: {

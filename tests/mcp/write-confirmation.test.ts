@@ -48,8 +48,12 @@ async function makeApp(): Promise<{ app: FastifyInstance; runtime: Runtime }> {
     db,
     randomUUID(),
     TOKEN,
-    true,
   );
+  db.db
+    .prepare(
+      'UPDATE mcp_policy SET write_create_enabled = 1, write_update_enabled = 1, write_set_occurrence_enabled = 1 WHERE id = 1',
+    )
+    .run();
   const app = await buildApp({ config: runtime.config, clock: runtime.clock, runtime });
   await app.ready();
   apps.push(app);

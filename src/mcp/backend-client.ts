@@ -1,4 +1,5 @@
 import { request as httpRequest } from 'node:http';
+import type { McpPolicy } from '../server/mcp/policy-store';
 import { readBackendInfo, readToken } from '../server/storage/runtime-files';
 
 export class McpBackendError extends Error {
@@ -92,7 +93,16 @@ export class BackendClient {
     return data;
   }
 
-  writeEnabled(): boolean {
-    return readBackendInfo(this.dataDir)?.mcp_write_enabled === true;
+  /** Permissions chosen in the CENTURION UI. Read-only by default when unknown. */
+  policy(): McpPolicy {
+    return (
+      readBackendInfo(this.dataDir)?.policy ?? {
+        read_enabled: true,
+        exports_enabled: true,
+        write_create_enabled: false,
+        write_update_enabled: false,
+        write_set_occurrence_enabled: false,
+      }
+    );
   }
 }

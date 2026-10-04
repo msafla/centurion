@@ -4,10 +4,23 @@ import { PageInputSchema } from '../../shared/schemas';
 import { AppError, parseInput } from '../http/errors';
 import { dispatchMcp } from '../mcp/dispatch';
 import type { McpToolName } from '../mcp/policy';
+import { getMcpPolicy, updateMcpPolicy } from '../mcp/policy-store';
 import { approveProposal, listProposals, rejectProposal } from '../mcp/proposals';
 import type { Runtime } from '../runtime';
+import { writeBackendInfo } from '../storage/runtime-files';
 
 const DispatchBody = z.object({ tool: z.string(), arguments: z.unknown().optional() }).strict();
+
+const McpPolicyPatch = z
+  .object({
+    read_enabled: z.boolean().optional(),
+    exports_enabled: z.boolean().optional(),
+    write_create_enabled: z.boolean().optional(),
+    write_update_enabled: z.boolean().optional(),
+    write_set_occurrence_enabled: z.boolean().optional(),
+  })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, { message: 'empty_patch' });
 
 export function registerMcpRoutes(app: FastifyInstance, runtime: Runtime): void {
   app.post('/internal/mcp/dispatch', async (request) => {
@@ -44,5 +57,23 @@ export function registerMcpRoutes(app: FastifyInstance, runtime: Runtime): void 
   app.post('/api/mcp-proposals/:proposalId/reject', async (request) => {
     const { proposalId } = request.params as { proposalId: string };
     return runtime.gate.runExclusive(() => rejectProposal(runtime, proposalId));
+  });
+
+  app.get('/api/mcp-policy', async () =>
+    runtime.gate.runRead(() => getMcpPolicy(runtime.db.db)),
+  );
+
+  app.put('/api/mcp-policy', async (request) => {
+    const patch = parseInput(McpPolicyPatch, request.body);
+    return runtime.gate.runExclusive(() => {
+      const policy = updateMcpPolicy(runtime.db.db, patch, runtime.clock.nowUtc());
+      // Refresh the adapter bootstrap so the new permissions apply immediately.
+      writeBackendInfo(runtime.dataDir, {
+        origin: runtime.config.canonicalOrigin,
+        epoch: runtime.engineEpoch,
+        policy,
+      });
+      return policy;
+    });
   });
 }
