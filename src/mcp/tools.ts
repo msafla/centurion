@@ -1,10 +1,13 @@
 import type { McpServer } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import {
+  ConformiteSchema,
+  ControlDtoSchema,
   ControlListFilterSchema,
   type ControlDto,
   FilterInputSchema,
   type OccurrenceDto,
+  OccurrenceStateSchema,
   PlanDtoSchema,
 } from '../shared/schemas';
 import type { BackendClient } from './backend-client';
@@ -26,20 +29,20 @@ const ControlSummarySchema = z.object({
   title: z.string(),
   referentials: z.array(z.string()),
   automated: z.boolean(),
-  status: z.string(),
+  status: z.enum(['active', 'archived']),
 });
 
 const OccurrenceSummarySchema = z.object({
   id: z.string(),
   control_id: z.string(),
   occurrence_date: z.string(),
-  state: z.string(),
+  state: OccurrenceStateSchema,
   code: z.string(),
   title: z.string(),
   referentials: z.array(z.string()),
   automated: z.boolean(),
   fait: z.boolean().nullable(),
-  conformite: z.string().nullable(),
+  conformite: ConformiteSchema.nullable(),
 });
 
 const PageSchema = <T extends z.ZodType>(item: T) =>
@@ -53,12 +56,19 @@ const ArtifactSchema = z.object({
   expires_at: z.string(),
 });
 
+const ReferentialSummarySchema = z.object({
+  referential: z.object({ slug: z.string(), label: z.string() }),
+  counts: z.record(z.string(), z.number()),
+  realization_rate: RateSchema,
+  conformity_rate: RateSchema,
+});
+
 const SummarySchema = z.object({
   counts: z.record(z.string(), z.number()),
   realization_rate: RateSchema,
   conformity_rate: RateSchema,
   automation_rate: RateSchema,
-  by_referentiel: z.array(z.unknown()),
+  by_referentiel: z.array(ReferentialSummarySchema),
 });
 
 const PaginationInput = { page: z.number().int().min(1).optional(), page_size: z.number().int().min(1).max(100).optional() };
@@ -126,7 +136,12 @@ function envelope(data: unknown, sanitizedFields: string[]) {
 }
 
 function errorResult(error: unknown) {
-  const code = error instanceof McpBackendError ? error.code : ((error as Error).message ?? 'error');
+  const code =
+    error instanceof McpBackendError
+      ? error.code
+      : error instanceof Error
+        ? error.message
+        : 'error';
   return {
     content: [
       {
@@ -219,7 +234,7 @@ export function registerReadTools(
       guard(async () => {
         limiter.check(false);
         const raw = await client.dispatch('get_control', args);
-        const { data, sanitized_fields } = projectMcpOutput(raw, z.record(z.string(), z.unknown()));
+        const { data, sanitized_fields } = projectMcpOutput(raw, ControlDtoSchema);
         return envelope(data, sanitized_fields);
       }),
   );

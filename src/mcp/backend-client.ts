@@ -12,6 +12,17 @@ export class McpBackendError extends Error {
 
 type HttpResult = { status: number; text: string };
 
+const REQUEST_TIMEOUT_MS = 120_000;
+
+function isLoopbackOrigin(origin: string): boolean {
+  try {
+    const { hostname } = new URL(origin);
+    return hostname === '127.0.0.1' || hostname === 'localhost' || hostname === '::1';
+  } catch {
+    return false;
+  }
+}
+
 /**
  * POSTs JSON over loopback with `node:http`, so the internal call carries no
  * browser `Origin` or `Sec-Fetch-*` metadata. It never opens SQLite and never
@@ -38,7 +49,16 @@ function postJson(origin: string, token: string, body: unknown): Promise<HttpRes
         );
       },
     );
-    request.on('error', () => reject(new McpBackendError('backend_unavailable', 'Backend is unreachable')));
+    request.setTimeout(REQUEST_TIMEOUT_MS, () => {
+      request.destroy(new McpBackendError('backend_unavailable', 'Backend request timed out'));
+    });
+    request.on('error', (error) =>
+      reject(
+        error instanceof McpBackendError
+          ? error
+          : new McpBackendError('backend_unavailable', 'Backend is unreachable'),
+      ),
+    );
     request.write(payload);
     request.end();
   });
@@ -50,6 +70,9 @@ export class BackendClient {
   async dispatch(tool: string, args: unknown): Promise<unknown> {
     const info = readBackendInfo(this.dataDir);
     if (!info) throw new McpBackendError('backend_unavailable', 'Backend is not running');
+    if (!isLoopbackOrigin(info.origin)) {
+      throw new McpBackendError('backend_unavailable', 'Backend origin is not loopback');
+    }
     const token = readToken(this.dataDir);
     if (!token) throw new McpBackendError('backend_unavailable', 'Backend token is missing');
 

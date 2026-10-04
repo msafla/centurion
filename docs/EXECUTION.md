@@ -824,3 +824,129 @@ réseau (`fetch` non appelé).
 ### Commit
 
 `feat: render the PDF report with pdfcn components` (voir `git log`).
+
+## Post-T12 — couverture CENTURION et sommaire paginé
+
+État : implémenté le 3 octobre 2026.
+
+- La première page est une couverture dédiée : fond violet profond `#360058`,
+  titre blanc, violet CENTURION `#451DC7`, accent vert `#04F06A`, nom du plan,
+  exercice, périmètre, date de génération et filtres.
+- La deuxième page contient le sommaire ; les sections listées dépendent du
+  contenu réel du rapport. Les numéros renvoient à la première page de chaque
+  section et sont calculés depuis une première passe PDF, puis inscrits dans la
+  version finale. La couverture n’affiche pas l’en-tête ni le pied de page
+  répétés ; la pagination commence visuellement à la page du sommaire.
+- Chaque bloc court de détail reste groupé sur une même page. Les longs
+  commentaires et preuves gardent leur pagination naturelle.
+- Tests d’export : couverture, sommaire, correspondance des renvois avec les
+  pages réelles sur un rapport multipage, absence de section Détails sans
+  réalisation documentée, et regroupement du commentaire avec sa preuve.
+- Le rendu utilise deux passes Takumi afin de calculer les numéros exacts ; le
+  plafond de 64 MiB est vérifié après chacune des passes.
+
+## Post-T13 — recentrage du sommaire et correction des marges de page
+
+Relecture du PDF d'aperçu le 3 octobre 2026 avec extraction des positions du
+texte par page. Défauts relevés : le sommaire occupait presque toute la largeur
+et restait en haut à gauche ; l'en-tête et le pied de page répétés partaient du
+bord gauche ; la mention légale du pied de page se repliait sur deux lignes.
+
+- Le bloc de sommaire est maintenant plus étroit, centré horizontalement et
+  déplacé vers le milieu de la page.
+- Les en-têtes et pieds de page respectent les marges latérales. La mention
+  légale et le compteur partagent une seule ligne, alignés sur les marges.
+- L'aperçu `docs/presentation/pdf-preview/centurion-report-sample.pdf` a été
+  régénéré (7 pages, 30 500 octets). Extraction vérifiée : couverture et
+  sommaire présents, en-tête/pied à x=36 points, sommaire à x=141 points ; le
+  texte du pied reste sur une seule ligne à y=19,5 points.
+- Tests ciblés d'export PDF : assertions de position du titre du sommaire,
+  d'alignement des marges et de ligne de pied de page ajoutées.
+
+## Post-T14 — pied de page lisible et horodatage réel
+
+- Le pied utilise un trait violet plus visible, une mention explicite
+  « CENTURION · Rapport de conformité » avec contraste renforcé et une
+  pagination violette en gras.
+- Le mode démo garde son horloge métier fixe, mais le timestamp `generated_at`
+  des endpoints de rapport et PDF prend maintenant l'heure système réelle.
+- Test d'intégration : l'horodatage de couverture PDF est comparé à la fenêtre
+  réelle de l'export en mode démo et ne doit plus afficher la date fixe de 2028.
+- Les quatre indicateurs de synthèse sont centrés dans leur rangée ; les
+  valeurs courtes du tableau sont centrées sous leurs en-têtes. Les largeurs
+  des cellules du corps sont maintenant les mêmes que celles de l'en-tête ; la
+  colonne Date a été élargie pour garder chaque date sur une seule ligne.
+- Les fiches de réalisation des pages de détails forment une colonne centrée ;
+  leurs identifiants et statuts sont centrés, les commentaires restent alignés
+  à gauche dans cette colonne pour faciliter la lecture.
+- Chaque grande section commence maintenant sur une nouvelle page : Synthèse,
+  Occurrences et, si elle existe, Détails. Le sommaire prend les nouveaux
+  numéros depuis le PDF de première passe.
+- Aperçu final régénéré : 7 pages ; horodatage réel « 3 octobre 2026 à 17:57 » ;
+  Synthèse page 3, Occurrences page 4, Détails page 6. Vérification des
+  positions : métriques équilibrées, date de tableau sur une ligne et centrée
+  sous son en-tête, fiches de détails centrées pages 6 et 7.
+
+## Post-T15 — refonte du dossier de contrôle et respiration de page
+
+- La section 03 adopte des fiches horizontales : contrôle, échéance et résultat
+  sont regroupés dans une colonne latérale ; commentaire et preuve disposent
+  d'une zone de lecture distincte. La bordure colorée reprend le résultat.
+- Les fiches courtes restent ensemble sur une page. Les commentaires longs
+  peuvent se poursuivre naturellement. Le sommaire repère le début de la
+  section avec le libellé « DOSSIER DE CONTRÔLE ».
+- L'en-tête répété est abaissé de 7 points ; la marge haute du contenu passe de
+  52 à 88 points pour dégager davantage d'espace sous l'en-tête.
+- Aperçu `docs/presentation/pdf-preview/centurion-report-sample.pdf` régénéré :
+  9 pages, date réelle « 3 octobre 2026 à 18:08 », Synthèse page 3,
+  Occurrences page 4 et Détails page 6. Les fiches occupent les pages 6 à 9.
+- Vérifications : 6 tests d'export réussis, `npm run typecheck` et
+  `npm run lint` réussis. Un test contrôle aussi l'écart vertical entre
+  l'en-tête répété et le titre de la synthèse.
+
+## Post-T16 — synthèse PDF repensée et palette des sections 01/02
+
+- Les titres des sections 01 et 02 reprennent la palette de `DESIGN.md` :
+  numéros violets `#451DC7`, titres noirs et repère vert `#04F06A`.
+- La section 01 met le taux de réalisation en grand sur un aplat violet profond
+  `#360058`, avec le chiffre vert d'accent. Les volumes du plan sont présentés
+  à côté ; conformité et automatisation ont chacune leur indicateur secondaire.
+  Les décomptes de statuts restent visibles en bas de bloc.
+- La section 02 utilise un bandeau violet avec libellés blancs. Le tableau garde
+  ses lignes et alignements de données ; son conteneur est centré sur la page.
+- Aperçu régénéré : 9 pages ; Synthèse page 3, Occurrences page 4, Détails page
+  6 ; timestamp réel « 3 octobre 2026 à 18:58 ».
+- Tests : 6 tests d'export, `npm run typecheck`, `npm run lint` et
+  `git diff --check` réussis. Le test PDF contrôle le taux principal, les
+  indicateurs secondaires et le positionnement des titres.
+
+## Post-T17 — libellé de couverture et statuts de conformité visibles
+
+- La couverture sépare le nombre d'occurrences des filtres. Sans filtre, elle
+  affiche « Filtres : aucun (toutes les occurrences) » ; avec des filtres, elle
+  en indique les critères.
+- Dans la section 01, les nombres de contrôles conformes, partiellement
+  conformes, non conformes et non applicables ont chacun leur carte et leur
+  couleur sémantique. Ces indicateurs remplacent l'ancienne ligne compacte.
+- L'aperçu `docs/presentation/pdf-preview/centurion-report-sample.pdf` est
+  régénéré : 9 pages ; couverture sans filtre explicitée ; les quatre statuts
+  visibles sur la page 3.
+- Le test d'export vérifie les libellés explicites de filtre et de statut.
+  Test ciblé, typecheck, lint et contrôle de diff réussis.
+
+## Post-T18 — alignement du titre de la section 03
+
+- Le titre 03 reprend le composant commun des titres 01 et 02 : même taille,
+  même colonne de numérotation et même repère vert. « DOSSIER DE CONTRÔLE »
+  et le nombre de fiches apparaissent en complément à droite. Les titres sont
+  vérifiés au même x=81,75 pt sur les pages 3, 4 et 6.
+- Aperçu régénéré : 9 pages. Les 6 tests d'export, typecheck, lint et
+  `git diff --check` réussissent.
+
+## Post-T19 — libellés de statut au singulier avec pluriel explicite
+
+- Les cartes de la section 01 affichent désormais « Conforme(s) »,
+  « Partiellement conforme(s) », « Non conforme(s) » et « Non applicable(s) ».
+- Aperçu régénéré et vérifié : les quatre libellés apparaissent sur la page 3.
+- Les 6 tests d'export, `npm run typecheck`, `npm run lint` et
+  `git diff --check` réussissent.

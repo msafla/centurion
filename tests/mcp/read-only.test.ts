@@ -1,5 +1,9 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { z } from 'zod';
 import { describe, expect, it } from 'vitest';
+import { BackendClient } from '../../src/mcp/backend-client';
 import { AppError } from '../../src/server/http/errors';
 import { McpLimiter } from '../../src/server/mcp/limits';
 import { ALL_TOOLS, READ_TOOLS, resolveTool, WRITE_TOOLS } from '../../src/server/mcp/policy';
@@ -63,6 +67,26 @@ describe('MCP projection', () => {
     expect(result.data).toEqual({ title: 'ok' });
     expect(result.sanitized_fields).toEqual(['title']);
     expect(() => projectMcpOutput({ title: 1 }, schema)).toThrow('mcp_output_schema_mismatch');
+  });
+});
+
+describe('MCP backend client', () => {
+  it('refuses a non-loopback backend origin', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'centurion-mcp-client-'));
+    try {
+      mkdirSync(join(dir, 'runtime'), { recursive: true });
+      writeFileSync(
+        join(dir, 'runtime', 'backend.json'),
+        JSON.stringify({ origin: 'http://evil.example:4317', epoch: 'e', mcp_write_enabled: false }),
+      );
+      writeFileSync(join(dir, 'runtime', 'mcp-token'), 'token');
+      const client = new BackendClient(dir);
+      await expect(client.dispatch('list_plans', {})).rejects.toMatchObject({
+        code: 'backend_unavailable',
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 

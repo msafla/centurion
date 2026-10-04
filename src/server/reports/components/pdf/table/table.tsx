@@ -96,7 +96,7 @@ export const TableCell = ({
       <PDFText
         style={[
           textStyle,
-          align ? { textAlign: align } : {},
+          align ? { display: 'block', textAlign: align, width: '100%' } : {},
           { margin: 0, padding: 0 },
         ]}
       >

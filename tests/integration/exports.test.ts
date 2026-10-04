@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type BetterSqlite3 from 'better-sqlite3';
 import type { FastifyInstance } from 'fastify';
-import { extractText, getDocumentProxy } from 'unpdf';
+import { extractText, extractTextItems, getDocumentProxy } from 'unpdf';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildApp } from '../../src/server/app';
 import { fixedClock } from '../../src/server/clock';
@@ -35,14 +35,14 @@ afterEach(async () => {
   dirs.length = 0;
 });
 
-async function makeApp(): Promise<{ app: FastifyInstance; runtime: Runtime }> {
+async function makeApp(demo = false): Promise<{ app: FastifyInstance; runtime: Runtime }> {
   const raw = mkdtempSync(join(tmpdir(), 'centurion-export-'));
   dirs.push(raw);
   const dataDir = canonicalDataDir(raw);
   ensurePrivateDir(dataDir);
   const db = openDatabase(join(dataDir, 'centurion.sqlite'));
   const runtime = new Runtime(
-    loadConfig({}, { dataDir }),
+    loadConfig(demo ? { CENTURION_DEMO: '1' } : {}, { dataDir }),
     fixedClock(CLOCK),
     dataDir,
     new OperationGate(),
@@ -199,7 +199,8 @@ describe('PDF export', () => {
   it('renders a structured, paginated PDF and rejects over 1000 rows', async () => {
     const { app, runtime } = await makeApp();
     const planId = await createPlan(app);
-    const controlId = await createControl(app, planId, 'C1', ['2028-01-01', '2028-02-01']);
+    const reportDates = allDaysOf2028().slice(0, 30);
+    const controlId = await createControl(app, planId, 'C1', reportDates);
     runtime.db.db
       .prepare(
         `INSERT INTO realizations (id, occurrence_id, completed_date, fait, conformite, comment, evidence_ref, created_at, updated_at)
@@ -227,10 +228,92 @@ describe('PDF export', () => {
     expect(ok.rawPayload.subarray(0, 4).toString('latin1')).toBe('%PDF');
 
     const document = await getDocumentProxy(new Uint8Array(ok.rawPayload));
+    const { text: pageTexts } = await extractText(document, { mergePages: false });
     const { text } = await extractText(document, { mergePages: true });
+    const { items: pageItems } = await extractTextItems(document);
     const flat = text.replace(/\s+/g, ' ');
+    expect(pageTexts[0]).toContain('Rapport annuel de conformité');
+    expect(pageTexts[0]).toContain('Plan annuel 2028');
+    expect(pageTexts[0]).toContain('Filtres : aucun (toutes les occurrences)');
+    expect(pageTexts[1]).toContain('Sommaire');
+    expect(pageTexts[1]).toContain('Synthèse du plan');
+    expect(pageTexts[1]).toContain('Occurrences');
+    expect(pageTexts[1]).toContain('Détails des réalisations');
+    const contentsItems = pageItems[1] ?? [];
+    const contentsTitle = contentsItems.find((item) => item.str === 'Sommaire');
+    const pageHeader = contentsItems.find((item) => item.str === 'CENTURION · Plan annuel 2028');
+    const footerLegal = contentsItems.find((item) =>
+      item.str.startsWith('CENTURION · Rapport de conformité'),
+    );
+    const footerPage = contentsItems.find((item) => item.str.includes('Page2 /'));
+    expect(contentsTitle?.x).toBeGreaterThan(100);
+    expect(contentsTitle?.x).toBeLessThan(250);
+    expect(pageHeader?.x).toBeGreaterThan(20);
+    expect(footerLegal?.x).toBeGreaterThan(20);
+    expect(footerPage?.x).toBeGreaterThan(700);
+    expect(footerLegal?.y).toBe(footerPage?.y);
+    const dataPageIndex = pageTexts.findIndex((page) => page.includes('01 — Synthèse du plan'));
+    const dataItems = pageItems[dataPageIndex] ?? [];
+    const dataHeader = dataItems.find((item) => item.str === 'CENTURION · Plan annuel 2028');
+    const dataTitle = dataItems.find((item) => item.str === '— Synthèse du plan');
+    const realizationRate = dataItems.find((item) => item.str === '3,3 %');
+    const tablePageIndex = pageItems.findIndex((items) =>
+      items.some((item) => item.str === '2028-01-01'),
+    );
+    const tableItems = pageItems[tablePageIndex] ?? [];
+    const autoHeading = tableItems.find((item) => item.str === 'Auto');
+    const dateHeading = tableItems.find((item) => item.str === 'Date');
+    const firstDate = tableItems.find((item) => item.str === '2028-01-01');
+    const firstAutoValue = tableItems.find((item) => item.str === 'Non' && item.y === firstDate?.y);
+    const textCenter = (item: { x: number; width: number } | undefined) =>
+      item ? item.x + item.width / 2 : Number.NaN;
+    expect(pageTexts[dataPageIndex]).toContain('TAUX DE RÉALISATION');
+    expect(pageTexts[dataPageIndex]).toContain('contrôles au');
+    expect(pageTexts[dataPageIndex]).toContain('périmètre');
+    expect(pageTexts[dataPageIndex]).toContain('Conformité des contrôles applicables');
+    expect(pageTexts[dataPageIndex]).toContain('Automatisation des contrôles réalisés');
+    expect(pageTexts[dataPageIndex]).toContain('RÉSULTATS PAR STATUT');
+    expect(pageTexts[dataPageIndex]).toContain('Conforme(s)');
+    expect(pageTexts[dataPageIndex]).toContain('Partiellement conforme(s)');
+    expect(pageTexts[dataPageIndex]).toContain('Non conforme(s)');
+    expect(pageTexts[dataPageIndex]).toContain('Non applicable(s)');
+    expect(realizationRate?.x).toBeGreaterThan(36);
+    expect((dataHeader?.y ?? 0) - (dataTitle?.y ?? 0)).toBeGreaterThan(45);
+    expect(firstDate).toBeDefined();
+    expect(Math.abs(textCenter(dateHeading) - textCenter(firstDate))).toBeLessThan(4);
+    expect(Math.abs(textCenter(autoHeading) - textCenter(firstAutoValue))).toBeLessThan(8);
+    const contentsText = (pageTexts[1] ?? '').replace(/\s+/g, '');
+    const summaryPage = pageTexts.findIndex((page) => page.includes('01 — Synthèse du plan')) + 1;
+    const occurrencePage = pageTexts.findIndex((page) => page.includes('02 — Occurrences')) + 1;
+    const detailsPage = pageTexts.findIndex((page) => page.includes('DOSSIER DE CONTRÔLE')) + 1;
+    expect(contentsText).toContain(`Synthèseduplan${summaryPage}`);
+    expect(contentsText).toContain(`Occurrences${occurrencePage}`);
+    expect(contentsText).toContain(`Détailsdesréalisations${detailsPage}`);
+    expect(occurrencePage).toBeGreaterThan(summaryPage);
+    expect(detailsPage).toBeGreaterThan(occurrencePage);
+    const detailItems = pageItems[detailsPage - 1] ?? [];
+    const detailHeading = detailItems.find((item) => item.str === '— Détails des réalisations');
+    const dossierLabel = detailItems.find((item) => item.str.includes('DOSSIER DE CONTRÔLE'));
+    const controlCode = detailItems.find((item) => item.str === 'C1');
+    const dateLabel = detailItems.find((item) => item.str === 'ÉCHÉANCE');
+    const resultLabel = detailItems.find((item) => item.str === 'RÉSULTAT');
+    const commentLabel = detailItems.find((item) => item.str === 'COMMENTAIRE');
+    const evidenceLabel = detailItems.find((item) => item.str === 'RÉFÉRENCE DE PREUVE');
+    expect(detailHeading?.x).toBe(dataTitle?.x);
+    expect(dossierLabel).toBeDefined();
+    expect(controlCode?.x).toBeLessThan(commentLabel?.x ?? Number.NaN);
+    expect(dateLabel).toBeDefined();
+    expect(resultLabel).toBeDefined();
+    expect(commentLabel).toBeDefined();
+    expect(evidenceLabel).toBeDefined();
+    const realizationPage = pageTexts.findIndex(
+      (page) => page.includes('COMMENTAIRE') && page.includes('<script>alert(1)</script>'),
+    );
+    expect(realizationPage).toBeGreaterThanOrEqual(0);
+    expect(pageTexts[realizationPage]).toContain('RÉFÉRENCE DE PREUVE');
+    expect(pageTexts[realizationPage]).toContain('<b>preuve</b> & données');
     // Structure and summary
-    expect(text).toContain('Rapport CENTURION');
+    expect(text).toContain('Rapport annuel de conformité');
     expect(text).toContain('Plan annuel 2028');
     expect(text).toContain('Synthèse');
     expect(text).toContain('Occurrences');
@@ -241,12 +324,44 @@ describe('PDF export', () => {
     // Details, accents and pagination
     expect(text).toContain('Détails des réalisations');
     expect(text).toContain('éàç');
-    expect(text).toMatch(/Page\s*1\s*\/\s*\d+/);
+    expect(pageTexts[0]).not.toMatch(/Page\s*1\s*\/\s*\d+/);
+    expect(pageTexts[1]).toMatch(/Page\s*2\s*\/\s*\d+/);
     // User values are literal text, not interpreted markup
     expect(text).toContain('<script>alert(1)</script>');
     expect(text).toContain('<b>preuve</b> & données');
-    expect(flat).toContain("ne constitue pas une opinion d'assurance");
+    expect(flat).toMatch(/ne constitue pas une opinion d['’]assurance/i);
     expect(document.numPages).toBeGreaterThanOrEqual(2);
+  }, 120_000);
+
+  it('prints the real export time when the demo business clock is fixed', async () => {
+    const { app } = await makeApp(true);
+    const planId = await createPlan(app);
+    const startedAt = Date.now();
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/plans/${planId}/exports/report.pdf`,
+      headers: { host: HOST },
+    });
+    const finishedAt = Date.now();
+    expect(response.statusCode).toBe(200);
+
+    const document = await getDocumentProxy(new Uint8Array(response.rawPayload));
+    const { text: pages } = await extractText(document, { mergePages: false });
+    const cover = pages[0] ?? '';
+    const dateLabel = new Intl.DateTimeFormat('fr-FR', {
+      dateStyle: 'long',
+      timeStyle: 'short',
+      timeZone: 'Europe/Paris',
+    });
+    const firstMinute = Math.floor(startedAt / 60_000) * 60_000;
+    const lastMinute = Math.floor(finishedAt / 60_000) * 60_000;
+    const plausibleTimestamps: string[] = [];
+    for (let timestamp = firstMinute; timestamp <= lastMinute; timestamp += 60_000) {
+      plausibleTimestamps.push(`Généré le ${dateLabel.format(new Date(timestamp))}`);
+    }
+
+    expect(plausibleTimestamps.some((timestamp) => cover.includes(timestamp))).toBe(true);
+    expect(cover).not.toContain('Généré le 15 avril 2028 à 12:00');
   }, 120_000);
 
   it('renders an empty report and preserves long, Unicode and markup text', async () => {
@@ -259,7 +374,14 @@ describe('PDF export', () => {
         `INSERT INTO realizations (id, occurrence_id, completed_date, fait, conformite, comment, evidence_ref, created_at, updated_at)
          VALUES (?, ?, '2028-01-01', 1, 'partiellement_conforme', ?, ?, ?, ?)`,
       )
-      .run(randomUUID(), occId(runtime.db.db, controlId, '2028-01-01'), longComment, '<>& <b>preuve</b>', CLOCK, CLOCK);
+      .run(
+        randomUUID(),
+        occId(runtime.db.db, controlId, '2028-01-01'),
+        longComment,
+        '<>& <b>preuve</b>',
+        CLOCK,
+        CLOCK,
+      );
 
     const res = await app.inject({
       method: 'GET',
@@ -286,8 +408,12 @@ describe('PDF export', () => {
     expect(empty.statusCode).toBe(200);
     const emptyDocument = await getDocumentProxy(new Uint8Array(empty.rawPayload));
     const { text: emptyText } = await extractText(emptyDocument, { mergePages: true });
+    const { text: emptyPages } = await extractText(emptyDocument, { mergePages: false });
     expect(emptyText).toContain('Aucune occurrence pour ces filtres');
-    expect(emptyText.replace(/\s+/g, ' ')).toContain("ne constitue pas une opinion d'assurance");
+    expect(emptyText.replace(/\s+/g, ' ')).toMatch(/ne constitue pas une opinion d['’]assurance/i);
+    expect(emptyPages[0]).toContain('Rapport annuel de conformité');
+    expect(emptyPages[1]).toContain('Sommaire');
+    expect(emptyPages[1]).not.toContain('Détails des réalisations');
     expect(emptyDocument.numPages).toBeGreaterThanOrEqual(1);
   }, 180_000);
 

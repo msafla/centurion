@@ -1,5 +1,6 @@
 import { createReadStream } from 'node:fs';
 import type { FastifyInstance } from 'fastify';
+import { systemClock } from '../clock';
 import { planInScope } from '../db/scoping';
 import { getArtifact } from '../reports/artifacts';
 import { buildReport, buildSummary } from '../domain/report';
@@ -8,6 +9,11 @@ import { parseInput } from '../http/errors';
 import { buildCsv } from '../reports/csv';
 import { PDF_MAX_ROWS, buildReportPdf } from '../reports/report-pdf';
 import type { Runtime } from '../runtime';
+
+function reportClock(runtime: Runtime) {
+  // The demo clock keeps business dates stable; report creation time is real.
+  return runtime.config.mode === 'demo' ? systemClock() : runtime.clock;
+}
 
 export function registerReportingRoutes(app: FastifyInstance, runtime: Runtime): void {
   app.get('/api/plans/:planId/summary', async (request) =>
@@ -26,7 +32,7 @@ export function registerReportingRoutes(app: FastifyInstance, runtime: Runtime):
       const query = parseInput(OccurrenceQuerySchema, request.query);
       return buildReport(
         runtime.db.db,
-        runtime.clock,
+        reportClock(runtime),
         planId,
         toFilter(query),
         query.page,
@@ -56,7 +62,7 @@ export function registerReportingRoutes(app: FastifyInstance, runtime: Runtime):
       return {
         report: buildReport(
           runtime.db.db,
-          runtime.clock,
+          reportClock(runtime),
           planId,
           toFilter(query),
           1,

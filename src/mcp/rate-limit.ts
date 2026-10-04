@@ -12,7 +12,7 @@ export class AdapterLimiter {
   }
 
   check(isExport: boolean): void {
-    const now = Date.now();
+    const now = performance.now();
     this.callTimes = this.prune(this.callTimes, now);
     if (this.callTimes.length >= MAX_CALLS) throw new Error('rate_limited');
     if (isExport) {

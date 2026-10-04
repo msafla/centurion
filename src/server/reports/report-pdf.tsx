@@ -3,13 +3,73 @@ import { join } from 'node:path';
 import type { ReactNode } from 'react';
 import type { ReportDto } from '../domain/report';
 import { AppError } from '../http/errors';
-import { CenturionReportDocument, ReportPageFooter } from './components/pdf/report/report-document';
+import {
+  CenturionReportDocument,
+  ReportPageFooter,
+} from './components/pdf/report/report-document';
+import {
+  reportTocSections,
+  type ReportSectionKey,
+} from './components/pdf/report/report-contents';
 import { ReportPageHeader } from './components/pdf/report/report-header';
 import { PdfcnThemeProvider } from './components/pdf/theme-provider';
 import { centurionPdfTheme } from './lib/pdf-themes/centurion';
 
 export const PDF_MAX_ROWS = 1_000;
 const PDF_MAX_BYTES = 64 * 1024 * 1024;
+
+type PdfRender = (
+  input: ReactNode,
+  options: Record<string, unknown>,
+) => Promise<Uint8Array>;
+
+async function renderReport(
+  render: PdfRender,
+  report: ReportDto,
+  tocPages: Partial<Record<ReportSectionKey, number>>,
+  fonts: unknown[],
+): Promise<Uint8Array> {
+  return render(
+    <PdfcnThemeProvider theme={centurionPdfTheme}>
+      <CenturionReportDocument report={report} tocPages={tocPages} />
+    </PdfcnThemeProvider>,
+    {
+      size: 'a4',
+      landscape: true,
+      fonts,
+      header: (
+        <PdfcnThemeProvider theme={centurionPdfTheme}>
+          <ReportPageHeader report={report} />
+        </PdfcnThemeProvider>
+      ),
+      footer: (
+        <PdfcnThemeProvider theme={centurionPdfTheme}>
+          <ReportPageFooter />
+        </PdfcnThemeProvider>
+      ),
+      pages: { first: { header: false, footer: false } },
+      margin: { top: 88, bottom: 48, left: 36, right: 36 },
+    },
+  );
+}
+
+async function locateContentsPages(
+  bytes: Uint8Array,
+  report: ReportDto,
+): Promise<Partial<Record<ReportSectionKey, number>>> {
+  const { extractText, getDocumentProxy } = await import('unpdf');
+  const document = await getDocumentProxy(new Uint8Array(bytes));
+  const { text: pages } = await extractText(document, { mergePages: false });
+  const pageNumbers: Partial<Record<ReportSectionKey, number>> = {};
+  for (const section of reportTocSections(report)) {
+    const pageIndex = pages.findIndex((page) => page.includes(section.marker));
+    if (pageIndex < 0) {
+      throw new AppError(500, 'pdf_toc_failed', 'Could not locate a report section for the table of contents');
+    }
+    pageNumbers[section.key] = pageIndex + 1;
+  }
+  return pageNumbers;
+}
 
 function fontCandidates(name: string): string[] {
   return [
@@ -44,31 +104,14 @@ export async function buildReportPdf(report: ReportDto): Promise<Uint8Array> {
     loadFont('Poppins-SemiBold.ttf', 600),
   ].filter((font): font is NonNullable<typeof font> => font !== null);
 
-  const { render } = (await import('takumi-pdf')) as unknown as {
-    render: (input: ReactNode, options: Record<string, unknown>) => Promise<Uint8Array>;
-  };
+  const { render } = (await import('takumi-pdf')) as unknown as { render: PdfRender };
 
-  const bytes = await render(
-    <PdfcnThemeProvider theme={centurionPdfTheme}>
-      <CenturionReportDocument report={report} />
-    </PdfcnThemeProvider>,
-    {
-      size: 'a4',
-      landscape: true,
-      fonts,
-      header: (
-        <PdfcnThemeProvider theme={centurionPdfTheme}>
-          <ReportPageHeader report={report} />
-        </PdfcnThemeProvider>
-      ),
-      footer: (
-        <PdfcnThemeProvider theme={centurionPdfTheme}>
-          <ReportPageFooter />
-        </PdfcnThemeProvider>
-      ),
-      margin: { top: 52, bottom: 48, left: 36, right: 36 },
-    },
-  );
+  const firstPass = await renderReport(render, report, {}, fonts);
+  if (firstPass.byteLength > PDF_MAX_BYTES) {
+    throw new AppError(422, 'report_too_large', 'PDF exceeds 64 MiB');
+  }
+  const tocPages = await locateContentsPages(firstPass, report);
+  const bytes = await renderReport(render, report, tocPages, fonts);
 
   if (bytes.byteLength > PDF_MAX_BYTES) {
     throw new AppError(422, 'report_too_large', 'PDF exceeds 64 MiB');
