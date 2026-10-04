@@ -8,10 +8,13 @@ opérations bornées au processus propriétaire par un appel REST local authenti
 
 1. Démarrer le backend propriétaire : `npm run start` (écoute sur
    `http://127.0.0.1:4317`). Il écrit `runtime/mcp-token` (privé) et
-   `runtime/backend.json` (`origin`, `epoch`, `mcp_write_enabled`).
+   `runtime/backend.json` (`origin`, `epoch`, `policy`).
 2. Lancer l'adaptateur : `npm run mcp` (Node `dist/mcp/server.js`, stdio).
    L'adaptateur lit ces fichiers ; il n'accepte jamais une URL fournie par un
    outil.
+
+Le backend doit tourner **avant** que l'hôte MCP n'appelle un outil, et sur le
+**même `dataDir`** que l'adaptateur (sinon `backend_unavailable`).
 
 SDK : `@modelcontextprotocol/server@2.3.0` (`serveStdio`), protocole
 `2026-07-28` ; les clients legacy sont pris en charge par le shim du SDK.
@@ -82,3 +85,76 @@ dispatchables par MCP).
 
 Un appel d'écriture autorisé ne modifie aucune donnée : il crée une proposition
 confirmée dans l'UI CENTURION.
+
+## Lancer l'adaptateur depuis un hôte MCP (Claude, Codex…)
+
+L'adaptateur est un serveur **stdio** : l'hôte le lance comme sous-processus. Le
+script `scripts/mcp-stdio.sh` sert de lanceur portable : il résout la racine du
+dépôt, choisit Node 24 et fixe `CENTURION_DATA_DIR` (démo par défaut, sinon
+`$CENTURION_DATA_DIR`).
+
+### Claude Code (CLI)
+
+```bash
+claude mcp add --transport stdio centurion \
+  --env CENTURION_DATA_DIR=/mnt/c/Workspace/CENTURION/data/demo \
+  -- /mnt/c/Workspace/CENTURION/scripts/mcp-stdio.sh
+```
+
+Ou dans `.mcp.json` à la racine du projet :
+
+```json
+{
+  "mcpServers": {
+    "centurion": {
+      "type": "stdio",
+      "command": "/mnt/c/Workspace/CENTURION/scripts/mcp-stdio.sh",
+      "env": { "CENTURION_DATA_DIR": "/mnt/c/Workspace/CENTURION/data/demo" }
+    }
+  }
+}
+```
+
+### Claude Desktop (Windows)
+
+`%APPDATA%\Claude\claude_desktop_config.json` — lance le lanceur dans WSL :
+
+```json
+{
+  "mcpServers": {
+    "centurion": {
+      "command": "wsl.exe",
+      "args": ["-e", "/mnt/c/Workspace/CENTURION/scripts/mcp-stdio.sh"]
+    }
+  }
+}
+```
+
+### Codex
+
+`~/.codex/config.toml` (ou `codex mcp add`) :
+
+```toml
+[mcp_servers.centurion]
+command = "wsl.exe"
+args = ["-e", "/mnt/c/Workspace/CENTURION/scripts/mcp-stdio.sh"]
+enabled = true
+```
+
+```bash
+codex mcp add centurion -- wsl.exe -e /mnt/c/Workspace/CENTURION/scripts/mcp-stdio.sh
+```
+
+Si l'hôte tourne **dans WSL**, remplace `wsl.exe -e …` par le chemin direct du
+script. Si tout tourne sous **Windows natif**, installe Node 24 + `npm ci` +
+`npm run build` côté Windows et utilise `node C:\Workspace\CENTURION\dist\mcp\server.js`
+avec `CENTURION_DATA_DIR=C:\Workspace\CENTURION\data\demo`.
+
+### Remarques
+
+- Les permissions se règlent dans l'UI (Paramètres → Permissions MCP). Après un
+  changement, rechargez/reconnectez le serveur MCP dans l'hôte pour que la liste
+  d'outils soit recalculée.
+- `stdout` est réservé au protocole ; les logs de l'adaptateur vont sur `stderr`.
+- Aucun jeton n'est transmis à l'hôte : il reste dans `runtime/mcp-token`, lu par
+  l'adaptateur seulement.
