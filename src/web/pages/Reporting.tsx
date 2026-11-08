@@ -136,7 +136,7 @@ export function Reporting() {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
-      <p className="text-xs uppercase tracking-wide text-[var(--color-text-secondary)]">{label}</p>
+      <p className="text-xs tracking-wide text-[var(--color-text-secondary)]">{label}</p>
       <p className="mt-1 text-2xl font-light tabular-nums">{value}</p>
     </div>
   );

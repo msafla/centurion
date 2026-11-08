@@ -1004,3 +1004,40 @@ upload/liste/download/delete/415/413/422/404 + nom de fichier assaini) et
 
 Commit local de la branche de travail ; exposer éventuellement `get_trends`
 en lecture MCP si un hôte IA en a besoin.
+
+## Post-T21 — passe unslop (skill heydamir/unslop) sur l'UI
+
+État : livré et vérifié le 8 novembre 2026. Skill `unslop` installé en global
+dans `~/.vibe/skills/unslop/` (CC-BY-4.0, crédit conservé) ; audit mené avec
+`references/signs.md`.
+
+### Corrections
+
+- `App.tsx` : bandeau rendu plat (blanc, filet `border-brand`, sans ombre
+  colorée ni `backdrop-blur`, sans `rounded-[2rem]`) et logo CENTURION en
+  texte plein `brand-primary` — le dégradé de texte et la carte verre
+  introduits par le précédent commit sont retirés.
+- `styles.css` : tokens restaurés aux valeurs DESIGN.md (`ink #111111`,
+  `surface #ffffff`, `surface-soft #f7f5fc`, `border #e5e0f0`,
+  `text-secondary #625b70`), `--radius` remis à `0.5rem` (8 px), variable
+  `--shadow-card` (ombre violette) supprimée, fonds `body` aplati (les deux
+  washes radiales violet/vert retirés), bloc `prefers-reduced-motion` ajouté.
+- `Summary.tsx` / `Reporting.tsx` : libellés des cartes métriques en sentence
+  case (`uppercase` retiré).
+
+Conservé : `rounded-3xl` des panneaux et `uppercase` des en-têtes de tableaux
+(24 occurrences, motif uniforme préexistant, hors périmètre de la passe),
+transitions 180 ms et `scale(0.99)` au press (conformes DESIGN.md).
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run check` | 169/169 tests, typecheck et lint OK |
+| `npm run build` | OK |
+| `npm run test:e2e` | 9/9 passés (dont header 390/1440 + reduced-motion) |
+
+### Prochaine action
+
+Commit local ; si une passe plus profonde est souhaitée, uniformiser le rayon
+des panneaux (8 px) et la casse des libellés sur les 24 occurrences restantes.
