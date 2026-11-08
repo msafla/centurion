@@ -52,7 +52,7 @@ describe('host boundary', () => {
     const app = await makeApp();
     const res = await app.inject({ method: 'GET', url: '/health', headers: { host: HOST } });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ status: 'ok', schema_version: 1 });
+    expect(res.json()).toEqual({ status: 'ok', schema_version: 3 });
   });
 
   it('refuses a hostile Host header', async () => {

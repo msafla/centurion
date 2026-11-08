@@ -23,7 +23,7 @@ type Summary = {
 
 function Card({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-[var(--color-border-brand)] bg-white p-4">
+    <div className="rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
       <p className="text-xs uppercase tracking-wide text-[var(--color-text-secondary)]">{label}</p>
       <p className="mt-1 text-2xl font-light tabular-nums">{value}</p>
     </div>
@@ -63,7 +63,7 @@ export function Summary() {
 
   return (
     <section className="space-y-6">
-      <h1 className="text-4xl font-light tracking-tight">Synthèse — {plan.name}</h1>
+      <h1 className="text-4xl font-semibold tracking-[-0.05em]">Synthèse — {plan.name}</h1>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card label="Total" value={String(summary.counts.total)} />
@@ -87,7 +87,7 @@ export function Summary() {
         />
       </div>
 
-      <div className="rounded-lg border border-[var(--color-border-brand)] bg-white">
+      <div className="rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
         <h2 className="border-b border-[var(--color-border-brand)] px-4 py-3 text-sm font-medium">
           Prochaines occurrences
         </h2>

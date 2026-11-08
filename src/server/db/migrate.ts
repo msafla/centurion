@@ -1,10 +1,12 @@
 import { readFileSync } from 'node:fs';
 import type BetterSqlite3 from 'better-sqlite3';
 
-export const CURRENT_SCHEMA_VERSION = 1;
+export const CURRENT_SCHEMA_VERSION = 3;
 
 const MIGRATIONS: { version: number; file: string }[] = [
   { version: 1, file: '001_initial.sql' },
+  { version: 2, file: '002_evidence.sql' },
+  { version: 3, file: '003_clauses.sql' },
 ];
 
 function readMigration(file: string): string {

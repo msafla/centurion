@@ -8,13 +8,17 @@ import { registerErrorHandler } from './http/errors';
 import { registerGuards } from './http/guards';
 import { registerSecurityHeaders } from './http/headers';
 import { registerBackupRoutes } from './routes/backups';
+import { registerClauseRoutes } from './routes/clauses';
 import { registerControlRoutes } from './routes/controls';
+import { registerEvidenceRoutes } from './routes/evidence';
 import { registerImportRoutes } from './routes/imports';
 import { registerMcpRoutes } from './routes/mcp';
 import { registerOccurrenceRoutes } from './routes/occurrences';
 import { registerPlanRoutes } from './routes/plans';
 import { registerReferentialRoutes } from './routes/referentials';
 import { registerReportingRoutes } from './routes/reporting';
+import { registerSearchRoutes } from './routes/search';
+import { registerTrendRoutes } from './routes/trends';
 import type { Runtime } from './runtime';
 
 export type AppDeps = {
@@ -42,11 +46,15 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 10, fieldSize: 16 * 1024 },
     });
     registerBackupRoutes(app, deps.runtime);
+    registerClauseRoutes(app, deps.runtime);
     registerPlanRoutes(app, deps.runtime);
     registerReferentialRoutes(app, deps.runtime);
     registerControlRoutes(app, deps.runtime);
     registerOccurrenceRoutes(app, deps.runtime);
+    registerEvidenceRoutes(app, deps.runtime);
     registerReportingRoutes(app, deps.runtime);
+    registerSearchRoutes(app, deps.runtime);
+    registerTrendRoutes(app, deps.runtime);
     registerImportRoutes(app, deps.runtime);
     registerMcpRoutes(app, deps.runtime);
   }

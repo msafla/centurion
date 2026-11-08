@@ -25,6 +25,7 @@
     "lint": "biome lint .",
     "format": "biome format --write .",
     "check": "npm run typecheck && npm run lint && vitest run tests/unit tests/integration tests/security tests/mcp",
+    "diagnose": "node scripts/diagnose.mjs",
     "audit:deps": "npm audit --omit=dev --audit-level=high",
     "smoke": "vitest run tests/integration/dependency-smoke.test.ts --reporter=verbose"
   },

@@ -93,7 +93,7 @@ describe('backup catalog', () => {
     seedControl(runtime.db.db, plan, 'C1');
 
     const dto = await createBackup(runtime, 'manual');
-    expect(dto.schema_version).toBe(1);
+    expect(dto.schema_version).toBe(3);
     expect(dto.size_bytes).toBeGreaterThan(0);
     expect(dto.sha256).toBe(sha256File(backupSqlitePath(dataDir, dto.id)));
 
@@ -117,7 +117,7 @@ describe('backup catalog', () => {
     if (!manifest) throw new Error('manifest missing');
     writeFileSync(
       backupManifestPath(dataDir, dto.id),
-      JSON.stringify({ ...manifest, schema_version: 2 }),
+      JSON.stringify({ ...manifest, schema_version: 4 }),
     );
     expect(() => createRestorePreview(runtime, dto.id)).toThrow(/newer than current/);
   });

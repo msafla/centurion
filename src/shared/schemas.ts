@@ -366,6 +366,15 @@ export const PlanDtoSchema = z.object({
 });
 export type PlanDto = z.infer<typeof PlanDtoSchema>;
 
+export const ClauseDtoSchema = z.object({
+  id: z.string(),
+  referential: z.string().nullable(),
+  code: z.string(),
+  title: z.string(),
+  created_at: z.string(),
+});
+export type ClauseDto = z.infer<typeof ClauseDtoSchema>;
+
 export const ControlDtoSchema = z.object({
   id: z.string(),
   plan_id: z.string(),
@@ -373,6 +382,7 @@ export const ControlDtoSchema = z.object({
   title: z.string(),
   description: z.string(),
   referentials: z.array(z.string()),
+  clauses: z.array(z.string()),
   reference: z.string(),
   domain: z.string(),
   owner_name: z.string(),

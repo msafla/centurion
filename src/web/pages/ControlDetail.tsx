@@ -11,12 +11,33 @@ import { Input } from '@/components/ui/input';
 
 type Tab = 'definition' | 'calendar' | 'realizations' | 'history';
 
+type ClauseDtoLocal = {
+  id: string;
+  referential: string | null;
+  code: string;
+  title: string;
+  created_at: string;
+};
+
+type EvidenceDto = {
+  id: string;
+  occurrence_id: string;
+  original_name: string;
+  mime_type: string;
+  size_bytes: number;
+  sha256: string;
+  created_at: string;
+};
+
 export function ControlDetail() {
   const { controlId } = useParams<{ controlId: string }>();
   const { plan, labelOf } = usePlan();
   const [control, setControl] = useState<ControlDto | null>(null);
   const [occurrences, setOccurrences] = useState<OccurrenceDto[]>([]);
   const [history, setHistory] = useState<AuditDto[]>([]);
+  const [allClauses, setAllClauses] = useState<ClauseDtoLocal[]>([]);
+  const [selectedClauseIds, setSelectedClauseIds] = useState<string[]>([]);
+  const [evidenceByOccurrence, setEvidenceByOccurrence] = useState<Record<string, EvidenceDto[]>>({});
   const [tab, setTab] = useState<Tab>('definition');
   const [effectiveDate, setEffectiveDate] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -24,16 +45,29 @@ export function ControlDetail() {
   const load = useCallback(async () => {
     if (!plan || !controlId) return;
     try {
-      const [controlData, occurrencePage, auditPage] = await Promise.all([
+      const [controlData, occurrencePage, auditPage, clauses] = await Promise.all([
         api.get<ControlDto>(`/api/plans/${plan.id}/controls/${controlId}`),
         api.get<Page<OccurrenceDto>>(`/api/plans/${plan.id}/occurrences`, { page_size: 100 }),
         api.get<Page<AuditDto>>(`/api/plans/${plan.id}/controls/${controlId}/audit-events`, {
           page_size: 50,
         }),
+        api.get<ClauseDtoLocal[]>('/api/clauses'),
       ]);
+      const filteredOccurrences = occurrencePage.items.filter((item) => item.control_id === controlId);
       setControl(controlData);
-      setOccurrences(occurrencePage.items.filter((item) => item.control_id === controlId));
+      setOccurrences(filteredOccurrences);
       setHistory(auditPage.items);
+      setAllClauses(clauses);
+      setSelectedClauseIds(clauses.filter((clause) => controlData.clauses.includes(clause.code)).map((clause) => clause.id));
+      const evidenceEntries = await Promise.all(
+        filteredOccurrences.map(async (occurrence) => {
+          const list = await api.get<EvidenceDto[]>(
+            `/api/plans/${plan.id}/occurrences/${occurrence.id}/evidence`,
+          );
+          return [occurrence.id, list] as const;
+        }),
+      );
+      setEvidenceByOccurrence(Object.fromEntries(evidenceEntries));
     } catch (cause) {
       setError(String(cause));
     }
@@ -61,10 +95,46 @@ export function ControlDetail() {
     }
   }
 
+  async function uploadEvidence(occurrenceId: string, fileList: FileList | null) {
+    if (!plan || !fileList || fileList.length === 0) return;
+    setError(null);
+    for (const file of Array.from(fileList)) {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch(`/api/plans/${plan.id}/occurrences/${occurrenceId}/evidence`, {
+        method: 'POST',
+        headers: { 'X-Centurion-Request': '1' },
+        body: formData,
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        setError(String((payload as { error?: { message?: string } })?.error?.message ?? response.statusText));
+        return;
+      }
+    }
+    await load();
+  }
+
+  async function removeEvidence(occurrenceId: string, evidenceId: string) {
+    if (!plan) return;
+    setError(null);
+    await api.delete(`/api/plans/${plan.id}/occurrences/${occurrenceId}/evidence/${evidenceId}`);
+    await load();
+  }
+
+  async function saveClauses() {
+    if (!plan || !control) return;
+    setError(null);
+    await api.put(`/api/plans/${plan.id}/controls/${control.id}/clauses`, {
+      clause_ids: selectedClauseIds,
+    });
+    await load();
+  }
+
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-3xl font-light tracking-tight">
+        <h1 className="text-4xl font-semibold tracking-[-0.05em]">
           {control.code} — {control.title}
         </h1>
         {control.status === 'archived' ? (
@@ -104,7 +174,7 @@ export function ControlDetail() {
       </div>
 
       {tab === 'definition' ? (
-        <dl className="grid grid-cols-1 gap-3 rounded-lg border border-[var(--color-border-brand)] bg-white p-4 text-sm sm:grid-cols-2">
+        <dl className="grid grid-cols-1 gap-3 rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-xs uppercase text-[var(--color-text-secondary)]">Référentiel</dt>
             <dd>{control.referentials.map(labelOf).join(" + ")}</dd>
@@ -133,11 +203,47 @@ export function ControlDetail() {
             <dt className="text-xs uppercase text-[var(--color-text-secondary)]">Preuve attendue</dt>
             <dd className="whitespace-pre-wrap">{control.expected_evidence || '—'}</dd>
           </div>
+          <div className="sm:col-span-2">
+            <dt className="text-xs uppercase text-[var(--color-text-secondary)]">Clauses</dt>
+            <dd className="space-y-2">
+              {control.clauses.length > 0 ? (
+                <p>{control.clauses.join(', ')}</p>
+              ) : (
+                <p className="text-[var(--color-text-secondary)]">Aucune clause liée.</p>
+              )}
+              {allClauses.length > 0 ? (
+                <div className="space-y-1 rounded-md border border-[var(--color-border-brand)] bg-white p-2">
+                  {allClauses.map((clause) => (
+                    <label key={clause.id} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedClauseIds.includes(clause.id)}
+                        onChange={(event) =>
+                          setSelectedClauseIds((current) =>
+                            event.target.checked
+                              ? [...current, clause.id]
+                              : current.filter((id) => id !== clause.id),
+                          )
+                        }
+                      />
+                      <span>
+                        {clause.code}
+                        {clause.referential ? ` (${clause.referential})` : ''}
+                      </span>
+                    </label>
+                  ))}
+                  <Button variant="outline" onClick={() => void saveClauses().catch((cause) => setError(String(cause)))}>
+                    Enregistrer les clauses
+                  </Button>
+                </div>
+              ) : null}
+            </dd>
+          </div>
         </dl>
       ) : null}
 
       {tab === 'calendar' ? (
-        <div className="space-y-4 rounded-lg border border-[var(--color-border-brand)] bg-white p-4">
+        <div className="space-y-4 rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
           <p className="text-sm">
             Fréquence :{' '}
             {FREQUENCY_LABELS[control.schedule.kind] ?? control.schedule.kind}
@@ -166,7 +272,7 @@ export function ControlDetail() {
       ) : null}
 
       {tab === 'realizations' ? (
-        <div className="rounded-lg border border-[var(--color-border-brand)] bg-white">
+        <div className="rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
           <table className="w-full text-sm">
             <thead className="text-left text-xs uppercase text-[var(--color-text-secondary)]">
               <tr>
@@ -188,7 +294,38 @@ export function ControlDetail() {
                     <StateBadge occurrence={occurrence} />
                   </td>
                   <td className="px-3 py-2">{occurrence.realization?.comment || '—'}</td>
-                  <td className="px-3 py-2">{occurrence.realization?.evidence_ref || '—'}</td>
+                  <td className="px-3 py-2">
+                    <div className="space-y-1">
+                      {(evidenceByOccurrence[occurrence.id] ?? []).map((evidence) => (
+                        <div key={evidence.id} className="flex items-center gap-2">
+                          <a
+                            className="text-[var(--color-brand-primary)] hover:underline"
+                            href={`/api/plans/${plan.id}/occurrences/${occurrence.id}/evidence/${evidence.id}/download`}
+                          >
+                            {evidence.original_name}
+                          </a>
+                          <button
+                            type="button"
+                            className="text-xs text-red-700 hover:underline"
+                            onClick={() =>
+                              void removeEvidence(occurrence.id, evidence.id).catch((cause) => setError(String(cause)))
+                            }
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      ))}
+                      <label className="block">
+                        <span className="sr-only">Ajouter des pièces jointes</span>
+                        <input
+                          type="file"
+                          multiple
+                          accept="application/pdf,image/png,image/jpeg,text/plain"
+                          onChange={(event) => void uploadEvidence(occurrence.id, event.target.files).catch((cause) => setError(String(cause)))}
+                        />
+                      </label>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -201,7 +338,7 @@ export function ControlDetail() {
           {history.map((event) => (
             <li
               key={event.id}
-              className="rounded-lg border border-[var(--color-border-brand)] bg-white p-3 text-sm"
+              className="rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-3 text-sm"
             >
               <span className="font-medium">{event.action}</span> · {event.source} ·{' '}
               <span className="text-[var(--color-text-secondary)]">{event.at_utc}</span>

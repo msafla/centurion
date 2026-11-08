@@ -2,7 +2,8 @@
 
 Application locale mono-utilisateur de suivi d'un plan annuel de contrôles cyber
 et IT : occurrences récurrentes, réalisations auditées, import CSV/XLSX revu,
-reporting, sauvegardes/restauration et un adaptateur MCP stdio à capacités
+reporting, tendances multi-années, mapping manuel de clauses, justificatifs
+uploadés, sauvegardes/restauration et un adaptateur MCP stdio à capacités
 limitées.
 
 CENTURION est un projet indépendant. Ses exemples ISO 27001 et ISAE 3402 servent
@@ -57,6 +58,49 @@ Lecture seule par défaut (huit outils) ; les écritures sont désactivées sauf
 double flag (`CENTURION_MCP_WRITE=1` backend **et** adaptateur) et ne modifient
 rien avant une approbation explicite dans l'UI CENTURION.
 
+## MCP — connexion agnostique (tout hôte stdio)
+
+CENTURION expose un serveur MCP via `stdio`, indépendamment de l’hôte. Les
+exemples Claude Code/Codex/Claude Desktop dans `docs/MCP.md` sont des
+illustrations ; le protocole et les variables d’environnement sont les mêmes
+pour tout harness compatible MCP.
+
+1. Démarrer le backend propriétaire :
+
+```bash
+npm run start
+```
+
+2. Configurer l’hôte MCP pour lancer ce processus stdio (variables recommandées) :
+
+```bash
+env CENTURION_DATA_DIR="$PWD/data/demo" "$PWD/scripts/mcp-stdio.sh"
+```
+
+3. Configuration générique `.mcp.json` (OpenCode, Codex, VS Code, etc.) :
+
+```json
+{
+  "mcpServers": {
+    "centurion": {
+      "type": "stdio",
+      "command": "/chemin/vers/CENTURION/scripts/mcp-stdio.sh",
+      "env": {
+        "CENTURION_DATA_DIR": "/chemin/vers/CENTURION/data/demo"
+      }
+    }
+  }
+}
+```
+
+4. Vérifier que l’hôte liste les outils disponibles. En lecture seule par
+défaut : `list_plans`, `get_plan`, `list_controls`, `get_control`,
+`list_occurrences`, `get_summary`, `export_controls_csv`, `generate_report_pdf`.
+Les écritures ne s’activent que via Paramètres → Permissions MCP.
+
+Voir [`docs/MCP.md`](docs/MCP.md) pour les détails Claude Desktop, Codex,
+Windows natif, limites, jeton runtime et frontière de confiance.
+
 ## Qualité
 
 ```bash
@@ -69,9 +113,9 @@ npm run audit:deps     # npm audit --omit=dev --audit-level=high (réseau requis
 
 - Mono-utilisateur, sans compte ni SSO ; le MVP protège les requêtes du
   navigateur, pas les autres processus du même poste.
-- Aucune notion automatique de retard/SLA, aucun mapping de clauses, aucun
-  justificatif uploadé, aucun chiffrement applicatif, aucune inviolabilité de
-  l'audit.
+- Aucune notion automatique de retard/SLA, aucun chiffrement applicatif, aucune
+  inviolabilité de l'audit. Les justificatifs sont bornés et typrés, mais ne
+  sont pas scannés par antivirus.
 - MCP stdio uniquement (pas de transport réseau) ; les données renvoyées à un
   host IA peuvent être transmises par ce host à son fournisseur.
 - Voir `docs/EXECUTION.md` pour l'état exact, les preuves et les sous-points

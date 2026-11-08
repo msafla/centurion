@@ -1,23 +1,15 @@
 # CENTURION — direction artistique
 
-État : proposition pour revue. Relevé du site Wavestone le 2 octobre 2026.
+État : proposition pour revue.
 
-## Référence demandée
+## Référence
 
-La proximité avec Wavestone doit être explicite : même famille typographique,
-même violet principal, même accent vert, titres fins, grands espaces blancs,
-boutons en pilule et aplats colorés. CENTURION conserve son nom et sa propre
-composition adaptée à un outil de travail.
+Famille typographique géométrique, violet principal, accent vert vif, titres
+fins, grands espaces blancs, boutons en pilule et aplats colorés.
 
-Pages inspectées visuellement et par styles calculés dans Chromium à 1440 × 1000 :
+## Palette et typographie
 
-- [Accueil](https://www.wavestone.com/fr/)
-- [Cybersécurité](https://www.wavestone.com/fr/nos-expertises/cybersecurite/)
-- [Découvrir Wavestone](https://www.wavestone.com/fr/decouvrir-wavestone/)
-
-## Observations vérifiées
-
-| Élément | Relevé sur le site |
+| Élément | Valeur |
 | --- | --- |
 | Police | Poppins |
 | Violet principal | `#451DC7`, variable `--blue-vibrant` |
@@ -26,20 +18,14 @@ Pages inspectées visuellement et par styles calculés dans Chromium à 1440 × 
 | Fond courant | `#FFFFFF` |
 | Titres du bandeau principal | Poppins 300, 50 px / 60 px, espacement −2,5 px |
 | Grands titres de section | Poppins 300, 140 px / 140 px, espacement −5,6 px |
-| Titres secondaires cyber | Poppins 400, 26 px / 30 px |
+| Titres secondaires | Poppins 400, 26 px / 30 px |
 | Actions principales | Texte blanc sur violet, extrémités complètement arrondies |
 | Navigation | Bandeau blanc, liens noirs, violet pour la sélection |
 | Pied de page | Dégradé radial violet `#451DC7` vers `#360058` |
 
-L'accueil associe des visuels abstraits violets à des panneaux sombres.
-La page cyber utilise une photographie d'infrastructure et un bandeau violet
-vers vert. Les pages alternent surfaces blanches et blocs violets. Les titres
-sont légers et les mises en page aérées ; les ombres sont discrètes.
-
-Ces observations décrivent le site inspecté, pas une charte officielle fournie
-par Wavestone. Les captures de recherche sont conservées hors du projet dans
-`/tmp/centurion-wavestone-*.png` et le relevé dans
-`/tmp/centurion-wavestone-styles.json`.
+Les visuels abstraits violets accompagnent des panneaux sombres ; les pages
+alternent surfaces blanches et blocs violets. Les titres sont légers et les
+mises en page aérées ; les ombres sont discrètes.
 
 ## Traduction proposée pour l'application
 
@@ -91,5 +77,3 @@ rapprochement de référentiels et aperçu d'import.
 La police sera intégrée localement depuis une distribution Poppins avec sa
 [licence OFL](https://github.com/google/fonts/blob/main/ofl/poppins/OFL.txt).
 Les illustrations, le signe CENTURION et les contenus seront propres au projet.
-La référence Wavestone sera mentionnée dans la documentation de conception ;
-le projet est indépendant.

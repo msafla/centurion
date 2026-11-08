@@ -80,13 +80,13 @@ describe('migrations and pragmas', () => {
     const path = join(dir, 'centurion.sqlite');
 
     const first = openDatabase(path);
-    expect(first.schemaVersion).toBe(1);
+    expect(first.schemaVersion).toBe(3);
     first.close();
 
     const second = openDatabase(path);
     handles.push(second);
-    expect(second.schemaVersion).toBe(1);
-    expect(second.db.pragma('user_version', { simple: true })).toBe(1);
+    expect(second.schemaVersion).toBe(3);
+    expect(second.db.pragma('user_version', { simple: true })).toBe(3);
     const tables = second.db
       .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
       .all() as { name: string }[];

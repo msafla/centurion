@@ -27,6 +27,7 @@ import {
   tokensFromSlugs,
 } from './referentials';
 import { generateDates } from './schedule';
+import { clausesForControl } from './clauses';
 
 export type ScheduleStorage = {
   frequency_kind: Schedule['kind'];
@@ -74,6 +75,7 @@ export function toControlDto(db: BetterSqlite3.Database, row: ControlRow): Contr
     title: row.title,
     description: row.description,
     referentials: referentialsForControl(db, row.id),
+    clauses: clausesForControl(db, row.id),
     reference: row.reference,
     domain: row.domain,
     owner_name: row.owner_name,

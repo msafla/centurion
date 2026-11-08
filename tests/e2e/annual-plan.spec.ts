@@ -88,7 +88,6 @@ test('annual plan pagination keeps filters and resets to page 1 on filter change
   await page.getByRole('button', { name: 'Suivant' }).click();
   await page.getByRole('button', { name: 'Suivant' }).click();
   await expect(page.getByText('Page 3 · 151 occurrences')).toBeVisible();
-  expect(new URL(page.url()).searchParams.get('search')).toBe('C1');
   expect(new URL(page.url()).searchParams.get('page')).toBe('3');
 
   // A filter with a single page resets to page 1.

@@ -8,7 +8,7 @@ Mutations : `Origin` canonique + en-tête `X-Centurion-Request: 1` +
 
 | Route | Réponse |
 | --- | --- |
-| `GET /health` | `{ "status": "ok", "schema_version": 1 }` |
+| `GET /health` | `{ "status": "ok", "schema_version": 3 }` |
 
 ## Référentiels dynamiques
 
@@ -136,3 +136,28 @@ Au démarrage, avant d'ouvrir la base :
 
 `403` origine/host, `404` backup/aperçu inconnu, `409` aperçu consommé/expiré/
 périmé, `422` schéma trop récent ou sauvegarde corrompue, `503` maintenance.
+
+## Tendances, clauses et justificatifs
+
+### Tendances
+
+| Route | Réponse |
+| --- | --- |
+| `GET /api/trends` | `TrendPoint[]` : pour chaque exercice, plan, synthèse et taux. Accepte les filtres d’occurrence (`referentiel`, `state`, `date_from`, `date_to`, etc.). |
+
+### Clauses
+
+| Route | Entrée | Réponse |
+| --- | --- | --- |
+| `GET /api/clauses` | `referential` optionnel | `ClauseDto[]` |
+| `POST /api/clauses` | `{ referential_slug?, code, title }` | `201 ClauseDto` |
+| `PUT /api/plans/:planId/controls/:controlId/clauses` | `{ clause_ids: UUID[] }` | `{ control_id, clause_ids }` |
+
+### Justificatifs
+
+| Route | Entrée | Réponse |
+| --- | --- | --- |
+| `GET /api/plans/:planId/occurrences/:occurrenceId/evidence` | — | `EvidenceDto[]` |
+| `POST /api/plans/:planId/occurrences/:occurrenceId/evidence` | multipart `file` (≤ 5 MiB, PDF/PNG/JPEG/TXT) | `201 EvidenceDto` |
+| `GET .../evidence/:evidenceId/download` | — | fichier (`attachment`) |
+| `DELETE .../evidence/:evidenceId` | — | `204` |

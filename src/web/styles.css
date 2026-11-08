@@ -40,11 +40,11 @@
   --color-brand-primary: #451dc7;
   --color-brand-deep: #360058;
   --color-brand-accent: #04f06a;
-  --color-ink: #111111;
-  --color-surface: #ffffff;
-  --color-surface-soft: #f7f5fc;
-  --color-border-brand: #e5e0f0;
-  --color-text-secondary: #625b70;
+  --color-ink: #16132a;
+  --color-surface: #fbfafd;
+  --color-surface-soft: #f2effa;
+  --color-border-brand: #ddd6eb;
+  --color-text-secondary: #5f5870;
 }
 
 /* shadcn/ui semantic variables mapped to the CENTURION palette. */
@@ -68,7 +68,8 @@
   --border: #e5e0f0;
   --input: #e5e0f0;
   --ring: #451dc7;
-  --radius: 0.5rem;
+  --radius: 0.75rem;
+  --shadow-card: 0 18px 45px -24px rgba(69, 29, 199, 0.18);
 }
 
 @theme inline {
@@ -103,9 +104,30 @@ body,
   height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   font-family: var(--font-sans);
   color: var(--color-ink);
-  background: var(--color-surface);
+  background:
+    radial-gradient(circle at top left, rgba(69, 29, 199, 0.08), transparent 32%),
+    radial-gradient(circle at top right, rgba(4, 240, 106, 0.05), transparent 28%),
+    var(--color-surface);
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(69, 29, 199, 0.18);
+}
+
+button,
+a {
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+
+button:active {
+  transform: translateY(1px) scale(0.99);
 }

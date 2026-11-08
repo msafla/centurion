@@ -85,7 +85,7 @@ export function Settings() {
 
   return (
     <section className="space-y-8">
-      <h1 className="text-4xl font-light tracking-tight">Paramètres</h1>
+      <h1 className="text-4xl font-semibold tracking-[-0.05em]">Paramètres</h1>
 
       {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
       {error ? (
@@ -94,7 +94,7 @@ export function Settings() {
         </p>
       ) : null}
 
-      <div className="space-y-3 rounded-lg border border-[var(--color-border-brand)] bg-white p-4">
+      <div className="space-y-3 rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
         <h2 className="text-lg font-medium">Plan annuel</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
@@ -135,7 +135,7 @@ export function Settings() {
         </div>
       </div>
 
-      <div className="space-y-3 rounded-lg border border-[var(--color-border-brand)] bg-white p-4">
+      <div className="space-y-3 rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-medium">Sauvegardes</h2>
           <Button
@@ -198,7 +198,7 @@ export function Settings() {
         </table>
       </div>
 
-      <div className="space-y-3 rounded-lg border border-[var(--color-border-brand)] bg-white p-4">
+      <div className="space-y-3 rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
         <h2 className="text-lg font-medium">Permissions MCP</h2>
         <p className="text-sm text-[var(--color-text-secondary)]">
           Choisissez ce que l'adaptateur MCP est autorisé à faire. Le backend revalide chaque appel ;
@@ -228,7 +228,7 @@ export function Settings() {
         )}
       </div>
 
-      <div className="space-y-3 rounded-lg border border-[var(--color-border-brand)] bg-white p-4">
+      <div className="space-y-3 rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-medium">Approbations MCP</h2>
           {pendingCount > 0 ? (

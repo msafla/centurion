@@ -64,7 +64,7 @@ export function loadConfig(
     allowedHosts: [`${host}:${port}`],
     dataDir: defaultDataDir(env),
     webDistDir: join(process.cwd(), 'dist', 'web'),
-    schemaVersion: 1,
+    schemaVersion: 3,
     bodyLimitBytes: 64 * 1024,
     ...overrides,
   };

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import type { OccurrenceDto, Page } from '../../shared/schemas';
 import { ControlForm } from '../components/ControlForm';
 import { RealizationForm } from '../components/RealizationForm';
@@ -28,21 +28,29 @@ const MONTHS = [
 
 export function AnnualPlan() {
   const { plan, reloadPlans, labelOf } = usePlan();
-  const [params, setParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [rows, setRows] = useState<Page<OccurrenceDto> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<OccurrenceDto | null>(null);
   const [view, setView] = useState<'table' | 'months'>('table');
 
-  const filters = useMemo(
-    () => ({
-      search: params.get('search') ?? '',
-      referentiel: params.get('referentiel') ?? '',
-      state: params.get('state') ?? '',
-      page: Number(params.get('page') ?? '1'),
-    }),
-    [params],
-  );
+  const ignoreUrlSync = useRef(false);
+  const [filters, setFilters] = useState({
+    search: '',
+    referentiel: '',
+    state: '',
+    page: Number(searchParams.get('page') ?? '1'),
+  });
+
+  useEffect(() => {
+    if (ignoreUrlSync.current) {
+      ignoreUrlSync.current = false;
+      return;
+    }
+    const urlPage = Number(searchParams.get('page') ?? '1');
+    setFilters((current) => (current.page === urlPage ? current : { ...current, page: urlPage }));
+  }, [searchParams]);
 
   useEffect(() => {
     if (!plan) return;
@@ -74,22 +82,27 @@ export function AnnualPlan() {
   if (!plan) return <p className="text-[var(--color-text-secondary)]">Aucun plan disponible.</p>;
 
   function updateFilter(key: string, value: string) {
-    const next = new URLSearchParams(params);
-    if (value) next.set(key, value);
-    else next.delete(key);
-    // Changing a filter restarts at page 1; paging only moves `page`.
-    if (key !== 'page') next.delete('page');
-    setParams(next);
+    const isPage = key === 'page';
+    const pageNumber = isPage ? Number(value) : 1;
+    setFilters((current) => ({
+      ...current,
+      [key]: isPage ? pageNumber : value,
+      page: isPage ? pageNumber : 1,
+    }));
+    const nextParams = new URLSearchParams();
+    if (pageNumber > 1) nextParams.set('page', String(pageNumber));
+    ignoreUrlSync.current = true;
+    navigate(`/plan${nextParams.toString() ? `?${nextParams.toString()}` : ''}`);
   }
 
   function resetFilters() {
-    setParams(new URLSearchParams());
+    setFilters({ search: '', referentiel: '', state: '', page: 1 });
   }
 
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="min-w-0 text-2xl font-light tracking-tight sm:text-4xl">
+        <h1 className="min-w-0 text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">
           Plan annuel — {plan.year}
         </h1>
         <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto sm:justify-end">
@@ -169,7 +182,7 @@ export function AnnualPlan() {
           {MONTHS.map((label, index) => (
             <div
               key={label}
-              className="rounded-lg border border-[var(--color-border-brand)] bg-white p-3 text-center"
+              className="rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-3 text-center"
             >
               <p className="text-xs uppercase text-[var(--color-text-secondary)]">{label}</p>
               <p className="text-xl tabular-nums">{monthCounts[index] ?? 0}</p>
@@ -177,7 +190,7 @@ export function AnnualPlan() {
           ))}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-[var(--color-border-brand)] bg-white">
+        <div className="overflow-x-auto rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
           <table className="w-full min-w-[900px] text-sm">
             <thead className="text-left text-xs uppercase text-[var(--color-text-secondary)]">
               <tr>
@@ -286,6 +299,6 @@ export function AnnualPlan() {
   );
 
   function refresh() {
-    setParams(new URLSearchParams(params));
+    setFilters((current) => ({ ...current, page: current.page }));
   }
 }

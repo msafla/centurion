@@ -950,3 +950,57 @@ bord gauche ; la mention légale du pied de page se repliait sur deux lignes.
 - Aperçu régénéré et vérifié : les quatre libellés apparaissent sur la page 3.
 - Les 6 tests d'export, `npm run typecheck`, `npm run lint` et
   `git diff --check` réussissent.
+
+## Post-T20 — tendances, clauses, justificatifs, recherche et archivés
+
+État : livré et vérifié le 8 novembre 2026 (Node 24.21.0).
+
+### Produit
+
+- Migrations `002_evidence.sql` / `003_clauses.sql` (schéma v3) : tables
+  `occurrence_evidence`, `clauses`, `control_clauses`.
+- Routes `GET /api/trends` (un point par plan, filtres d'occurrence appliqués,
+  synthèse incluant `by_clause`), `GET /api/search?q=` (code/titre/description,
+  échappement LIKE, plafond 50, archivés inclus), `GET/POST /api/clauses`,
+  `PUT .../controls/:id/clauses`, CRUD justificatifs
+  (`POST` multipart ≤ 5 MiB PDF/PNG/JPEG/TXT, `GET` liste, `GET` download,
+  `DELETE`).
+- `ControlDto.clauses`, `SummaryDto.by_clause`, pages `Search`, `Trends`,
+  `ArchivedControls`, navigation mise à jour, docs `README`/`API.md`.
+
+### Corrections de cette session
+
+- `GET .../evidence` : 404 propre via `planInScope` (500 auparavant sur plan
+  inconnu) et lectures/écritures passées dans `gate.runRead`/`runExclusive`.
+- Upload justificatif : un fichier > 5 MiB était tronqué silencieusement par le
+  parseur multipart puis accepté ; le flag `truncated` renvoie désormais 413.
+- `setControlClauses` : ids de clauses inconnus → 422 (la FK levait sinon une
+  erreur 500, `INSERT OR IGNORE` ne couvrant pas les FK).
+
+### Commandes et résultats
+
+| Commande | Résultat |
+| --- | --- |
+| `npx playwright install chromium` | headless shell 1243 téléchargé (prérequis e2e) |
+| `npm run check` | 169/169 tests (22 fichiers), typecheck et lint OK |
+| `npm run build` | OK (Vite + esbuild) |
+| `npm run test:e2e` | 9/9 passés, dont `smoke-new-features.spec.ts` |
+
+Couverture ajoutée : `tests/integration/new-features.test.ts` (15 tests :
+tendances multi-plans + filtres + `by_clause`, recherche avec wildcards
+échappés et plafond 50, clauses CRUD/mapping/422/404, justificatifs
+upload/liste/download/delete/415/413/422/404 + nom de fichier assaini) et
+`tests/security/new-routes.test.ts` (5 tests de gardes : Origin, en-tête
+`X-Centurion-Request`, 415 text/plain, cross-site sur les lectures).
+
+### Limites
+
+- MCP inchangé : 8 outils lecture seule, les tendances/clauses/justificatifs
+  ne sont pas exposés au serveur MCP.
+- Recherche sans pagination (plafond 50) ; justificatifs non scannés par
+  antivirus (déjà documenté).
+
+### Prochaine action
+
+Commit local de la branche de travail ; exposer éventuellement `get_trends`
+en lecture MCP si un hôte IA en a besoin.

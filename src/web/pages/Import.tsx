@@ -96,7 +96,7 @@ export function Import() {
 
   return (
     <section className="space-y-5">
-      <h1 className="text-4xl font-light tracking-tight">Import</h1>
+      <h1 className="text-4xl font-semibold tracking-[-0.05em]">Import</h1>
       <p className="text-sm text-[var(--color-text-secondary)]">
         Un fichier CSV ou XLSX, un mapping explicite, un aperçu paginé puis une application atomique.
         L'import est une définition complète : un champ optionnel absent efface l'ancienne valeur.
@@ -109,7 +109,7 @@ export function Import() {
         </p>
       ) : null}
 
-      <div className="rounded-lg border border-[var(--color-border-brand)] bg-white p-4">
+      <div className="rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
         <label htmlFor="file" className="text-sm font-medium">
           Fichier (.csv ou .xlsx)
         </label>
@@ -126,7 +126,7 @@ export function Import() {
       </div>
 
       {upload ? (
-        <div className="space-y-4 rounded-lg border border-[var(--color-border-brand)] bg-white p-4">
+        <div className="space-y-4 rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
           <p className="text-sm">
             {upload.headers.length} colonnes détectées
             {upload.separator ? ` · séparateur « ${upload.separator} »` : ''}

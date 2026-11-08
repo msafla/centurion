@@ -4,17 +4,23 @@ import type { Page, PlanDto } from '../shared/schemas';
 import { api } from './lib/api';
 import { PlanContext, type PlanState } from './lib/plan-context';
 import { AnnualPlan } from './pages/AnnualPlan';
+import { ArchivedControls } from './pages/ArchivedControls';
 import { ControlDetail } from './pages/ControlDetail';
+import { Trends } from './pages/Trends';
 import { Import } from './pages/Import';
 import { References } from './pages/References';
 import { Reporting } from './pages/Reporting';
+import { Search } from './pages/Search';
 import { Settings } from './pages/Settings';
 import { Summary } from './pages/Summary';
 
 const NAV = [
   { to: '/', label: 'Synthèse' },
+  { to: '/search', label: 'Recherche' },
   { to: '/plan', label: 'Plan annuel' },
+  { to: '/trends', label: 'Tendances' },
   { to: '/references', label: 'Référentiels' },
+  { to: '/archived', label: 'Archivés' },
   { to: '/reporting', label: 'Reporting' },
   { to: '/import', label: 'Import' },
   { to: '/settings', label: 'Paramètres' },
@@ -67,11 +73,10 @@ export function App() {
     <PlanContext.Provider value={value}>
       <BrowserRouter>
         <div className="min-h-full bg-[var(--color-surface-soft)] text-[var(--color-ink)]">
-          <header className="border-b border-[var(--color-border-brand)] bg-white">
-            <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-6 py-3">
-              <span className="text-lg font-semibold tracking-tight text-[var(--color-brand-primary)]">
-                CENTURION
-              </span>
+          <header className="mx-auto mt-4 flex max-w-7xl flex-wrap items-center gap-4 rounded-[2rem] border border-[var(--color-border-brand)] bg-white/75 px-6 py-4 shadow-[0_18px_45px_-24px_rgba(69,29,199,0.18)] backdrop-blur-xl">
+            <span className="bg-gradient-to-r from-[var(--color-brand-primary)] via-[#6f4bd9] to-[var(--color-brand-deep)] bg-clip-text text-lg font-semibold tracking-[-0.04em] text-transparent">
+              CENTURION
+            </span>
               <nav aria-label="Navigation principale" className="flex flex-wrap gap-1 text-sm">
                 {NAV.map((item) => (
                   <NavLink
@@ -90,7 +95,7 @@ export function App() {
                   </NavLink>
                 ))}
               </nav>
-              <label className="ml-auto flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+              <label className="flex w-full flex-wrap items-center gap-2 text-sm text-[var(--color-text-secondary)] sm:ml-auto sm:w-auto sm:flex-nowrap">
                 Plan
                 <select
                   aria-label="Choix du plan"
@@ -106,7 +111,6 @@ export function App() {
                   ))}
                 </select>
               </label>
-            </div>
           </header>
 
           {error ? (
@@ -118,9 +122,12 @@ export function App() {
           <main className="mx-auto max-w-7xl px-6 py-8">
             <Routes>
               <Route path="/" element={<Summary />} />
+              <Route path="/search" element={<Search />} />
               <Route path="/plan" element={<AnnualPlan />} />
+              <Route path="/trends" element={<Trends />} />
               <Route path="/control/:controlId" element={<ControlDetail />} />
               <Route path="/references" element={<References />} />
+              <Route path="/archived" element={<ArchivedControls />} />
               <Route path="/reporting" element={<Reporting />} />
               <Route path="/import" element={<Import />} />
               <Route path="/settings" element={<Settings />} />

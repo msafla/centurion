@@ -49,7 +49,7 @@ export function Reporting() {
 
   return (
     <section className="space-y-5">
-      <h1 className="text-4xl font-light tracking-tight">Reporting</h1>
+      <h1 className="text-4xl font-semibold tracking-[-0.05em]">Reporting</h1>
 
       <div className="flex flex-wrap items-end gap-3">
         <div>
@@ -99,7 +99,7 @@ export function Reporting() {
           <p className="text-xs text-[var(--color-text-secondary)]">
             Généré le {report.generated_at}. Exports plafonnés (CSV 64 MiB, PDF 1 000 occurrences).
           </p>
-          <div className="overflow-x-auto rounded-lg border border-[var(--color-border-brand)] bg-white">
+          <div className="overflow-x-auto rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
             <table className="w-full min-w-[700px] text-sm">
               <thead className="text-left text-xs uppercase text-[var(--color-text-secondary)]">
                 <tr>
@@ -135,7 +135,7 @@ export function Reporting() {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-[var(--color-border-brand)] bg-white p-4">
+    <div className="rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
       <p className="text-xs uppercase tracking-wide text-[var(--color-text-secondary)]">{label}</p>
       <p className="mt-1 text-2xl font-light tabular-nums">{value}</p>
     </div>

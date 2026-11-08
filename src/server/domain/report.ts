@@ -3,6 +3,7 @@ import type { FilterInput, OccurrenceDto, Page, PlanDto } from '../../shared/sch
 import type { Clock } from '../clock';
 import { planInScope } from '../db/scoping';
 import { toPlanDto } from './plans';
+import { listClauses } from './clauses';
 import {
   OCCURRENCE_FROM,
   type SqlFilter,
@@ -32,12 +33,20 @@ export type ReferentialSummary = {
   conformity_rate: Rate;
 };
 
+export type ClauseSummary = {
+  clause: { id: string; code: string; referential: string | null };
+  counts: Counts;
+  realization_rate: Rate;
+  conformity_rate: Rate;
+};
+
 export type SummaryDto = {
   counts: Counts;
   realization_rate: Rate;
   conformity_rate: Rate;
   automation_rate: Rate;
   by_referentiel: ReferentialSummary[];
+  by_clause: ClauseSummary[];
 };
 
 export type ReportDto = {
@@ -193,12 +202,36 @@ export function buildSummary(
     };
   });
 
+  const clauseRows = db
+    .prepare(
+      `SELECT cl.id AS id, ${AGGREGATES}
+       FROM occurrences o
+       JOIN controls c ON c.id = o.control_id
+       LEFT JOIN realizations r ON r.occurrence_id = o.id
+       JOIN control_clauses cc ON cc.control_id = c.id
+       JOIN clauses cl ON cl.id = cc.clause_id
+       WHERE ${where} GROUP BY cl.id`,
+    )
+    .all(...params) as (Counts & { id: string })[];
+
+  const byClause: ClauseSummary[] = listClauses(db).map((clause) => {
+    const row = clauseRows.find((entry) => entry.id === clause.id);
+    const categoryCounts = row ? cleanCounts(row) : emptyCounts();
+    return {
+      clause: { id: clause.id, code: clause.code, referential: clause.referential },
+      counts: categoryCounts,
+      realization_rate: realizationRate(categoryCounts),
+      conformity_rate: conformityRate(categoryCounts),
+    };
+  });
+
   return {
     counts,
     realization_rate: realizationRate(counts),
     conformity_rate: conformityRate(counts),
     automation_rate: automationRate(db, planId, filter),
     by_referentiel: byReferentiel,
+    by_clause: byClause,
   };
 }
 
@@ -218,4 +251,23 @@ export function buildReport(
     summary: buildSummary(db, planId, filter),
     rows: listOccurrences(db, planId, filter, page, pageSize),
   };
+}
+
+export type TrendPoint = {
+  plan_id: string;
+  year: number;
+  name: string;
+  summary: SummaryDto;
+};
+
+export function buildTrend(db: BetterSqlite3.Database, filter: FilterInput): TrendPoint[] {
+  const plans = db
+    .prepare('SELECT id, year, name FROM plans ORDER BY year ASC')
+    .all() as Array<{ id: string; year: number; name: string }>;
+  return plans.map((plan) => ({
+    plan_id: plan.id,
+    year: plan.year,
+    name: plan.name,
+    summary: buildSummary(db, plan.id, filter),
+  }));
 }
