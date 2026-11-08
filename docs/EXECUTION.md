@@ -1113,3 +1113,33 @@ les captures régénérées si besoin.
 ### Prochaine action
 
 Commit local.
+
+## Post-T25 — notice d'utilisation illustrée + fix fallback SPA des nouvelles routes
+
+État : livré et vérifié le 8 novembre 2026.
+
+- **Bug trouvé en capturant les écrans** : le fallback SPA (`app.ts`) ne
+  servait `index.html` que pour les anciennes routes ; `/search`, `/trends`,
+  `/archived` renvoyaient 404 en chargement direct. Routes ajoutées + test de
+  régression `tests/integration/app-serving.test.ts` (toutes les routes
+  profondes → 200 HTML, API inconnue → 404 JSON).
+- `docs/NOTICE.md` : notice d'utilisation complète en français, avec les 10
+  captures réelles de `docs/screenshots/` (synthèse, recherche, plan annuel,
+  tendances, fiche contrôle, référentiels, archivés, reporting, import,
+  paramètres) : installation, lancement, démo, tour des écrans, workflows
+  (contrôle, réalisation, justificatifs, clauses, archivage, sauvegardes),
+  connexion MCP générique, sécurité/limites, commandes utiles. Liée depuis le
+  README.
+- `scripts/capture-screenshots.mjs` étendu aux nouvelles pages (recherche avec
+  requête remplie) ; nouveau script npm `npm run capture`.
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run check` | 170/170 tests (23 fichiers), typecheck et lint OK |
+| `npm run build` | OK |
+| `npm run test:e2e` | 9/9 passés |
+| `node scripts/capture-screenshots.mjs` (serveur démo actif) | 10 captures dans `docs/screenshots/` |
+
+### Prochaine action
+
+Commit local.

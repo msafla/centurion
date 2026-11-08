@@ -17,8 +17,16 @@ async function shot(name, path, waitFor) {
 }
 
 await shot('synthese', '/', /Synthèse/);
+await shot('recherche', '/search', /Recherche globale/);
+await page.getByRole('textbox', { name: 'Recherche' }).fill('ACC');
+await page.locator('tbody tr').first().waitFor();
+await page.waitForTimeout(300);
+await page.screenshot({ path: `${outDir}/recherche.png` });
 await shot('plan-annuel', '/plan', /Plan annuel/);
+await shot('tendances', '/trends', /Tendances/);
 await shot('referentiels', '/references', /Référentiels/);
+await shot('archives', '/archived', /Contrôles archivés/);
+await shot('reporting', '/reporting', /Reporting/);
 await shot('import', '/import', /Import/);
 await shot('parametres', '/settings', /Paramètres/);
 

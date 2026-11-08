@@ -10,6 +10,9 @@ CENTURION est un projet indépendant. Ses exemples ISO 27001 et ISAE 3402 serven
 à illustrer le suivi et la traçabilité ; ils ne constituent ni une évaluation de
 conformité ni une opinion d'assurance.
 
+> **[Notice d'utilisation illustrée](docs/NOTICE.md)** — installation, tour des
+> écrans avec captures, workflows du quotidien et connexion MCP.
+
 ## Prérequis
 
 - Node.js 24 LTS (`>=24 <25`) et npm 11.

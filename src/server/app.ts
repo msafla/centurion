@@ -74,8 +74,11 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       ),
     );
     for (const path of [
+      '/search',
       '/plan',
+      '/trends',
       '/references',
+      '/archived',
       '/reporting',
       '/import',
       '/settings',
