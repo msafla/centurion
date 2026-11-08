@@ -11,7 +11,8 @@ CENTURION est un projet indépendant. Ses exemples ISO 27001 et ISAE 3402 serven
 conformité ni une opinion d'assurance.
 
 > **[Notice d'utilisation illustrée](docs/NOTICE.md)** — installation, tour des
-> écrans avec captures, workflows du quotidien et connexion MCP.
+> écrans avec captures, workflows du quotidien et connexion MCP. Version page
+> web autonome : [docs/notice.html](docs/notice.html).
 
 ## Prérequis
 

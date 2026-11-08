@@ -1143,3 +1143,21 @@ Commit local.
 ### Prochaine action
 
 Commit local.
+
+## Post-T26 — notice en page HTML autonome (docs/notice.html)
+
+- `docs/notice.html` : page statique autonome (CSS inline, Poppins local via
+  `../public/fonts/`, marque CENTURION) reprenant la notice : hero, navigation
+  sticky, 6 sections, les 10 captures de `docs/screenshots/` en figures
+  légendées, blocs de code, pied de page sombre. Liens depuis `docs/NOTICE.md`
+  et `README.md`.
+- Vérifié au rendu (Playwright, 1440×1000) : 0 image cassée, ancres de
+  navigation OK, captures visibles.
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run check` | 170/170 tests, typecheck et lint OK |
+
+### Prochaine action
+
+Commit local.

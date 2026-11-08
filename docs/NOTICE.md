@@ -1,5 +1,8 @@
 # CENTURION — Notice d'utilisation
 
+> Version page web autonome : **[docs/notice.html](notice.html)** (mêmes contenus,
+> captures intégrées, ouvrable directement dans un navigateur).
+
 Application **locale et mono-utilisateur** de suivi d'un plan annuel de contrôles
 cyber et IT : occurrences récurrentes, réalisations auditées, justificatifs,
 tendances multi-années, exports, sauvegardes — et un serveur MCP pour piloter

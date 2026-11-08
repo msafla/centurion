@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#451dc7" />
+<title>CENTURION — Notice d'utilisation</title>
+<style>
+  @font-face { font-family: Poppins; src: url("../public/fonts/Poppins-Light.ttf") format("truetype"); font-weight: 300; font-display: swap; }
+  @font-face { font-family: Poppins; src: url("../public/fonts/Poppins-Regular.ttf") format("truetype"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: Poppins; src: url("../public/fonts/Poppins-Medium.ttf") format("truetype"); font-weight: 500; font-display: swap; }
+  @font-face { font-family: Poppins; src: url("../public/fonts/Poppins-SemiBold.ttf") format("truetype"); font-weight: 600; font-display: swap; }
+
+  :root {
+    --violet: #451dc7;
+    --plum: #360058;
+    --green: #04f06a;
+    --ink: #111111;
+    --muted: #625b70;
+    --paper: #ffffff;
+    --soft: #f7f5fc;
+    --line: #e5e0f0;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: Poppins, ui-sans-serif, system-ui, sans-serif;
+    font-weight: 400;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.6;
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  /* ---- chrome ---- */
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+  .bar {
+    max-width: 1120px; margin: 0 auto; padding: 12px 24px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px;
+  }
+  .brand { color: var(--violet); font-weight: 600; font-size: 1.05rem; letter-spacing: -0.02em; text-decoration: none; }
+  nav { display: flex; flex-wrap: wrap; gap: 4px; font-size: 0.86rem; }
+  nav a { color: var(--muted); text-decoration: none; padding: 6px 10px; border-radius: 999px; }
+  nav a:hover { color: var(--violet); background: var(--soft); }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 0 24px 80px; }
+  section { padding: 56px 0 8px; scroll-margin-top: 76px; }
+  h1 { font-weight: 300; font-size: clamp(2.2rem, 5vw, 3.4rem); letter-spacing: -0.045em; line-height: 1.08; margin: 0 0 16px; }
+  h1 strong { font-weight: 600; color: var(--violet); }
+  h2 { font-weight: 300; font-size: clamp(1.6rem, 3vw, 2.1rem); letter-spacing: -0.03em; margin: 0 0 8px; }
+  h2 .num { color: var(--violet); font-weight: 500; font-variant-numeric: tabular-nums; margin-right: 10px; }
+  h3 { font-weight: 500; font-size: 1rem; margin: 24px 0 6px; }
+  p { margin: 0 0 12px; max-width: 72ch; }
+  .lead { font-size: 1.06rem; color: var(--muted); max-width: 68ch; }
+  .eyebrow { color: var(--violet); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 10px; }
+  a { color: var(--violet); }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.86em; background: var(--soft); border: 1px solid var(--line);
+    border-radius: 6px; padding: 1px 6px;
+  }
+  pre {
+    background: #17102f; color: #f3efff; border-radius: var(--radius);
+    padding: 16px 18px; overflow-x: auto; font-size: 0.84rem; line-height: 1.55;
+  }
+  pre code { background: none; border: 0; padding: 0; color: inherit; }
+  .note {
+    border-left: 3px solid var(--violet); background: var(--soft);
+    border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 16px; margin: 16px 0;
+    font-size: 0.92rem; max-width: 72ch;
+  }
+  .note strong { color: var(--violet); }
+
+  /* ---- figures ---- */
+  figure {
+    margin: 20px 0 28px; border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; background: var(--soft);
+    box-shadow: 0 24px 80px -52px rgba(22, 19, 42, 0.32);
+  }
+  figure img { display: block; width: 100%; height: auto; }
+  figcaption {
+    padding: 10px 16px; font-size: 0.82rem; color: var(--muted);
+    border-top: 1px solid var(--line); background: var(--paper);
+    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  }
+  figcaption .tag { color: var(--violet); font-weight: 500; }
+
+  /* ---- grids / lists ---- */
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin: 20px 0; }
+  .card { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; background: var(--paper); }
+  .card h3 { margin-top: 0; }
+  .card p { font-size: 0.9rem; color: var(--muted); margin: 0; }
+  ul.tight { margin: 8px 0 16px; padding-left: 20px; max-width: 72ch; }
+  ul.tight li { margin-bottom: 6px; }
+  ol.steps { margin: 8px 0 16px; padding-left: 22px; max-width: 72ch; }
+  ol.steps li { margin-bottom: 8px; }
+  table { border-collapse: collapse; margin: 16px 0; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 8px 14px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 500; font-size: 0.8rem; }
+
+  /* ---- hero ---- */
+  .hero { padding: 72px 0 24px; }
+  .hero .lead { margin-bottom: 28px; }
+  .hero figure { max-width: 980px; }
+
+  footer {
+    margin-top: 72px; background: var(--plum); color: rgba(255, 255, 255, 0.75);
+    padding: 28px 24px; font-size: 0.84rem;
+  }
+  footer .inner { max-width: 1120px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+  footer .brand { color: var(--green); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <a class="brand" href="#top">CENTURION</a>
+    <nav aria-label="Sections de la notice">
+      <a href="#install">Installation</a>
+      <a href="#ecrans">Écrans</a>
+      <a href="#workflows">Workflows</a>
+      <a href="#mcp">MCP</a>
+      <a href="#securite">Sécurité</a>
+      <a href="#commandes">Commandes</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <div class="hero">
+    <p class="eyebrow">Notice d'utilisation</p>
+    <h1>Suivez votre plan annuel de contrôles <strong>cyber &amp; IT</strong>, année après année.</h1>
+    <p class="lead">
+      CENTURION est une application <strong>locale et mono-utilisateur</strong> : occurrences récurrentes,
+      réalisations auditées, justificatifs, tendances multi-années, exports, sauvegardes — et un serveur
+      MCP pour interroger vos données depuis un assistant IA. Aucune donnée ne quitte la machine,
+      sauf via le serveur MCP.
+    </p>
+    <div class="note">
+      <strong>Précision importante :</strong> les exemples ISO 27001 / ISAE 3402 / PCI DSS servent à
+      illustrer le suivi et la traçabilité. Ils ne constituent <strong>ni une évaluation de conformité,
+      ni une opinion d'assurance</strong>.
+    </div>
+    <figure>
+      <img src="screenshots/synthese.png" alt="Écran de synthèse du plan annuel 2028" />
+      <figcaption><span class="tag">Synthèse</span><span>Compteurs, taux et prochaines occurrences — capture réelle sur la démo.</span></figcaption>
+    </figure>
+  </div>
+
+  <section id="install">
+    <h2><span class="num">1</span>Installation et lancement</h2>
+    <p class="lead">Prérequis : <strong>Node.js 24 LTS</strong> (<code>&gt;=24 &lt;25</code>) et npm 11. Aucun accès réseau requis au runtime.</p>
+    <pre><code>npm ci
+npm run build
+npm run start        # UI + API sur http://127.0.0.1:4317</code></pre>
+    <p>Ouvrez <code>http://127.0.0.1:4317</code>. L'application n'écoute que sur <code>127.0.0.1</code> et un seul
+    processus possède les données (verrou d'instance). Les données vivent dans <code>CENTURION_DATA_DIR</code> ou, par défaut,
+    dans le répertoire utilisateur (<code>~/.local/share/centurion</code>, <code>%LOCALAPPDATA%/Centurion</code>, <code>~/Library/Application Support/Centurion</code>).</p>
+    <h3>Démo reproductible</h3>
+    <pre><code>npm run dev:demo                 # données fictives, horloge fixe 2028-04-15
+npm run demo:reset -- --confirm  # retour à l'état déterministe (data/demo uniquement)</code></pre>
+  </section>
+
+  <section id="ecrans">
+    <h2><span class="num">2</span>Tour des écrans</h2>
+    <p class="lead">Toutes les captures sont des écrans réels de l'application, prises sur le jeu de démonstration.</p>
+
+    <h3>Recherche</h3>
+    <p>Recherche globale sur les contrôles (code, titre, description), résultats plafonnés à 50, archivés inclus.</p>
+    <figure>
+      <img src="screenshots/recherche.png" alt="Page de recherche globale" />
+      <figcaption><span class="tag">Recherche</span><span>Requête « ACC » sur la démo.</span></figcaption>
+    </figure>
+
+    <h3>Plan annuel</h3>
+    <p>Tableau des occurrences avec filtres (texte, référentiel, état), pagination et vue « Douze mois ». <strong>Nouveau contrôle</strong> ouvre la fiche de création.</p>
+    <figure>
+      <img src="screenshots/plan-annuel.png" alt="Plan annuel 2028, vue tableau" />
+      <figcaption><span class="tag">Plan annuel</span><span>Filtres, badges d'état, pagination.</span></figcaption>
+    </figure>
+
+    <h3>Tendances</h3>
+    <p>Un point par exercice (occurrences, réalisation, conformité) avec les mêmes filtres, tableau + graphique, export CSV.</p>
+    <figure>
+      <img src="screenshots/tendances.png" alt="Tendances multi-années" />
+      <figcaption><span class="tag">Tendances</span><span>Volume d'occurrences par exercice.</span></figcaption>
+    </figure>
+
+    <h3>Fiche contrôle</h3>
+    <p>Définition (référentiels, clauses, responsables), calendrier et aperçu de changement de planning, réalisations avec justificatifs, historique d'audit.</p>
+    <figure>
+      <img src="screenshots/fiche-controle.png" alt="Fiche d'un contrôle" />
+      <figcaption><span class="tag">Fiche contrôle</span><span>Onglets Définition / Calendrier / Réalisations / Historique.</span></figcaption>
+    </figure>
+
+    <h3>Référentiels, Archivés, Reporting, Import, Paramètres</h3>
+    <div class="grid">
+      <div class="card"><h3>Référentiels</h3><p>Agrégation par famille (ISO 27001, ISAE 3402 Type 2, combinés) : un suivi, pas une couverture certifiée.</p></div>
+      <div class="card"><h3>Archivés</h3><p>Contrôles archivés de tous les plans, avec leur exercice d'origine.</p></div>
+      <div class="card"><h3>Reporting</h3><p>Rapport filtrable, exports CSV (occurrences filtrées) et PDF (rapport paginé, borné à 1 000 lignes).</p></div>
+      <div class="card"><h3>Import</h3><p>CSV/XLSX revu : upload, mapping explicite, aperçu paginé, application atomique.</p></div>
+      <div class="card"><h3>Paramètres</h3><p>Plan, année suivante, sauvegardes/restauration, permissions MCP et approbations.</p></div>
+    </div>
+    <figure>
+      <img src="screenshots/referentiels.png" alt="Page Référentiels" />
+      <figcaption><span class="tag">Référentiels</span><span>Cartes par référentiel.</span></figcaption>
+    </figure>
+    <figure>
+      <img src="screenshots/archives.png" alt="Page des contrôles archivés" />
+      <figcaption><span class="tag">Archivés</span><span>Liste inter-plans.</span></figcaption>
+    </figure>
+    <figure>
+      <img src="screenshots/reporting.png" alt="Page Reporting" />
+      <figcaption><span class="tag">Reporting</span><span>Filtres et exports.</span></figcaption>
+    </figure>
+    <figure>
+      <img src="screenshots/import.png" alt="Page Import" />
+      <figcaption><span class="tag">Import</span><span>Upload puis mapping.</span></figcaption>
+    </figure>
+    <figure>
+      <img src="screenshots/parametres.png" alt="Page Paramètres" />
+      <figcaption><span class="tag">Paramètres</span><span>Sauvegardes, permissions MCP, approbations.</span></figcaption>
+    </figure>
+  </section>
+
+  <section id="workflows">
+    <h2><span class="num">3</span>Workflows du quotidien</h2>
+    <ol class="steps">
+      <li><strong>Créer un contrôle</strong> — Plan annuel → Nouveau contrôle : code, titre, description, référentiels, fréquence (mensuel, trimestriel, semestriel, annuel, dates explicites) et date d'ancrage. Les occurrences de l'année sont générées automatiquement.</li>
+      <li><strong>Renseigner une réalisation</strong> — cliquez sur le badge de conformité d'une occurrence : FAIT oui/non, conformité (conforme, partiellement conforme, non conforme, non applicable), date de réalisation (les dates futures sont refusées), commentaire, référence de preuve. Les corrections gardent leur identifiant et sont auditées (avant/après).</li>
+      <li><strong>Joindre des justificatifs</strong> — fiche contrôle → Réalisations : déposez un fichier <strong>PDF, PNG, JPEG ou TXT ≤ 5 MiB</strong>. Stocké sous le répertoire de données (hash SHA-256), téléchargeable, supprimable. Non scanné par antivirus.</li>
+      <li><strong>Lier des clauses</strong> — fiche contrôle → Définition → Clauses : cochez les clauses et enregistrez ; la synthèse et les tendances agrègent alors la couverture par clause (<code>POST /api/clauses</code> pour les créer).</li>
+      <li><strong>Archiver un contrôle</strong> — fiche contrôle → Calendrier : date d'effet puis Archiver. Les occurrences ouvertes à cette date passent « supplantées », les réalisées sont conservées.</li>
+      <li><strong>Sauvegarder / restaurer</strong> — Paramètres → Sauvegardes : copie SQLite à chaud, rétention 20 automatiques + manuelles, restauration journalisée avec aperçu de 15 minutes.</li>
+    </ol>
+  </section>
+
+  <section id="mcp">
+    <h2><span class="num">4</span>Connecter un assistant IA (MCP)</h2>
+    <p class="lead">Serveur <strong>MCP en stdio</strong>, agnostique de l'hôte (OpenCode, Codex, VS Code, Claude Desktop…).</p>
+    <ol class="steps">
+      <li>Démarrez le backend : <code>npm run start</code></li>
+      <li>Configurez l'hôte MCP (ex. <code>.mcp.json</code>) :</li>
+    </ol>
+    <pre><code>{
+  "mcpServers": {
+    "centurion": {
+      "type": "stdio",
+      "command": "/chemin/vers/CENTURION/scripts/mcp-stdio.sh",
+      "env": { "CENTURION_DATA_DIR": "/chemin/vers/CENTURION/data/demo" }
+    }
+  }
+}</code></pre>
+    <p><strong>Lecture seule par défaut — 10 outils :</strong> <code>list_plans</code>, <code>get_plan</code>, <code>list_controls</code>,
+    <code>get_control</code>, <code>list_occurrences</code>, <code>get_summary</code>, <code>get_trends</code>, <code>list_clauses</code>,
+    <code>export_controls_csv</code>, <code>generate_report_pdf</code>.</p>
+    <p>Les <strong>écritures</strong> (<code>create_control</code>, <code>update_control_metadata</code>, <code>set_occurrence</code>)
+    exigent le double flag <code>CENTURION_MCP_WRITE=1</code> (backend <em>et</em> adaptateur) <strong>et</strong> une approbation
+    explicite dans l'UI (Paramètres → Approbations MCP). Détails dans <code>docs/MCP.md</code>.</p>
+    <div class="note"><strong>Attention :</strong> les données renvoyées à l'hôte IA peuvent être transmises par cet hôte à son fournisseur de modèle.</div>
+  </section>
+
+  <section id="securite">
+    <h2><span class="num">5</span>Sécurité et limites</h2>
+    <ul class="tight">
+      <li>Mono-utilisateur, sans compte ni SSO : l'app protège les requêtes du navigateur (Origin, en-tête <code>X-Centurion-Request</code>, contrôle d'hôte), pas les autres processus du même poste.</li>
+      <li>Écoute sur <code>127.0.0.1</code> uniquement ; verrou d'instance exclusif sur les données.</li>
+      <li>Pas de notion automatique de retard/SLA, pas de chiffrement applicatif, pas d'inviolabilité de l'audit.</li>
+      <li>Justificatifs bornés et typés, non scannés par antivirus.</li>
+      <li>MCP en stdio uniquement — aucun transport réseau.</li>
+    </ul>
+  </section>
+
+  <section id="commandes">
+    <h2><span class="num">6</span>Commandes utiles</h2>
+    <pre><code>npm run check        # typecheck + lint + tests (unitaires, intégration, sécurité, MCP)
+npm run test:e2e     # tests Playwright contre un build de production
+npm run diagnose     # état rapide des artefacts de build
+npm run audit:deps   # npm audit (réseau requis)
+npm run capture      # régénère docs/screenshots/*.png (serveur de démo requis)</code></pre>
+    <p>Version Markdown de cette notice : <code>docs/NOTICE.md</code>.</p>
+  </section>
+
+</main>
+
+<footer>
+  <div class="inner">
+    <span class="brand">CENTURION</span>
+    <span>Notice d'utilisation — captures réelles sur le jeu de démo (plan 2028, horloge fixe).</span>
+    <span>Code MIT · Police Poppins (SIL OFL 1.1)</span>
+  </div>
+</footer>
+
+</body>
+</html>
