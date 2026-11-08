@@ -14,6 +14,14 @@ conformité ni une opinion d'assurance.
 > écrans avec captures, workflows du quotidien et connexion MCP. Version page
 > web autonome : [docs/notice.html](docs/notice.html).
 
+## Captures d'écran
+
+Captures réelles sur le jeu de démonstration (plan 2028) — régénérables via `npm run capture` :
+
+![Synthèse](docs/screenshots/synthese.png)
+![Plan annuel](docs/screenshots/plan-annuel.png)
+![Tendances](docs/screenshots/tendances.png)
+
 ## Prérequis
 
 - Node.js 24 LTS (`>=24 <25`) et npm 11.

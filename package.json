@@ -1,9 +1,22 @@
 {
   "name": "centurion",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
-  "description": "Local single-user annual control tracking application (MVP)",
+  "description": "Local-first, single-user annual cyber/IT control tracking app with a read-only-by-default MCP adapter",
   "license": "MIT",
+  "keywords": [
+    "compliance",
+    "audit",
+    "controls",
+    "iso-27001",
+    "isae-3402",
+    "local-first",
+    "mcp"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msafla/centurion.git"
+  },
   "type": "module",
   "engines": {
     "node": ">=24 <25",
@@ -54,7 +67,7 @@
     "tailwind-merge": "3.7.0",
     "takumi-pdf": "0.15.0",
     "yauzl": "3.4.0",
-    "zod": "4.6.5"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

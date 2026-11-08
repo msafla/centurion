@@ -1161,3 +1161,31 @@ Commit local.
 ### Prochaine action
 
 Commit local.
+
+## Post-T27 — préparation mise en production v1.0.0 (audit, métadonnées, vitrine)
+
+État : prêt à publier, vérifié le 8 novembre 2026.
+
+- **Audit dépendances** : 2 vulnérabilités `high` corrigées — `body-parser`
+  (DoS, via `@modelcontextprotocol/server-legacy`, fix dans la plage) et
+  `zod <4.6.6` (épuisement mémoire, bump 4.6.5 → 4.6.7). Résultat : 0 high/critical
+  (1 low, 6 moderate restantes, documentées). `npm run audit:deps` repasse au
+  niveau `high` sans erreur.
+- `package.json` : version `1.0.0`, `keywords`, `repository`
+  (`github:msafla/centurion`), description mise à jour (plus « MVP »).
+- `README.md` : section « Captures d'écran » (3 captures réelles) + lien notice.
+- Hygiène vérifiée : aucun secret/artefact commité (`.gitignore` couvre
+  `data/`, `dist/`, sqlite, `mcp-token`, `test-results/`, `.cerberus/`) ; CI
+  existante OK (check Ubuntu+Windows, e2e Ubuntu avec Chromium).
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run audit:deps` | 0 high/critical (1 low, 6 moderate) |
+| `npm run check` | 170/170 tests, typecheck et lint OK |
+| `npm run build` | OK |
+| `npm run test:e2e` | 9/9 passés |
+
+### Prochaine action
+
+Création du dépôt GitHub `msafla/centurion` par l'utilisateur, ajout du remote
+et push (non effectué par l'agent).
