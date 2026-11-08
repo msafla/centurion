@@ -109,7 +109,7 @@ export function Import() {
         </p>
       ) : null}
 
-      <div className="rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
+      <div className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
         <label htmlFor="file" className="text-sm font-medium">
           Fichier (.csv ou .xlsx)
         </label>
@@ -126,7 +126,7 @@ export function Import() {
       </div>
 
       {upload ? (
-        <div className="space-y-4 rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
+        <div className="space-y-4 rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
           <p className="text-sm">
             {upload.headers.length} colonnes détectées
             {upload.separator ? ` · séparateur « ${upload.separator} »` : ''}
@@ -164,7 +164,7 @@ export function Import() {
 
           <div className="flex items-end gap-3">
             <div>
-              <label htmlFor="effective_date" className="text-xs uppercase text-[var(--color-text-secondary)]">
+              <label htmlFor="effective_date" className="text-xs text-[var(--color-text-secondary)]">
                 Date d'effet
               </label>
               <Input
@@ -184,7 +184,7 @@ export function Import() {
                 Inchangées : {preview.counts.unchanged} · Invalides : {preview.counts.invalid}
               </p>
               <table className="w-full text-sm">
-                <thead className="text-left text-xs uppercase text-[var(--color-text-secondary)]">
+                <thead className="text-left text-xs text-[var(--color-text-secondary)]">
                   <tr>
                     <th className="px-2 py-1">Ligne</th>
                     <th className="px-2 py-1">Code</th>

@@ -94,7 +94,7 @@ export function Settings() {
         </p>
       ) : null}
 
-      <div className="space-y-3 rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
+      <div className="space-y-3 rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
         <h2 className="text-lg font-medium">Plan annuel</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
@@ -135,7 +135,7 @@ export function Settings() {
         </div>
       </div>
 
-      <div className="space-y-3 rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
+      <div className="space-y-3 rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-medium">Sauvegardes</h2>
           <Button
@@ -151,7 +151,7 @@ export function Settings() {
           </Button>
         </div>
         <table className="w-full text-sm">
-          <thead className="text-left text-xs uppercase text-[var(--color-text-secondary)]">
+          <thead className="text-left text-xs text-[var(--color-text-secondary)]">
             <tr>
               <th className="px-2 py-1">Motif</th>
               <th className="px-2 py-1">Créée le</th>
@@ -198,7 +198,7 @@ export function Settings() {
         </table>
       </div>
 
-      <div className="space-y-3 rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
+      <div className="space-y-3 rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
         <h2 className="text-lg font-medium">Permissions MCP</h2>
         <p className="text-sm text-[var(--color-text-secondary)]">
           Choisissez ce que l'adaptateur MCP est autorisé à faire. Le backend revalide chaque appel ;
@@ -228,7 +228,7 @@ export function Settings() {
         )}
       </div>
 
-      <div className="space-y-3 rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
+      <div className="space-y-3 rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-medium">Approbations MCP</h2>
           {pendingCount > 0 ? (

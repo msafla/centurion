@@ -1041,3 +1041,27 @@ transitions 180 ms et `scale(0.99)` au press (conformes DESIGN.md).
 
 Commit local ; si une passe plus profonde est souhaitée, uniformiser le rayon
 des panneaux (8 px) et la casse des libellés sur les 24 occurrences restantes.
+
+## Post-T22 — finition unslop complète (rayons 8 px, casse des libellés)
+
+État : livré et vérifié le 8 novembre 2026.
+
+- `rounded-3xl` → `rounded-lg` sur tous les panneaux des 10 pages (21
+  occurrences), conforme au DESIGN.md « rayon de 8 px pour les panneaux,
+  rayon complet pour les actions » (les pilules d'action restent en
+  `rounded-full`).
+- `uppercase` retiré sur les 24 libellés restants (en-têtes de tableaux,
+  libellés de filtres, cartes métriques) : sentence case, `text-xs` conservé.
+- Hors périmètre : primitives shadcn (`tracking-widest` de dropdown-menu),
+  ombre neutre des panneaux, `bg-white/88`.
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run check` | 169/169 tests, typecheck et lint OK |
+| `npm run build` | OK |
+| `npm run test:e2e` | 9/9 passés (header 390/1440 + reduced-motion inclus) |
+
+### Prochaine action
+
+Commit local. L'UI est alignée DESIGN.md + unslop ; reste à valider visuellement
+les captures régénérées si besoin.

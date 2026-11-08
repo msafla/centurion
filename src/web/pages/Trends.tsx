@@ -70,7 +70,7 @@ export function Trends() {
 
       <div className="flex flex-wrap items-end gap-3">
         <div>
-          <label htmlFor="trend-referentiel" className="text-xs uppercase text-[var(--color-text-secondary)]">Référentiel</label>
+          <label htmlFor="trend-referentiel" className="text-xs text-[var(--color-text-secondary)]">Référentiel</label>
           <select
             id="trend-referentiel"
             className="rounded-md border border-[var(--color-border-brand)] bg-white px-2 py-2 text-sm"
@@ -83,7 +83,7 @@ export function Trends() {
           </select>
         </div>
         <div>
-          <label htmlFor="trend-state" className="text-xs uppercase text-[var(--color-text-secondary)]">État</label>
+          <label htmlFor="trend-state" className="text-xs text-[var(--color-text-secondary)]">État</label>
           <select
             id="trend-state"
             className="rounded-md border border-[var(--color-border-brand)] bg-white px-2 py-2 text-sm"
@@ -99,9 +99,9 @@ export function Trends() {
 
       {error ? <p className="text-sm text-red-700" role="alert">{error}</p> : null}
 
-      <div className="overflow-x-auto rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
+      <div className="overflow-x-auto rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
         <table className="w-full text-sm">
-          <thead className="text-left text-xs uppercase text-[var(--color-text-secondary)]">
+          <thead className="text-left text-xs text-[var(--color-text-secondary)]">
             <tr>
               <th className="px-3 py-2">Année</th>
               <th className="px-3 py-2">Plan</th>
@@ -136,8 +136,8 @@ export function Trends() {
         </table>
       </div>
 
-      <div className="rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
-        <p className="mb-3 text-xs uppercase text-[var(--color-text-secondary)]">Volume d’occurrences par exercice</p>
+      <div className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
+        <p className="mb-3 text-xs text-[var(--color-text-secondary)]">Volume d’occurrences par exercice</p>
         <div className="flex items-end gap-3" style={{ height: 160 }}>
           {rows.map((row) => (
             <div key={row.plan_id} className="flex flex-1 flex-col items-center gap-1">

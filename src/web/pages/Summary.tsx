@@ -23,7 +23,7 @@ type Summary = {
 
 function Card({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
+    <div className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
       <p className="text-xs tracking-wide text-[var(--color-text-secondary)]">{label}</p>
       <p className="mt-1 text-2xl font-light tabular-nums">{value}</p>
     </div>
@@ -87,12 +87,12 @@ export function Summary() {
         />
       </div>
 
-      <div className="rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
+      <div className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
         <h2 className="border-b border-[var(--color-border-brand)] px-4 py-3 text-sm font-medium">
           Prochaines occurrences
         </h2>
         <table className="w-full text-sm">
-          <thead className="text-left text-xs uppercase text-[var(--color-text-secondary)]">
+          <thead className="text-left text-xs text-[var(--color-text-secondary)]">
             <tr>
               <th className="px-4 py-2">Date</th>
               <th className="px-4 py-2">Code</th>

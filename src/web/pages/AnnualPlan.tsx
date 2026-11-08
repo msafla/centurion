@@ -124,7 +124,7 @@ export function AnnualPlan() {
 
       <div className="flex flex-wrap items-end gap-3">
         <div>
-          <label htmlFor="search" className="text-xs uppercase text-[var(--color-text-secondary)]">
+          <label htmlFor="search" className="text-xs text-[var(--color-text-secondary)]">
             Recherche
           </label>
           <Input
@@ -135,7 +135,7 @@ export function AnnualPlan() {
           />
         </div>
         <div>
-          <label htmlFor="referentiel" className="text-xs uppercase text-[var(--color-text-secondary)]">
+          <label htmlFor="referentiel" className="text-xs text-[var(--color-text-secondary)]">
             Référentiel
           </label>
           <select
@@ -151,7 +151,7 @@ export function AnnualPlan() {
           </select>
         </div>
         <div>
-          <label htmlFor="state" className="text-xs uppercase text-[var(--color-text-secondary)]">
+          <label htmlFor="state" className="text-xs text-[var(--color-text-secondary)]">
             État
           </label>
           <select
@@ -182,17 +182,17 @@ export function AnnualPlan() {
           {MONTHS.map((label, index) => (
             <div
               key={label}
-              className="rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-3 text-center"
+              className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-3 text-center"
             >
-              <p className="text-xs uppercase text-[var(--color-text-secondary)]">{label}</p>
+              <p className="text-xs text-[var(--color-text-secondary)]">{label}</p>
               <p className="text-xl tabular-nums">{monthCounts[index] ?? 0}</p>
             </div>
           ))}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
+        <div className="overflow-x-auto rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
           <table className="w-full min-w-[900px] text-sm">
-            <thead className="text-left text-xs uppercase text-[var(--color-text-secondary)]">
+            <thead className="text-left text-xs text-[var(--color-text-secondary)]">
               <tr>
                 <th className="px-3 py-2">Référentiel</th>
                 <th className="px-3 py-2">Référence</th>

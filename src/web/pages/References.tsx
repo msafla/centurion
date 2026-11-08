@@ -44,7 +44,7 @@ export function References() {
         {summary.by_referentiel.map((entry) => (
           <article
             key={entry.referential.slug}
-            className="rounded-3xl border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4"
+            className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4"
           >
             <h2 className="text-lg font-medium">{entry.referential.label}</h2>
             <dl className="mt-3 space-y-1 text-sm">
