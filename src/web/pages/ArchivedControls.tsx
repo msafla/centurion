@@ -29,7 +29,7 @@ export function ArchivedControls() {
   return (
     <section className="space-y-5">
       <h1 className="text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">Contrôles archivés</h1>
-      <div className="overflow-x-auto rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
+      <div className="overflow-x-auto panel">
         <table className="w-full text-sm">
           <thead className="text-left text-xs text-[var(--color-text-secondary)]">
             <tr>

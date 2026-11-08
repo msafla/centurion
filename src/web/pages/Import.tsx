@@ -109,7 +109,7 @@ export function Import() {
         </p>
       ) : null}
 
-      <div className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
+      <div className="panel p-4">
         <label htmlFor="file" className="text-sm font-medium">
           Fichier (.csv ou .xlsx)
         </label>
@@ -126,7 +126,7 @@ export function Import() {
       </div>
 
       {upload ? (
-        <div className="space-y-4 rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
+        <div className="space-y-4 panel p-4">
           <p className="text-sm">
             {upload.headers.length} colonnes détectées
             {upload.separator ? ` · séparateur « ${upload.separator} »` : ''}

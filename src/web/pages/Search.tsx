@@ -35,7 +35,7 @@ export function Search() {
         onChange={(event) => setQ(event.target.value)}
         placeholder="Code, titre, description"
       />
-      <div className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
+      <div className="panel">
         <table className="w-full text-sm">
           <thead className="text-left text-xs text-[var(--color-text-secondary)]">
             <tr>
@@ -58,6 +58,13 @@ export function Search() {
                 <td className="px-3 py-2">{result.status}</td>
               </tr>
             ))}
+            {results.length === 0 && q.trim() !== '' ? (
+              <tr>
+                <td className="px-3 py-4 text-[var(--color-text-secondary)]" colSpan={4}>
+                  Aucun résultat pour cette recherche.
+                </td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </div>

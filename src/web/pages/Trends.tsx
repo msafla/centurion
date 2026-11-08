@@ -98,7 +98,7 @@ export function Trends() {
 
       {error ? <p className="text-sm text-red-700" role="alert">{error}</p> : null}
 
-      <div className="overflow-x-auto rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
+      <div className="overflow-x-auto panel">
         <table className="w-full text-sm">
           <thead className="text-left text-xs text-[var(--color-text-secondary)]">
             <tr>
@@ -135,7 +135,7 @@ export function Trends() {
         </table>
       </div>
 
-      <div className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
+      <div className="panel p-4">
         <p className="mb-3 text-xs text-[var(--color-text-secondary)]">Volume d’occurrences par exercice</p>
         <div className="flex items-end gap-3" style={{ height: 160 }}>
           {rows.map((row) => (

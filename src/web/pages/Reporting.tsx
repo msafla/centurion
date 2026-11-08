@@ -3,6 +3,7 @@ import type { OccurrenceDto, Page, PlanDto } from '../../shared/schemas';
 import { api } from '../lib/api';
 import { formatDate, formatPercent } from '../lib/format';
 import { usePlan } from '../lib/plan-context';
+import { MetricCard } from '../components/MetricCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -91,15 +92,15 @@ export function Reporting() {
       {report ? (
         <>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <Metric label="Total" value={String(report.summary.counts.total)} />
-            <Metric label="À renseigner" value={String(report.summary.counts.open)} />
-            <Metric label="Réalisation" value={formatPercent(report.summary.realization_rate.value)} />
-            <Metric label="Conformité" value={formatPercent(report.summary.conformity_rate.value)} />
+            <MetricCard label="Total" value={String(report.summary.counts.total)} />
+            <MetricCard label="À renseigner" value={String(report.summary.counts.open)} />
+            <MetricCard label="Réalisation" value={formatPercent(report.summary.realization_rate.value)} />
+            <MetricCard label="Conformité" value={formatPercent(report.summary.conformity_rate.value)} />
           </div>
           <p className="text-xs text-[var(--color-text-secondary)]">
             Généré le {report.generated_at}. Exports plafonnés (CSV 64 MiB, PDF 1 000 occurrences).
           </p>
-          <div className="overflow-x-auto rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
+          <div className="overflow-x-auto panel">
             <table className="w-full min-w-[700px] text-sm">
               <thead className="text-left text-xs text-[var(--color-text-secondary)]">
                 <tr>
@@ -133,11 +134,3 @@ export function Reporting() {
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
-      <p className="text-xs tracking-wide text-[var(--color-text-secondary)]">{label}</p>
-      <p className="mt-1 text-2xl font-light tabular-nums">{value}</p>
-    </div>
-  );
-}

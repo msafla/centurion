@@ -50,8 +50,15 @@ test('smoke nouvelles fonctionnalités', async ({ page }) => {
   await expect(page.getByText('piece.pdf')).toBeVisible();
 
   // Navigation all main screens.
-  for (const label of ['Synthèse', 'Référentiels', 'Reporting', 'Import', 'Paramètres']) {
+  for (const label of ['Synthèse', 'Recherche', 'Référentiels', 'Archivés', 'Reporting', 'Import', 'Paramètres']) {
     await page.getByRole('link', { name: label }).click();
     await expect(page.locator('main')).toBeVisible();
   }
+
+  // Recherche : état vide puis résultat.
+  await page.getByRole('link', { name: 'Recherche' }).click();
+  await page.getByRole('textbox', { name: 'Recherche' }).fill('SMOKE');
+  await expect(page.locator('tbody tr', { hasText: 'SMOKE' })).toHaveCount(1);
+  await page.getByRole('textbox', { name: 'Recherche' }).fill('zzz-rien');
+  await expect(page.getByText('Aucun résultat pour cette recherche.')).toBeVisible();
 });

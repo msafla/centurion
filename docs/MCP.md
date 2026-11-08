@@ -22,7 +22,7 @@ SDK : `@modelcontextprotocol/server@2.3.0` (`serveStdio`), protocole
 
 ## Outils en lecture seule (défaut)
 
-Exactement huit outils, sans mutation métier :
+Exactement dix outils, sans mutation métier :
 
 | Outil | Arguments | Route API sous-jacente |
 | --- | --- | --- |
@@ -32,6 +32,8 @@ Exactement huit outils, sans mutation métier :
 | `get_control` | `{plan_id,control_id}` | `GET /api/plans/:id/controls/:controlId` |
 | `list_occurrences` | `{plan_id,filters?,page?,page_size?}` | `GET /api/plans/:id/occurrences` |
 | `get_summary` | `{plan_id,filters?}` | `GET /api/plans/:id/summary` |
+| `get_trends` | `{filters?}` | `GET /api/trends` |
+| `list_clauses` | `{referential?}` | `GET /api/clauses` |
 | `export_controls_csv` | `{plan_id,filters?}` | artefact CSV borné |
 | `generate_report_pdf` | `{plan_id,filters?}` | artefact PDF borné |
 
@@ -70,7 +72,7 @@ et persistées en base. Elles remplacent les anciens flags d'environnement.
 
 | Permission | Outils |
 | --- | --- |
-| Lecture | `list_plans`, `get_plan`, `list_controls`, `get_control`, `list_occurrences`, `get_summary` |
+| Lecture | `list_plans`, `get_plan`, `list_controls`, `get_control`, `list_occurrences`, `get_summary`, `get_trends`, `list_clauses` |
 | Exports | `export_controls_csv`, `generate_report_pdf` |
 | Écriture — créer un contrôle | `create_control` |
 | Écriture — modifier un contrôle | `update_control_metadata` |

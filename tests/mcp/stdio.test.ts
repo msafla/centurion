@@ -88,7 +88,7 @@ function textOf(result: { content?: unknown }): Record<string, unknown> {
 }
 
 describe('MCP stdio read-only', () => {
-  it('lists exactly the eight read tools and answers a call in legacy and modern modes', async () => {
+  it('lists exactly the ten read tools and answers a call in legacy and modern modes', async () => {
     for (const mode of ['legacy', 'modern'] as const) {
       const client = await connect(mode, dataDir);
       const tools = await client.listTools();
@@ -100,6 +100,13 @@ describe('MCP stdio read-only', () => {
       expect(body.status).toBe('ok');
       expect(body.data_origin).toBe('centurion_data');
       expect(body.trust).toBe('untrusted_data');
+
+      const trends = textOf(await client.callTool({ name: 'get_trends', arguments: {} }));
+      expect(trends.status).toBe('ok');
+      expect(Array.isArray(trends.data)).toBe(true);
+      const clauses = textOf(await client.callTool({ name: 'list_clauses', arguments: {} }));
+      expect(clauses.status).toBe('ok');
+      expect(Array.isArray(clauses.data)).toBe(true);
       await client.close();
     }
   }, 60_000);

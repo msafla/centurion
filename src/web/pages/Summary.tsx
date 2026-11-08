@@ -3,6 +3,7 @@ import type { OccurrenceDto, Page } from '../../shared/schemas';
 import { api } from '../lib/api';
 import { formatDate, formatPercent } from '../lib/format';
 import { usePlan } from '../lib/plan-context';
+import { MetricCard } from '../components/MetricCard';
 
 type Summary = {
   counts: {
@@ -20,15 +21,6 @@ type Summary = {
   automation_rate: { numerator: number; denominator: number; value: number | null };
   by_referentiel: { referentiel: string; counts: { total: number } }[];
 };
-
-function Card({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
-      <p className="text-xs tracking-wide text-[var(--color-text-secondary)]">{label}</p>
-      <p className="mt-1 text-2xl font-light tabular-nums">{value}</p>
-    </div>
-  );
-}
 
 export function Summary() {
   const { plan, labelOf } = usePlan();
@@ -66,28 +58,28 @@ export function Summary() {
       <h1 className="text-4xl font-semibold tracking-[-0.05em]">Synthèse — {plan.name}</h1>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Card label="Total" value={String(summary.counts.total)} />
-        <Card label="À renseigner" value={String(summary.counts.open)} />
-        <Card label="Réalisés" value={String(summary.counts.fait_true)} />
-        <Card label="Non réalisés" value={String(summary.counts.fait_false)} />
+        <MetricCard label="Total" value={String(summary.counts.total)} />
+        <MetricCard label="À renseigner" value={String(summary.counts.open)} />
+        <MetricCard label="Réalisés" value={String(summary.counts.fait_true)} />
+        <MetricCard label="Non réalisés" value={String(summary.counts.fait_false)} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card
+        <MetricCard
           label="Taux de réalisation"
           value={`${formatPercent(summary.realization_rate.value)} (${summary.realization_rate.numerator}/${summary.realization_rate.denominator})`}
         />
-        <Card
+        <MetricCard
           label="Taux de conformité"
           value={`${formatPercent(summary.conformity_rate.value)} (${summary.conformity_rate.numerator}/${summary.conformity_rate.denominator})`}
         />
-        <Card
+        <MetricCard
           label="Automatisation (contrôles actifs)"
           value={`${formatPercent(summary.automation_rate.value)} (${summary.automation_rate.numerator}/${summary.automation_rate.denominator})`}
         />
       </div>
 
-      <div className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
+      <div className="panel">
         <h2 className="border-b border-[var(--color-border-brand)] px-4 py-3 text-sm font-medium">
           Prochaines occurrences
         </h2>

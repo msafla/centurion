@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   ControlListFilterSchema,
   FilterInputSchema,
+  ReferentialSlugSchema,
   type FilterInput,
 } from '../../shared/schemas';
 import { AppError, parseInput } from '../http/errors';
@@ -14,6 +15,8 @@ export const READ_ONLY_TOOLS = [
   'get_control',
   'list_occurrences',
   'get_summary',
+  'get_trends',
+  'list_clauses',
 ] as const;
 
 export const EXPORT_TOOLS = ['export_controls_csv', 'generate_report_pdf'] as const;
@@ -53,6 +56,8 @@ const ListOccurrencesArgs = z
   })
   .strict();
 const SummaryArgs = z.object({ plan_id: PlanId, filters: FilterInputSchema.optional() }).strict();
+const TrendsArgs = z.object({ filters: FilterInputSchema.optional() }).strict();
+const ListClausesArgs = z.object({ referential: ReferentialSlugSchema.optional() }).strict();
 const ExportArgs = z.object({ plan_id: PlanId, filters: FilterInputSchema.optional() }).strict();
 
 export type ResolvedCall =
@@ -124,6 +129,14 @@ export function resolveTool(tool: string, args: unknown): ResolvedCall {
         method: 'GET',
         url: `/api/plans/${parsed.plan_id}/summary${query({ ...(parsed.filters ?? {}) })}`,
       };
+    }
+    case 'get_trends': {
+      const parsed = parseInput(TrendsArgs, args);
+      return { kind: 'api', method: 'GET', url: `/api/trends${query({ ...(parsed.filters ?? {}) })}` };
+    }
+    case 'list_clauses': {
+      const parsed = parseInput(ListClausesArgs, args);
+      return { kind: 'api', method: 'GET', url: `/api/clauses${query({ referential: parsed.referential })}` };
     }
     case 'export_controls_csv':
     case 'generate_report_pdf': {

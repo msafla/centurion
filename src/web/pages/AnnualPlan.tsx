@@ -182,7 +182,7 @@ export function AnnualPlan() {
           {MONTHS.map((label, index) => (
             <div
               key={label}
-              className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-3 text-center"
+              className="panel p-3 text-center"
             >
               <p className="text-xs text-[var(--color-text-secondary)]">{label}</p>
               <p className="text-xl tabular-nums">{monthCounts[index] ?? 0}</p>
@@ -190,7 +190,7 @@ export function AnnualPlan() {
           ))}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
+        <div className="overflow-x-auto panel">
           <table className="w-full min-w-[900px] text-sm">
             <thead className="text-left text-xs text-[var(--color-text-secondary)]">
               <tr>

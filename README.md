@@ -54,7 +54,7 @@ les fichiers d'instance ; un verrou exclusif empêche une seconde instance.
 ## MCP
 
 Voir [`docs/MCP.md`](docs/MCP.md). En résumé : `npm run start` puis `npm run mcp`.
-Lecture seule par défaut (huit outils) ; les écritures sont désactivées sauf
+Lecture seule par défaut (dix outils) ; les écritures sont désactivées sauf
 double flag (`CENTURION_MCP_WRITE=1` backend **et** adaptateur) et ne modifient
 rien avant une approbation explicite dans l'UI CENTURION.
 
@@ -95,7 +95,7 @@ env CENTURION_DATA_DIR="$PWD/data/demo" "$PWD/scripts/mcp-stdio.sh"
 
 4. Vérifier que l’hôte liste les outils disponibles. En lecture seule par
 défaut : `list_plans`, `get_plan`, `list_controls`, `get_control`,
-`list_occurrences`, `get_summary`, `export_controls_csv`, `generate_report_pdf`.
+`list_occurrences`, `get_summary`, `get_trends`, `list_clauses`, `export_controls_csv`, `generate_report_pdf`.
 Les écritures ne s’activent que via Paramètres → Permissions MCP.
 
 Voir [`docs/MCP.md`](docs/MCP.md) pour les détails Claude Desktop, Codex,

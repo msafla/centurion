@@ -1,6 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import {
+  ClauseDtoSchema,
   ConformiteSchema,
   ControlDtoSchema,
   ControlListFilterSchema,
@@ -10,6 +11,7 @@ import {
   type OccurrenceDto,
   OccurrenceStateSchema,
   PlanDtoSchema,
+  ReferentialSlugSchema,
   StatusInputSchema,
   UpdateMetadataInputSchema,
 } from '../shared/schemas';
@@ -67,12 +69,31 @@ const ReferentialSummarySchema = z.object({
   conformity_rate: RateSchema,
 });
 
+const ClauseSummarySchema = z.object({
+  clause: z.object({
+    id: z.string(),
+    code: z.string(),
+    referential: z.string().nullable(),
+  }),
+  counts: z.record(z.string(), z.number()),
+  realization_rate: RateSchema,
+  conformity_rate: RateSchema,
+});
+
 const SummarySchema = z.object({
   counts: z.record(z.string(), z.number()),
   realization_rate: RateSchema,
   conformity_rate: RateSchema,
   automation_rate: RateSchema,
   by_referentiel: z.array(ReferentialSummarySchema),
+  by_clause: z.array(ClauseSummarySchema),
+});
+
+const TrendPointSchema = z.object({
+  plan_id: z.string(),
+  year: z.number(),
+  name: z.string(),
+  summary: SummarySchema,
 });
 
 const PaginationInput = { page: z.number().int().min(1).optional(), page_size: z.number().int().min(1).max(100).optional() };
@@ -304,6 +325,37 @@ function registerReadOnly(
         limiter.check('call');
         const raw = await client.dispatch('get_summary', args);
         const { data, sanitized_fields } = projectMcpOutput(raw, SummarySchema);
+        return envelope(data, sanitized_fields);
+      }),
+  );
+
+  server.registerTool(
+    'get_trends',
+    {
+      description:
+        'Get one trend point per annual plan (summary counts and rates, including clause coverage), with optional occurrence filters.',
+      inputSchema: z.object({ filters: FilterInputSchema.optional() }).strict(),
+    },
+    async (args) =>
+      guard(async () => {
+        limiter.check('call');
+        const raw = await client.dispatch('get_trends', args);
+        const { data, sanitized_fields } = projectMcpOutput(raw, z.array(TrendPointSchema));
+        return envelope(data, sanitized_fields);
+      }),
+  );
+
+  server.registerTool(
+    'list_clauses',
+    {
+      description: 'List the clauses available for manual mapping, optionally filtered by referential slug.',
+      inputSchema: z.object({ referential: ReferentialSlugSchema.optional() }).strict(),
+    },
+    async (args) =>
+      guard(async () => {
+        limiter.check('call');
+        const raw = await client.dispatch('list_clauses', args);
+        const { data, sanitized_fields } = projectMcpOutput(raw, z.array(ClauseDtoSchema));
         return envelope(data, sanitized_fields);
       }),
   );

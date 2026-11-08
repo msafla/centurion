@@ -174,7 +174,7 @@ export function ControlDetail() {
       </div>
 
       {tab === 'definition' ? (
-        <dl className="grid grid-cols-1 gap-3 rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4 text-sm sm:grid-cols-2">
+        <dl className="grid grid-cols-1 gap-3 panel p-4 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-xs text-[var(--color-text-secondary)]">Référentiel</dt>
             <dd>{control.referentials.map(labelOf).join(" + ")}</dd>
@@ -243,7 +243,7 @@ export function ControlDetail() {
       ) : null}
 
       {tab === 'calendar' ? (
-        <div className="space-y-4 rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-4">
+        <div className="space-y-4 panel p-4">
           <p className="text-sm">
             Fréquence :{' '}
             {FREQUENCY_LABELS[control.schedule.kind] ?? control.schedule.kind}
@@ -272,7 +272,7 @@ export function ControlDetail() {
       ) : null}
 
       {tab === 'realizations' ? (
-        <div className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
+        <div className="panel">
           <table className="w-full text-sm">
             <thead className="text-left text-xs text-[var(--color-text-secondary)]">
               <tr>
@@ -338,7 +338,7 @@ export function ControlDetail() {
           {history.map((event) => (
             <li
               key={event.id}
-              className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)] p-3 text-sm"
+              className="panel p-3 text-sm"
             >
               <span className="font-medium">{event.action}</span> · {event.source} ·{' '}
               <span className="text-[var(--color-text-secondary)]">{event.at_utc}</span>

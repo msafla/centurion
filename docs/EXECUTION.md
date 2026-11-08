@@ -1082,3 +1082,34 @@ les captures régénérées si besoin.
 | `npm run check` | 169/169 tests, typecheck et lint OK |
 | `npm run build` | OK |
 | `npm run test:e2e` | 9/9 passés |
+
+## Post-T24 — dedup UI, état vide recherche, outils MCP get_trends/list_clauses
+
+État : livré et vérifié le 8 novembre 2026.
+
+- Classe `.panel` dans `styles.css` (rayon 8 px, filet, ombre neutre) en
+  remplacement des 21 chaînes de classes panneau copiées dans les pages ;
+  composant `MetricCard` partagé entre `Summary` et `Reporting` (les
+  `Card`/`Metric` locaux supprimés).
+- `Search.tsx` : ligne « Aucun résultat pour cette recherche. » quand la
+  requête ne matche rien.
+- MCP lecture seule : deux nouveaux outils `get_trends` (`GET /api/trends`,
+  filtres d'occurrence) et `list_clauses` (`GET /api/clauses`, filtre
+  `referential?`) — allowlist `policy.ts`, dispatch, enregistrement adaptateur
+  avec projection zod (`by_clause` ajouté au schéma `SummarySchema` de
+  l'adaptateur, il était silencieusement tronqué). Dix outils read-only au
+  total. Tests : `read-only.test.ts` (10 outils + resolveTool), `stdio.test.ts`
+  (appels `get_trends`/`list_clauses` via stdio). Docs `docs/MCP.md` et
+  `README.md` mises à jour.
+- Smoke e2e : visite Recherche et Archivés + vérification état vide de la
+  recherche.
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run check` | 169/169 tests, typecheck et lint OK |
+| `npm run build` | OK |
+| `npm run test:e2e` | 9/9 passés |
+
+### Prochaine action
+
+Commit local.

@@ -11,8 +11,8 @@ import { defaultMcpPolicy, isToolEnabled } from '../../src/server/mcp/policy-sto
 import { projectMcpOutput, sanitizeText } from '../../src/mcp/sanitize';
 
 describe('MCP policy', () => {
-  it('exposes exactly the eight read tools and no write tool in read mode', () => {
-    expect(READ_TOOLS).toHaveLength(8);
+  it('exposes exactly the ten read tools and no write tool in read mode', () => {
+    expect(READ_TOOLS).toHaveLength(10);
     expect(READ_TOOLS).toEqual([
       'list_plans',
       'get_plan',
@@ -20,11 +20,13 @@ describe('MCP policy', () => {
       'get_control',
       'list_occurrences',
       'get_summary',
+      'get_trends',
+      'list_clauses',
       'export_controls_csv',
       'generate_report_pdf',
     ]);
     expect(WRITE_TOOLS).toHaveLength(3);
-    expect(ALL_TOOLS).toHaveLength(11);
+    expect(ALL_TOOLS).toHaveLength(13);
   });
 
   it('rejects unknown tools and unknown arguments', () => {
@@ -41,6 +43,18 @@ describe('MCP policy', () => {
     expect(resolveTool('get_plan', { plan_id: '123e4567-e89b-42d3-a456-426614174000' })).toEqual(
       { kind: 'api', method: 'GET', url: '/api/plans/123e4567-e89b-42d3-a456-426614174000' },
     );
+    expect(resolveTool('get_trends', {})).toEqual({ kind: 'api', method: 'GET', url: '/api/trends' });
+    expect(resolveTool('get_trends', { filters: { state: 'open' } })).toEqual({
+      kind: 'api',
+      method: 'GET',
+      url: '/api/trends?state=open',
+    });
+    expect(resolveTool('list_clauses', {})).toEqual({ kind: 'api', method: 'GET', url: '/api/clauses' });
+    expect(resolveTool('list_clauses', { referential: 'iso_27001' })).toEqual({
+      kind: 'api',
+      method: 'GET',
+      url: '/api/clauses?referential=iso_27001',
+    });
   });
 
   it('gates tools through the persisted MCP policy', () => {
