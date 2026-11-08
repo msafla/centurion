@@ -137,7 +137,13 @@ Au démarrage, avant d'ouvrir la base :
 `403` origine/host, `404` backup/aperçu inconnu, `409` aperçu consommé/expiré/
 périmé, `422` schéma trop récent ou sauvegarde corrompue, `503` maintenance.
 
-## Tendances, clauses et justificatifs
+## Tendances, clauses, recherche et justificatifs
+
+### Recherche
+
+| Route | Réponse |
+| --- | --- |
+| `GET /api/search?q=` | Jusqu’à 50 contrôles (actifs et archivés) dont le code, le titre ou la description correspond — LIKE échappé, insensible à la casse. `q` requis, ≤ 120 caractères. |
 
 ### Tendances
 

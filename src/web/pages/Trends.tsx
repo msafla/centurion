@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
+import { api } from '../lib/api';
+import { Button } from '@/components/ui/button';
 
 type TrendSummary = {
   counts: { total: number; fait_true: number; conforme: number };
@@ -12,9 +14,6 @@ type TrendPoint = {
   name: string;
   summary: TrendSummary;
 };
-
-import { api } from '../lib/api';
-import { Button } from '@/components/ui/button';
 
 export function Trends() {
   const [rows, setRows] = useState<TrendPoint[]>([]);

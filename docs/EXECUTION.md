@@ -1065,3 +1065,20 @@ des panneaux (8 px) et la casse des libellés sur les 24 occurrences restantes.
 
 Commit local. L'UI est alignée DESIGN.md + unslop ; reste à valider visuellement
 les captures régénérées si besoin.
+
+## Post-T23 — petits correctifs post-revue (unslop + a11y + docs)
+
+- `docs/API.md` : section « Recherche » ajoutée (`GET /api/search?q=`,
+  plafond 50, LIKE échappé) — la route n'était pas documentée.
+- `Search.tsx` : `aria-label="Recherche"` sur le champ (placeholder seul
+  auparavant).
+- `Settings.tsx` : badge « en attente » passé de `brand-accent` (#04F06A) à
+  `emerald-100/emerald-900` — DESIGN.md réserve le vert vif aux surfaces
+  sombres.
+- `Trends.tsx` : imports déplacés en tête de fichier.
+
+| Commande | Résultat |
+| --- | --- |
+| `npm run check` | 169/169 tests, typecheck et lint OK |
+| `npm run build` | OK |
+| `npm run test:e2e` | 9/9 passés |

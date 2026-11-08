@@ -29,7 +29,12 @@ export function Search() {
   return (
     <section className="space-y-5">
       <h1 className="text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">Recherche globale</h1>
-      <Input value={q} onChange={(event) => setQ(event.target.value)} placeholder="Code, titre, description" />
+      <Input
+        aria-label="Recherche"
+        value={q}
+        onChange={(event) => setQ(event.target.value)}
+        placeholder="Code, titre, description"
+      />
       <div className="rounded-lg border border-[var(--color-border-brand)] bg-white/88 shadow-[0_24px_80px_-52px_rgba(22,19,42,0.32)]">
         <table className="w-full text-sm">
           <thead className="text-left text-xs text-[var(--color-text-secondary)]">

@@ -232,7 +232,7 @@ export function Settings() {
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-medium">Approbations MCP</h2>
           {pendingCount > 0 ? (
-            <span className="rounded-full bg-[var(--color-brand-accent)] px-2 py-0.5 text-xs text-[var(--color-ink)]">
+            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-900">
               {pendingCount} en attente
             </span>
           ) : null}
