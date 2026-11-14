@@ -13,8 +13,12 @@ COPY . .
 RUN npm run build \
   && npm prune --omit=dev
 # Data directory owned by the runtime UID (65532); copied into the final image
-# so the named volume is writable by the non-root user.
-RUN mkdir -p /data && chown 65532:65532 /data
+# so the named volume is writable by the non-root user. The data dir is nested
+# one level inside the volume mount (/data/app, not /data) because the
+# instance lock is created as a sibling of the data dir (<dataDir>.lock):
+# /data.lock would land in the read-only root filesystem and could not be
+# created by the non-root user.
+RUN mkdir -p /data/app && chown 65532:65532 /data /data/app
 
 # Stage runtime: distroless Node 24 on Debian 12 (glibc-compatible with the
 # bookworm build stage). No shell, no package manager, non-root user 65532.
@@ -25,7 +29,7 @@ LABEL org.opencontainers.image.source="https://github.com/msafla/centurion" \
       org.opencontainers.image.title="CENTURION"
 WORKDIR /app
 ENV NODE_ENV=production \
-    CENTURION_DATA_DIR=/data \
+    CENTURION_DATA_DIR=/data/app \
     CENTURION_LISTEN_HOST=0.0.0.0
 COPY --from=build --chown=65532:65532 /app/dist ./dist
 COPY --from=build --chown=65532:65532 /app/node_modules ./node_modules

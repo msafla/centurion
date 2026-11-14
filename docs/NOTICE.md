@@ -32,7 +32,9 @@ sur `127.0.0.1` de l'hôte ; un seul processus peut accéder aux données (verro
 d'instance).
 
 Les données vivent dans le volume Docker `centurion-data` monté sur `/data`
-(`CENTURION_DATA_DIR=/data` dans l'image).
+(`CENTURION_DATA_DIR=/data/app` dans l'image ; le verrou d'instance
+`/data/app.lock` est un frère du répertoire de données et doit rester dans le
+volume inscriptible).
 
 **Démo reproductible** (développement, Linux + Node 24 LTS `>=24 <25` et npm 11,
 données fictives, horloge fixe 2028-04-15, plan 2028) :

@@ -77,7 +77,9 @@ npm run start        # UI compilée + API sur http://127.0.0.1:4317
 ## Stockage, sauvegardes, restauration
 
 Dans Docker, le `dataDir` est le volume nommé `centurion-data` monté sur
-`/data` (`CENTURION_DATA_DIR=/data` dans l'image). Hors Docker
+`/data`, avec `CENTURION_DATA_DIR=/data/app` dans l'image (le verrou
+d'instance `<dataDir>.lock` doit vivre dans le volume inscriptible, pas à la
+racine du système de fichiers racine en lecture seule). Hors Docker
 (développement), c'est `CENTURION_DATA_DIR` ou `~/.local/share/centurion` sous
 Linux. Un seul processus possède SQLite et
 les fichiers d'instance ; un verrou exclusif empêche une seconde instance.
