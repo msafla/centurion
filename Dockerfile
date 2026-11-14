@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1
 
-# Stage build: full Node image on Debian 12 (bookworm) so better-sqlite3 can
+# Stage build: full Node image on Debian 13 (trixie) so better-sqlite3 can
 # compile its native binding, then produce a pruned production tree.
-FROM node:24-bookworm-slim AS build
+FROM node:24-trixie-slim AS build
 RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ \
   && rm -rf /var/lib/apt/lists/*
@@ -20,10 +20,10 @@ RUN npm run build \
 # created by the non-root user.
 RUN mkdir -p /data/app && chown 65532:65532 /data /data/app
 
-# Stage runtime: distroless Node 24 on Debian 12 (glibc-compatible with the
-# bookworm build stage). No shell, no package manager, non-root user 65532.
+# Stage runtime: distroless Node 24 on Debian 13 (trixie, same release as the
+# build stage). No shell, no package manager, non-root user 65532.
 # The Node binary lives at /nodejs/bin/node in distroless nodejs images.
-FROM gcr.io/distroless/nodejs24-debian12:nonroot AS runtime
+FROM gcr.io/distroless/nodejs24-debian13:nonroot AS runtime
 LABEL org.opencontainers.image.source="https://github.com/msafla/centurion" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.title="CENTURION"
