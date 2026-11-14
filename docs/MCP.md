@@ -6,12 +6,16 @@ opérations bornées au processus propriétaire par un appel REST local authenti
 
 ## Lancement
 
-1. Démarrer le backend propriétaire : `npm run start` (écoute sur
-   `http://127.0.0.1:4317`). Il écrit `runtime/mcp-token` (privé) et
-   `runtime/backend.json` (`origin`, `epoch`, `policy`).
-2. Lancer l'adaptateur : `npm run mcp` (Node `dist/mcp/server.js`, stdio).
-   L'adaptateur lit ces fichiers ; il n'accepte jamais une URL fournie par un
-   outil.
+1. Démarrer le backend propriétaire : `docker compose up -d --build` (conteneur
+   `centurion`, écoute sur `http://127.0.0.1:4317` publié sur l'hôte). Il écrit
+   `runtime/mcp-token` (privé) et `runtime/backend.json` (`origin`, `epoch`,
+   `policy`) dans le volume `/data`.
+2. Lancer l'adaptateur : `docker exec -i centurion /nodejs/bin/node dist/mcp/server.js`
+   (Node `dist/mcp/server.js`, stdio). L'adaptateur lit ces fichiers ; il
+   n'accepte jamais une URL fournie par un outil.
+
+En développement (hors Docker, Linux + Node 24) : `npm run start` puis
+`npm run mcp` (ou `scripts/mcp-stdio.sh`, voir ci-dessous).
 
 Le backend doit tourner **avant** que l'hôte MCP n'appelle un outil, et sur le
 **même `dataDir`** que l'adaptateur (sinon `backend_unavailable`).
@@ -90,20 +94,91 @@ confirmée dans l'UI CENTURION.
 
 ## Lancer l'adaptateur depuis un hôte MCP (Claude, Codex…)
 
-L'adaptateur est un serveur **stdio** : l'hôte le lance comme sous-processus. Le
-script `scripts/mcp-stdio.sh` sert de lanceur portable : il résout la racine du
-dépôt, choisit Node 24 et fixe `CENTURION_DATA_DIR` (démo par défaut, sinon
-`$CENTURION_DATA_DIR`).
+L'adaptateur est un serveur **stdio** : l'hôte le lance comme sous-processus.
+Plateforme supportée : **Linux via Docker** — l'hôte lance l'adaptateur dans le
+conteneur `centurion` avec `docker exec -i centurion /nodejs/bin/node dist/mcp/server.js`.
 
-### Claude Code (CLI)
+### Depuis Docker (recommandé)
+
+Prérequis : `docker compose up -d --build` (le backend tourne dans le
+conteneur `centurion`, les fichiers runtime sont lus dans le volume `/data`).
+
+#### Claude Code (CLI)
+
+```bash
+claude mcp add --transport stdio centurion -- \
+  docker exec -i centurion /nodejs/bin/node dist/mcp/server.js
+```
+
+Ou dans `.mcp.json` à la racine du projet :
+
+```json
+{
+  "mcpServers": {
+    "centurion": {
+      "type": "stdio",
+      "command": "docker",
+      "args": ["exec", "-i", "centurion", "/nodejs/bin/node", "dist/mcp/server.js"]
+    }
+  }
+}
+```
+
+#### Claude Desktop
+
+`claude_desktop_config.json` :
+
+```json
+{
+  "mcpServers": {
+    "centurion": {
+      "command": "docker",
+      "args": ["exec", "-i", "centurion", "/nodejs/bin/node", "dist/mcp/server.js"]
+    }
+  }
+}
+```
+
+#### Codex
+
+`~/.codex/config.toml` (ou `codex mcp add`) :
+
+```toml
+[mcp_servers.centurion]
+command = "docker"
+args = ["exec", "-i", "centurion", "/nodejs/bin/node", "dist/mcp/server.js"]
+enabled = true
+```
+
+```bash
+codex mcp add centurion -- docker exec -i centurion /nodejs/bin/node dist/mcp/server.js
+```
+
+#### `.mcp.json` générique (OpenCode, VS Code, etc.)
+
+```json
+{
+  "mcpServers": {
+    "centurion": {
+      "type": "stdio",
+      "command": "docker",
+      "args": ["exec", "-i", "centurion", "/nodejs/bin/node", "dist/mcp/server.js"]
+    }
+  }
+}
+```
+
+### En développement (hors Docker, Linux + Node 24)
+
+Le script `scripts/mcp-stdio.sh` sert de lanceur portable : il résout la racine
+du dépôt, choisit Node 24 et fixe `CENTURION_DATA_DIR` (démo par défaut, sinon
+`$CENTURION_DATA_DIR`). Prérequis : `npm run start`.
 
 ```bash
 claude mcp add --transport stdio centurion \
   --env CENTURION_DATA_DIR=/chemin/vers/CENTURION/data/demo \
   -- /chemin/vers/CENTURION/scripts/mcp-stdio.sh
 ```
-
-Ou dans `.mcp.json` à la racine du projet :
 
 ```json
 {
@@ -116,41 +191,6 @@ Ou dans `.mcp.json` à la racine du projet :
   }
 }
 ```
-
-### Claude Desktop (Windows)
-
-`%APPDATA%\Claude\claude_desktop_config.json` — lance le lanceur dans WSL :
-
-```json
-{
-  "mcpServers": {
-    "centurion": {
-      "command": "wsl.exe",
-      "args": ["-e", "/chemin/vers/CENTURION/scripts/mcp-stdio.sh"]
-    }
-  }
-}
-```
-
-### Codex
-
-`~/.codex/config.toml` (ou `codex mcp add`) :
-
-```toml
-[mcp_servers.centurion]
-command = "wsl.exe"
-args = ["-e", "/chemin/vers/CENTURION/scripts/mcp-stdio.sh"]
-enabled = true
-```
-
-```bash
-codex mcp add centurion -- wsl.exe -e /chemin/vers/CENTURION/scripts/mcp-stdio.sh
-```
-
-Si l'hôte tourne **dans WSL**, remplace `wsl.exe -e …` par le chemin direct du
-script. Si tout tourne sous **Windows natif**, installe Node 24 + `npm ci` +
-`npm run build` côté Windows et utilise `node C:\Workspace\CENTURION\dist\mcp\server.js`
-avec `CENTURION_DATA_DIR=C:\Workspace\CENTURION\data\demo`.
 
 ### Remarques
 

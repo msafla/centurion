@@ -5,7 +5,8 @@
 CENTURION is a local-first, single-user app for tracking an annual cyber/IT
 control plan: audited completions, evidence uploads, multi-year trends,
 CSV/PDF exports, backups and restore, plus a read-only-by-default MCP stdio
-server. Built with TypeScript, Fastify, SQLite and React/Vite.
+server. Built with TypeScript, Fastify, SQLite and React/Vite. Runs on Linux
+via a hardened Docker image.
 
 Documentation is in French.
 
@@ -31,39 +32,54 @@ Captures réelles sur le jeu de démonstration (plan 2028) — régénérables v
 ![Plan annuel](docs/screenshots/plan-annuel.png)
 ![Tendances](docs/screenshots/tendances.png)
 
-## Prérequis
+## Plateforme supportée
 
-- Node.js 24 LTS (`>=24 <25`) et npm 11.
-- Aucun accès réseau n'est requis au runtime ; aucune télémétrie, aucun CDN.
+**Linux, via Docker** (image distroless, non-root, système de fichiers en
+lecture seule). Windows et macOS ne sont pas supportés nativement.
+
+Aucun accès réseau n'est requis au runtime ; aucune télémétrie, aucun CDN.
 
 ## Installation et lancement
 
 ```bash
+docker compose up -d --build
+```
+
+Ouvrez <http://127.0.0.1:4317> dans votre navigateur. Le port 4317 n'est publié
+que sur `127.0.0.1` de l'hôte.
+
+### Développement (contributeurs, Linux, Node 24)
+
+Prérequis : Node.js 24 LTS (`>=24 <25`) et npm 11.
+
+```bash
 npm ci
-npm run build
-npm run start          # UI compilée + API sur http://127.0.0.1:4317
-```
-
-Développement (backend + Vite sur 5173, données privées ordinaires) :
-
-```bash
-npm run dev
-```
-
-Démo reproductible (dataDir `data/demo`, horloge fixe 2028-04-15, plan 2028) :
-
-```bash
-npm run dev:demo       # seed si vide, aucun reset implicite
+npm run dev          # backend + Vite sur 5173, données privées ordinaires
+npm run dev:demo     # démo reproductible (dataDir data/demo, horloge fixe 2028-04-15, plan 2028)
 npm run demo:reset -- --confirm   # remet la démo à l'état déterministe
+npm run build
+npm run start        # UI compilée + API sur http://127.0.0.1:4317
 ```
 
 `demo:reset` refuse toute cible hors de `data/demo` et toute instance active.
 
+### Durcissement du conteneur
+
+- Image `gcr.io/distroless/nodejs24-debian12:nonroot` : pas de shell, pas de
+  gestionnaire de paquets ; exécution sous l'UID 65532 (non-root).
+- Système de fichiers racine en lecture seule (`read_only: true`) avec
+  `tmpfs /tmp` ; `cap_drop: [ALL]` ; `no-new-privileges:true` ;
+  `pids_limit: 128` ; `mem_limit: 512m`.
+- Port publié uniquement sur `127.0.0.1:4317:4317`.
+- `HEALTHCHECK` en Node (forme exec, sans shell) sur `GET /health`.
+- Scan Trivy (sévérité CRITICAL) de l'image dans la CI GitHub.
+
 ## Stockage, sauvegardes, restauration
 
-Le `dataDir` est `CENTURION_DATA_DIR` ou, par défaut, le répertoire utilisateur
-de la plateforme (`%LOCALAPPDATA%/Centurion`, `~/.local/share/centurion`,
-`~/Library/Application Support/Centurion`). Un seul processus possède SQLite et
+Dans Docker, le `dataDir` est le volume nommé `centurion-data` monté sur
+`/data` (`CENTURION_DATA_DIR=/data` dans l'image). Hors Docker
+(développement), c'est `CENTURION_DATA_DIR` ou `~/.local/share/centurion` sous
+Linux. Un seul processus possède SQLite et
 les fichiers d'instance ; un verrou exclusif empêche une seconde instance.
 
 - Sauvegardes cohérentes (`better-sqlite3.backup()`), catalogue externe durable,
@@ -74,7 +90,8 @@ les fichiers d'instance ; un verrou exclusif empêche une seconde instance.
 
 ## MCP
 
-Voir [`docs/MCP.md`](docs/MCP.md). En résumé : `npm run start` puis `npm run mcp`.
+Voir [`docs/MCP.md`](docs/MCP.md). En résumé : `docker compose up -d --build`
+puis `docker exec -i centurion /nodejs/bin/node dist/mcp/server.js`.
 Lecture seule par défaut (dix outils) ; les écritures sont désactivées sauf
 double flag (`CENTURION_MCP_WRITE=1` backend **et** adaptateur) et ne modifient
 rien avant une approbation explicite dans l'UI CENTURION.
@@ -86,16 +103,16 @@ exemples Claude Code/Codex/Claude Desktop dans `docs/MCP.md` sont des
 illustrations ; le protocole et les variables d’environnement sont les mêmes
 pour tout harness compatible MCP.
 
-1. Démarrer le backend propriétaire :
+1. Démarrer le backend propriétaire dans Docker :
 
 ```bash
-npm run start
+docker compose up -d --build
 ```
 
-2. Configurer l’hôte MCP pour lancer ce processus stdio (variables recommandées) :
+2. Configurer l’hôte MCP pour lancer l’adaptateur dans le conteneur en stdio :
 
 ```bash
-env CENTURION_DATA_DIR="$PWD/data/demo" "$PWD/scripts/mcp-stdio.sh"
+docker exec -i centurion /nodejs/bin/node dist/mcp/server.js
 ```
 
 3. Configuration générique `.mcp.json` (OpenCode, Codex, VS Code, etc.) :
@@ -105,13 +122,18 @@ env CENTURION_DATA_DIR="$PWD/data/demo" "$PWD/scripts/mcp-stdio.sh"
   "mcpServers": {
     "centurion": {
       "type": "stdio",
-      "command": "/chemin/vers/CENTURION/scripts/mcp-stdio.sh",
-      "env": {
-        "CENTURION_DATA_DIR": "/chemin/vers/CENTURION/data/demo"
-      }
+      "command": "docker",
+      "args": ["exec", "-i", "centurion", "/nodejs/bin/node", "dist/mcp/server.js"]
     }
   }
 }
+```
+
+En mode développement (hors Docker, Linux + Node 24), le lanceur
+`scripts/mcp-stdio.sh` reste disponible :
+
+```bash
+env CENTURION_DATA_DIR="$PWD/data/demo" "$PWD/scripts/mcp-stdio.sh"
 ```
 
 4. Vérifier que l’hôte liste les outils disponibles. En lecture seule par
@@ -120,7 +142,7 @@ défaut : `list_plans`, `get_plan`, `list_controls`, `get_control`,
 Les écritures ne s’activent que via Paramètres → Permissions MCP.
 
 Voir [`docs/MCP.md`](docs/MCP.md) pour les détails Claude Desktop, Codex,
-Windows natif, limites, jeton runtime et frontière de confiance.
+limites, jeton runtime et frontière de confiance.
 
 ## Qualité
 

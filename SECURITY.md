@@ -15,6 +15,9 @@ Reporting* de GitHub : onglet **Security** du dépôt `msafla/centurion`, puis
 - Application mono-utilisateur, sans compte ni SSO, à l'écoute uniquement sur
   `127.0.0.1` ; la protection vise les requêtes du navigateur, pas les autres
   processus du même poste.
+- En déploiement Docker, le conteneur tourne non-root (UID 65532), avec un
+  système de fichiers racine en lecture seule, sans capabilities, et le port
+  publié uniquement sur `127.0.0.1` de l'hôte.
 - Aucun chiffrement applicatif, aucune inviolabilité de l'audit.
 - Les justificatifs sont bornés et typés, mais ne sont pas scannés par
   antivirus.

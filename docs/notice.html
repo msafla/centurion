@@ -157,14 +157,13 @@
 
   <section id="install">
     <h2><span class="num">1</span>Installation et lancement</h2>
-    <p class="lead">Prérequis : <strong>Node.js 24 LTS</strong> (<code>&gt;=24 &lt;25</code>) et npm 11. Aucun accès réseau requis au runtime.</p>
-    <pre><code>npm ci
-npm run build
-npm run start        # UI + API sur http://127.0.0.1:4317</code></pre>
-    <p>Ouvrez <code>http://127.0.0.1:4317</code>. L'application n'écoute que sur <code>127.0.0.1</code> et un seul
-    processus possède les données (verrou d'instance). Les données vivent dans <code>CENTURION_DATA_DIR</code> ou, par défaut,
-    dans le répertoire utilisateur (<code>~/.local/share/centurion</code>, <code>%LOCALAPPDATA%/Centurion</code>, <code>~/Library/Application Support/Centurion</code>).</p>
-    <h3>Démo reproductible</h3>
+    <p class="lead"><strong>Plateforme supportée : Linux, via Docker</strong> (image distroless, non-root, système de fichiers
+    en lecture seule). Windows et macOS ne sont pas supportés nativement. Aucun accès réseau requis au runtime.</p>
+    <pre><code>docker compose up -d --build</code></pre>
+    <p>Ouvrez <code>http://127.0.0.1:4317</code>. Le port n'est publié que sur <code>127.0.0.1</code> de l'hôte et un seul
+    processus possède les données (verrou d'instance). Les données vivent dans le volume Docker <code>centurion-data</code>
+    monté sur <code>/data</code> (<code>CENTURION_DATA_DIR=/data</code> dans l'image).</p>
+    <h3>Démo reproductible (développement, Linux + Node 24 LTS)</h3>
     <pre><code>npm run dev:demo                 # données fictives, horloge fixe 2028-04-15
 npm run demo:reset -- --confirm  # retour à l'état déterministe (data/demo uniquement)</code></pre>
   </section>
@@ -247,18 +246,19 @@ npm run demo:reset -- --confirm  # retour à l'état déterministe (data/demo un
     <h2><span class="num">4</span>Connecter un assistant IA (MCP)</h2>
     <p class="lead">Serveur <strong>MCP en stdio</strong>, agnostique de l'hôte (OpenCode, Codex, VS Code, Claude Desktop…).</p>
     <ol class="steps">
-      <li>Démarrez le backend : <code>npm run start</code></li>
+      <li>Démarrez le backend : <code>docker compose up -d --build</code></li>
       <li>Configurez l'hôte MCP (ex. <code>.mcp.json</code>) :</li>
     </ol>
     <pre><code>{
   "mcpServers": {
     "centurion": {
       "type": "stdio",
-      "command": "/chemin/vers/CENTURION/scripts/mcp-stdio.sh",
-      "env": { "CENTURION_DATA_DIR": "/chemin/vers/CENTURION/data/demo" }
+      "command": "docker",
+      "args": ["exec", "-i", "centurion", "/nodejs/bin/node", "dist/mcp/server.js"]
     }
   }
 }</code></pre>
+    <p>En développement (hors Docker, Linux + Node 24), le lanceur <code>scripts/mcp-stdio.sh</code> reste disponible (voir <code>docs/MCP.md</code>).</p>
     <p><strong>Lecture seule par défaut — 10 outils :</strong> <code>list_plans</code>, <code>get_plan</code>, <code>list_controls</code>,
     <code>get_control</code>, <code>list_occurrences</code>, <code>get_summary</code>, <code>get_trends</code>, <code>list_clauses</code>,
     <code>export_controls_csv</code>, <code>generate_report_pdf</code>.</p>

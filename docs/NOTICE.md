@@ -19,29 +19,28 @@ le jeu de données de démonstration (`npm run dev:demo`).
 
 ## 1. Installation et lancement
 
-Prérequis : **Node.js 24 LTS** (`>=24 <25`) et npm 11. Aucun accès réseau
-n'est requis au runtime.
+**Plateforme supportée : Linux, via Docker** (image distroless, non-root,
+système de fichiers en lecture seule). Windows et macOS ne sont pas supportés
+nativement. Aucun accès réseau n'est requis au runtime.
 
 ```bash
-npm ci
-npm run build
-npm run start        # UI + API sur http://127.0.0.1:4317
+docker compose up -d --build
 ```
 
-Ouvrez <http://127.0.0.1:4317> dans votre navigateur. L'application n'écoute que
-sur `127.0.0.1` ; un seul processus peut accéder aux données (verrou d'instance).
+Ouvrez <http://127.0.0.1:4317> dans votre navigateur. Le port n'est publié que
+sur `127.0.0.1` de l'hôte ; un seul processus peut accéder aux données (verrou
+d'instance).
 
-**Démo reproductible** (données fictives, horloge fixe 2028-04-15, plan 2028) :
+Les données vivent dans le volume Docker `centurion-data` monté sur `/data`
+(`CENTURION_DATA_DIR=/data` dans l'image).
+
+**Démo reproductible** (développement, Linux + Node 24 LTS `>=24 <25` et npm 11,
+données fictives, horloge fixe 2028-04-15, plan 2028) :
 
 ```bash
 npm run dev:demo                 # seed si vide, aucun reset implicite
 npm run demo:reset -- --confirm  # retour à l'état déterministe (data/demo uniquement)
 ```
-
-Les données vivent dans `CENTURION_DATA_DIR`, ou par défaut dans le répertoire
-utilisateur de la plateforme (`~/.local/share/centurion` sous Linux,
-`%LOCALAPPDATA%/Centurion` sous Windows, `~/Library/Application Support/Centurion`
-sur macOS).
 
 ---
 
@@ -174,7 +173,7 @@ de 15 minutes et reprise possible après arrêt.
 CENTURION expose un serveur **MCP en stdio**, agnostique de l'hôte (OpenCode,
 Codex, VS Code, Claude Desktop…) :
 
-1. Démarrez le backend : `npm run start`
+1. Démarrez le backend : `docker compose up -d --build`
 2. Dans la configuration MCP de votre hôte (ex. `.mcp.json`) :
 
 ```json
@@ -182,12 +181,15 @@ Codex, VS Code, Claude Desktop…) :
   "mcpServers": {
     "centurion": {
       "type": "stdio",
-      "command": "/chemin/vers/CENTURION/scripts/mcp-stdio.sh",
-      "env": { "CENTURION_DATA_DIR": "/chemin/vers/CENTURION/data/demo" }
+      "command": "docker",
+      "args": ["exec", "-i", "centurion", "/nodejs/bin/node", "dist/mcp/server.js"]
     }
   }
 }
 ```
+
+En développement (hors Docker, Linux + Node 24), le lanceur
+`scripts/mcp-stdio.sh` reste disponible (voir [`docs/MCP.md`](MCP.md)).
 
 **Lecture seule par défaut — 10 outils** : `list_plans`, `get_plan`,
 `list_controls`, `get_control`, `list_occurrences`, `get_summary`, `get_trends`,
