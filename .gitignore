@@ -17,11 +17,11 @@ data/
 *.sqlite-wal
 *.sqlite-shm
 *.sqlite-journal
-backups/
-imports/
-exports/
-restores/
-runtime/
+/backups/
+/imports/
+/exports/
+/restores/
+/runtime/
 restore-journal.json
 mcp-token
 
