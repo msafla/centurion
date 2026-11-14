@@ -1,0 +1,13 @@
+node_modules
+dist
+data
+.git
+test-results
+playwright-report
+coverage
+docs
+presentation
+.cerberus
+CLAUDE-SECURITY-*
+*.log
+.env*

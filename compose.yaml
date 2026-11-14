@@ -1,0 +1,20 @@
+services:
+  centurion:
+    build: .
+    image: centurion:local
+    container_name: centurion
+    ports:
+      - "127.0.0.1:4317:4317"
+    volumes:
+      - centurion-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 512m
+    restart: unless-stopped
+volumes:
+  centurion-data:
