@@ -59,7 +59,7 @@ try {
   process.on('SIGINT', () => void shutdown(0));
   void lock.compromised.then(() => shutdown(1));
 
-  await app.listen({ host: config.host, port: config.port });
+  await app.listen({ host: config.listenHost, port: config.port });
 } catch (error) {
   await shutdown(1);
   throw error;

@@ -7,6 +7,7 @@ export type Config = {
   mode: AppMode;
   isDev: boolean;
   host: string;
+  listenHost: string;
   port: number;
   canonicalOrigin: string;
   devOrigin: string;
@@ -37,6 +38,23 @@ export function defaultDataDir(env: NodeJS.ProcessEnv = process.env): string {
   }
 }
 
+const ACCEPTED_LISTEN_HOSTS = ['127.0.0.1', '0.0.0.0'] as const;
+
+/**
+ * Bind address for the HTTP listener. Distinct from `host`, which stays the
+ * canonical 127.0.0.1 used for Origin/Host checks: in a container the socket
+ * must bind 0.0.0.0 for the published port to be reachable, while the browser
+ * still reaches the app via http://127.0.0.1:4317.
+ */
+export function resolveListenHost(env: NodeJS.ProcessEnv = process.env): string {
+  const raw = env.CENTURION_LISTEN_HOST;
+  if (raw === undefined) return '127.0.0.1';
+  if ((ACCEPTED_LISTEN_HOSTS as readonly string[]).includes(raw)) return raw;
+  throw new Error(
+    `invalid CENTURION_LISTEN_HOST ${JSON.stringify(raw)}: only ${ACCEPTED_LISTEN_HOSTS.join(' and ')} are accepted`,
+  );
+}
+
 export function loadConfig(
   env: NodeJS.ProcessEnv = process.env,
   overrides: Partial<Config> = {},
@@ -57,6 +75,7 @@ export function loadConfig(
     mode,
     isDev: mode === 'development' || mode === 'demo',
     host,
+    listenHost: resolveListenHost(env),
     port,
     canonicalOrigin,
     devOrigin,
