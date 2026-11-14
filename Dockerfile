@@ -11,7 +11,10 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
 RUN npm run build \
-  && npm prune --omit=dev
+  && npm prune --omit=dev \
+  && chmod -R go-w dist node_modules package.json scripts/healthcheck.mjs
+# ^ A build context on a Windows/drvfs mount (/mnt/c) arrives with mode 777;
+#   strip group/other write so no shipped file is writable by the app user.
 # Data directory owned by the runtime UID (65532); copied into the final image
 # so the named volume is writable by the non-root user. The data dir is nested
 # one level inside the volume mount (/data/app, not /data) because the
@@ -34,7 +37,7 @@ ENV NODE_ENV=production \
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
-COPY scripts/healthcheck.mjs ./scripts/healthcheck.mjs
+COPY --from=build /app/scripts/healthcheck.mjs ./scripts/healthcheck.mjs
 COPY --from=build --chown=65532:65532 /data /data
 USER 65532:65532
 EXPOSE 4317
