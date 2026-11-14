@@ -3,10 +3,11 @@
 > Version page web autonome : **[docs/notice.html](notice.html)** (mêmes contenus,
 > captures intégrées, ouvrable directement dans un navigateur).
 
-Application **locale et mono-utilisateur** de suivi d'un plan annuel de contrôles
-cyber et IT : occurrences récurrentes, réalisations auditées, justificatifs,
-tendances multi-années, exports, sauvegardes — et un serveur MCP pour piloter
-les données depuis un assistant IA.
+CENTURION est une application **locale et mono-utilisateur** de suivi d'un plan
+annuel de contrôles cyber et IT. Elle enregistre les occurrences de l'année,
+les réalisations auditées, les justificatifs, les tendances d'un exercice à
+l'autre, et propose des exports, des sauvegardes — ainsi qu'un serveur MCP pour
+interroger les données depuis un assistant IA.
 
 > CENTURION est un outil de suivi et de traçabilité. Ses exemples ISO 27001 /
 > ISAE 3402 / PCI DSS servent à illustrer le suivi ; ils ne constituent **ni
@@ -198,10 +199,10 @@ En développement (hors Docker, Linux + Node 24), le lanceur
 `list_clauses`, `export_controls_csv`, `generate_report_pdf`.
 
 Les **écritures** (`create_control`, `update_control_metadata`, `set_occurrence`)
-nécessitent le double flag `CENTURION_MCP_WRITE=1` (backend **et** adaptateur)
-**et** ne modifient rien avant une approbation explicite dans l'UI
-(Paramètres → Approbations MCP). Activez/désactivez chaque permission dans
-Paramètres → Permissions MCP.
+sont désactivées par défaut. On les active par permission dans
+Paramètres → Permissions MCP ; chaque appel d'écriture ne crée qu'une
+proposition, et aucune donnée n'est modifiée avant une approbation explicite
+dans l'UI (Paramètres → Approbations MCP).
 
 Voir [`docs/MCP.md`](MCP.md) pour les détails (jeton runtime, limites, frontière
 de confiance). Attention : les données renvoyées à l'hôte IA peuvent être
@@ -211,9 +212,8 @@ transmises par cet hôte à son fournisseur de modèle.
 
 ## 5. Sécurité et limites
 
-- Mono-utilisateur, sans compte ni SSO ; l'app protège les requêtes du navigateur
-  (Origin, en-tête `X-Centurion-Request`, hôte) mais pas les autres processus du
-  même poste.
+- Mono-utilisateur, sans compte ni SSO ; l'app protège les requêtes du
+  navigateur (Origin, en-tête `X-Centurion-Request`, hôte) mais pas les autres processus du même poste.
 - Aucune donnée ne quitte la machine, sauf via le serveur MCP stdio (voir ci-dessus).
 - Pas de notion automatique de retard/SLA, pas de chiffrement applicatif, pas
   d'inviolabilité de l'audit.

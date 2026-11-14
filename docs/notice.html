@@ -137,7 +137,7 @@
 
   <div class="hero">
     <p class="eyebrow">Notice d'utilisation</p>
-    <h1>Suivez votre plan annuel de contrôles <strong>cyber &amp; IT</strong>, année après année.</h1>
+    <h1>Notice d'utilisation — suivi local d'un plan annuel de contrôles <strong>cyber &amp; IT</strong>.</h1>
     <p class="lead">
       CENTURION est une application <strong>locale et mono-utilisateur</strong> : occurrences récurrentes,
       réalisations auditées, justificatifs, tendances multi-années, exports, sauvegardes — et un serveur
@@ -162,7 +162,7 @@
     <pre><code>docker compose up -d --build</code></pre>
     <p>Ouvrez <code>http://127.0.0.1:4317</code>. Le port n'est publié que sur <code>127.0.0.1</code> de l'hôte et un seul
     processus possède les données (verrou d'instance). Les données vivent dans le volume Docker <code>centurion-data</code>
-    monté sur <code>/data</code> (<code>CENTURION_DATA_DIR=/data</code> dans l'image).</p>
+    monté sur <code>/data</code> (<code>CENTURION_DATA_DIR=/data/app</code> dans l'image).</p>
     <h3>Démo reproductible (développement, Linux + Node 24 LTS)</h3>
     <pre><code>npm run dev:demo                 # données fictives, horloge fixe 2028-04-15
 npm run demo:reset -- --confirm  # retour à l'état déterministe (data/demo uniquement)</code></pre>
@@ -263,8 +263,9 @@ npm run demo:reset -- --confirm  # retour à l'état déterministe (data/demo un
     <code>get_control</code>, <code>list_occurrences</code>, <code>get_summary</code>, <code>get_trends</code>, <code>list_clauses</code>,
     <code>export_controls_csv</code>, <code>generate_report_pdf</code>.</p>
     <p>Les <strong>écritures</strong> (<code>create_control</code>, <code>update_control_metadata</code>, <code>set_occurrence</code>)
-    exigent le double flag <code>CENTURION_MCP_WRITE=1</code> (backend <em>et</em> adaptateur) <strong>et</strong> une approbation
-    explicite dans l'UI (Paramètres → Approbations MCP). Détails dans <code>docs/MCP.md</code>.</p>
+    sont désactivées par défaut : on les active par permission dans Paramètres → Permissions MCP. Chaque appel
+    d'écriture ne crée qu'une proposition, et aucune donnée n'est modifiée avant une approbation explicite dans
+    l'UI (Paramètres → Approbations MCP). Détails dans <code>docs/MCP.md</code>.</p>
     <div class="note"><strong>Attention :</strong> les données renvoyées à l'hôte IA peuvent être transmises par cet hôte à son fournisseur de modèle.</div>
   </section>
 
