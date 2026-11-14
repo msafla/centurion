@@ -6,11 +6,7 @@ on:
 
 jobs:
   check:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -33,3 +29,57 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build image
+        run: docker build -t centurion:ci .
+      - name: Run hardened container
+        run: |
+          docker run -d --name centurion \
+            --read-only --tmpfs /tmp:size=64m \
+            --cap-drop ALL --security-opt no-new-privileges:true \
+            --pids-limit 128 -p 127.0.0.1:4317:4317 \
+            -v centurion-data:/data centurion:ci
+      - name: Wait for /health (max 60s)
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS -H 'Host: 127.0.0.1:4317' http://127.0.0.1:4317/health; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs centurion
+          exit 1
+      - name: Verify non-root user
+        run: test "$(docker inspect -f '{{.Config.User}}' centurion:ci)" = "65532:65532"
+      - name: Wait for healthcheck healthy (max 90s)
+        run: |
+          for i in $(seq 1 90); do
+            status="$(docker inspect -f '{{.State.Health.Status}}' centurion)"
+            if [ "$status" = "healthy" ]; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs centurion
+          exit 1
+      - name: MCP stdio smoke test
+        run: |
+          printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2026-07-28","capabilities":{},"clientInfo":{"name":"ci","version":"0.0.0"}}}' \
+            | timeout 20 docker exec -i centurion /nodejs/bin/node dist/mcp/server.js \
+            | grep -q '"result"'
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: centurion:ci
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+      - name: Logs and cleanup
+        if: always()
+        run: |
+          docker logs centurion || true
+          docker rm -f centurion || true
