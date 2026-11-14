@@ -1,5 +1,14 @@
 # CENTURION
 
+[![check](https://github.com/msafla/centurion/actions/workflows/check.yml/badge.svg)](https://github.com/msafla/centurion/actions/workflows/check.yml)
+
+CENTURION is a local-first, single-user app for tracking an annual cyber/IT
+control plan: audited completions, evidence uploads, multi-year trends,
+CSV/PDF exports, backups and restore, plus a read-only-by-default MCP stdio
+server. Built with TypeScript, Fastify, SQLite and React/Vite.
+
+Documentation is in French.
+
 Application locale mono-utilisateur de suivi d'un plan annuel de contrôles cyber
 et IT : occurrences récurrentes, réalisations auditées, import CSV/XLSX revu,
 reporting, tendances multi-années, mapping manuel de clauses, justificatifs
@@ -126,7 +135,7 @@ npm run audit:deps     # npm audit --omit=dev --audit-level=high (réseau requis
 - Mono-utilisateur, sans compte ni SSO ; le MVP protège les requêtes du
   navigateur, pas les autres processus du même poste.
 - Aucune notion automatique de retard/SLA, aucun chiffrement applicatif, aucune
-  inviolabilité de l'audit. Les justificatifs sont bornés et typrés, mais ne
+  inviolabilité de l'audit. Les justificatifs sont bornés et typés, mais ne
   sont pas scannés par antivirus.
 - MCP stdio uniquement (pas de transport réseau) ; les données renvoyées à un
   host IA peuvent être transmises par ce host à son fournisseur.
