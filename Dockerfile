@@ -31,10 +31,10 @@ WORKDIR /app
 ENV NODE_ENV=production \
     CENTURION_DATA_DIR=/data/app \
     CENTURION_LISTEN_HOST=0.0.0.0
-COPY --from=build --chown=65532:65532 /app/dist ./dist
-COPY --from=build --chown=65532:65532 /app/node_modules ./node_modules
-COPY --from=build --chown=65532:65532 /app/package.json ./package.json
-COPY --chown=65532:65532 scripts/healthcheck.mjs ./scripts/healthcheck.mjs
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/package.json ./package.json
+COPY scripts/healthcheck.mjs ./scripts/healthcheck.mjs
 COPY --from=build --chown=65532:65532 /data /data
 USER 65532:65532
 EXPOSE 4317
