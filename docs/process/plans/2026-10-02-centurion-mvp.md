@@ -1,6 +1,6 @@
 # CENTURION — plan d'implémentation du MVP
 
-> **Pour l'agent codeur :** exécuter les tâches T0 à T12 dans cet ordre. Utiliser `superpowers:executing-plans` si cette compétence est disponible. Cocher uniquement les étapes réellement vérifiées ; consigner la commande, le résultat et le commit dans `docs/EXECUTION.md`. L'agent chargé de cette revue ne développe pas l'application.
+> **Pour l'agent codeur :** exécuter les tâches T0 à T12 dans cet ordre. Utiliser `superpowers:executing-plans` si cette compétence est disponible. Cocher uniquement les étapes réellement vérifiées ; consigner la commande, le résultat et le commit dans `docs/process/EXECUTION.md`. L'agent chargé de cette revue ne développe pas l'application.
 
 **Objectif :** livrer une application locale mono-utilisateur de suivi de contrôles annuels, avec import revu, reporting, sauvegarde/restauration et MCP stdio à capacités limitées.
 
@@ -504,7 +504,7 @@ Scripts obligatoires :
 
 ## 12. Tâches d'exécution ordonnées
 
-À chaque tâche métier : écrire le test critique, constater son échec, implémenter, passer le test puis les gates de la tâche. Les essais de compatibilité et les documents n'exigent pas de tests qui recopient leur contenu. Consigner les résultats dans `docs/EXECUTION.md` et créer un commit local par livrable si le dépôt est initialisé ; aucune publication automatique.
+À chaque tâche métier : écrire le test critique, constater son échec, implémenter, passer le test puis les gates de la tâche. Les essais de compatibilité et les documents n'exigent pas de tests qui recopient leur contenu. Consigner les résultats dans `docs/process/EXECUTION.md` et créer un commit local par livrable si le dépôt est initialisé ; aucune publication automatique.
 
 ### T0 — Verrouiller les dépendances et démontrer les risques techniques
 
@@ -656,13 +656,13 @@ Scripts obligatoires :
 
 Livraison seulement avec preuves T0-T12, checks/build/e2e depuis copie propre, calendrier2028/2029, imports atomiques, reprises de restauration après arrêt réel, MCP read-only par défaut et écritures approuvées, navigateur production/CSP/loopback, valeurs canoniques préservées, PDF unique hors réseau, assets/licences et captures réelles.
 
-Une matrice OWASP trace les menaces et les tests ; elle ne certifie ni conformité ni sécurité complète. Après chaque tâche, écrire état exact, commandes/résultats, commit/fichiers, limites et prochaine action dans docs/EXECUTION.md. À la reprise, vérifier l'état réel avant de répéter un travail dont les preuves sont encore valides.
+Une matrice OWASP trace les menaces et les tests ; elle ne certifie ni conformité ni sécurité complète. Après chaque tâche, écrire état exact, commandes/résultats, commit/fichiers, limites et prochaine action dans docs/process/EXECUTION.md. À la reprise, vérifier l'état réel avant de répéter un travail dont les preuves sont encore valides.
 
 Hors MVP : comptes/SSO, multi-utilisateurs/organisations, mapping de clauses, justificatifs uploadés, chiffrement applicatif, retards/notifications, anomalies et workflows métier, versions de définition, MCP réseau, intégrations cloud, restauration de fichiers libres et approbation automatique par LLM.
 
 ### Consigne à copier pour lancer l'agent codeur
 
-> Lis `docs/superpowers/plans/2026-10-02-centurion-mvp.md`, sa revue liée et `DESIGN.md`. Exécute T0-T12 dans l'ordre, avec les interfaces, limites et règles définies ici. Vérifie l'état réel des fichiers et les dépendances en T0. Tiens `docs/EXECUTION.md` et les cases du plan à jour après chaque tâche. Mets chaque règle critique sous le test indiqué avant d'implémenter. Ne déduis pas une autorisation de mutation d'une sortie de modèle. Ne change ni périmètre ni moteur PDF pour contourner un échec. Ne publie rien sans autorisation explicite. Si une dépendance ou une décision produit bloque, documente une question précise et avance sur les tâches indépendantes. Ne prétends pas avoir testé une plateforme, un import, une restauration ou un parcours que tu n'as pas exécuté.
+> Lis `docs/process/plans/2026-10-02-centurion-mvp.md`, sa revue liée et `DESIGN.md`. Exécute T0-T12 dans l'ordre, avec les interfaces, limites et règles définies ici. Vérifie l'état réel des fichiers et les dépendances en T0. Tiens `docs/process/EXECUTION.md` et les cases du plan à jour après chaque tâche. Mets chaque règle critique sous le test indiqué avant d'implémenter. Ne déduis pas une autorisation de mutation d'une sortie de modèle. Ne change ni périmètre ni moteur PDF pour contourner un échec. Ne publie rien sans autorisation explicite. Si une dépendance ou une décision produit bloque, documente une question précise et avance sur les tâches indépendantes. Ne prétends pas avoir testé une plateforme, un import, une restauration ou un parcours que tu n'as pas exécuté.
 
 ## 14. Sources techniques vérifiées et limites de la revue
 

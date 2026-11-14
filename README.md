@@ -130,7 +130,7 @@ npm run audit:deps     # npm audit --omit=dev --audit-level=high (réseau requis
   sont pas scannés par antivirus.
 - MCP stdio uniquement (pas de transport réseau) ; les données renvoyées à un
   host IA peuvent être transmises par ce host à son fournisseur.
-- Voir `docs/EXECUTION.md` pour l'état exact, les preuves et les sous-points
+- Voir `docs/process/EXECUTION.md` pour l'état exact, les preuves et les sous-points
   restant à couvrir.
 
 ## Licence

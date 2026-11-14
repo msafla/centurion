@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript/TSX, React, composants pdfcn vendored sous `src/server/reports/components/pdf/`, `takumi-pdf`, `unpdf`, Poppins locale, Vitest.
 
-**Spec:** `docs/superpowers/plans/2026-10-02-centurion-mvp.md` sections PDF, reporting et sécurité des exports ; identité visuelle dans `DESIGN.md` ; renderer actuel dans `src/server/reports/report-pdf.ts`.
+**Spec:** `docs/process/plans/2026-10-02-centurion-mvp.md` sections PDF, reporting et sécurité des exports ; identité visuelle dans `DESIGN.md` ; renderer actuel dans `src/server/reports/report-pdf.ts`.
 
 ## Global Constraints
 
@@ -104,7 +104,7 @@ Expected: PASS, PDF lisible par `unpdf`, valeurs attendues extraites et limite 1
 **Files:**
 - Modify: `tests/integration/exports.test.ts`
 - Modify: `tests/fixtures/pdf-smoke.mjs` si le fixture est partagé par un invariant du build
-- Create: `docs/EXECUTION.md` entrée de validation PDF si le comportement validé change
+- Create: `docs/process/EXECUTION.md` entrée de validation PDF si le comportement validé change
 - Artifacts: captures PNG de pages représentatives sous `docs/presentation/pdf-preview/` ou artefact temporaire documenté
 
 **Interfaces:**

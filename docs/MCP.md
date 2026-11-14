@@ -99,8 +99,8 @@ dépôt, choisit Node 24 et fixe `CENTURION_DATA_DIR` (démo par défaut, sinon
 
 ```bash
 claude mcp add --transport stdio centurion \
-  --env CENTURION_DATA_DIR=/mnt/c/Workspace/CENTURION/data/demo \
-  -- /mnt/c/Workspace/CENTURION/scripts/mcp-stdio.sh
+  --env CENTURION_DATA_DIR=/chemin/vers/CENTURION/data/demo \
+  -- /chemin/vers/CENTURION/scripts/mcp-stdio.sh
 ```
 
 Ou dans `.mcp.json` à la racine du projet :
@@ -110,8 +110,8 @@ Ou dans `.mcp.json` à la racine du projet :
   "mcpServers": {
     "centurion": {
       "type": "stdio",
-      "command": "/mnt/c/Workspace/CENTURION/scripts/mcp-stdio.sh",
-      "env": { "CENTURION_DATA_DIR": "/mnt/c/Workspace/CENTURION/data/demo" }
+      "command": "/chemin/vers/CENTURION/scripts/mcp-stdio.sh",
+      "env": { "CENTURION_DATA_DIR": "/chemin/vers/CENTURION/data/demo" }
     }
   }
 }
@@ -126,7 +126,7 @@ Ou dans `.mcp.json` à la racine du projet :
   "mcpServers": {
     "centurion": {
       "command": "wsl.exe",
-      "args": ["-e", "/mnt/c/Workspace/CENTURION/scripts/mcp-stdio.sh"]
+      "args": ["-e", "/chemin/vers/CENTURION/scripts/mcp-stdio.sh"]
     }
   }
 }
@@ -139,12 +139,12 @@ Ou dans `.mcp.json` à la racine du projet :
 ```toml
 [mcp_servers.centurion]
 command = "wsl.exe"
-args = ["-e", "/mnt/c/Workspace/CENTURION/scripts/mcp-stdio.sh"]
+args = ["-e", "/chemin/vers/CENTURION/scripts/mcp-stdio.sh"]
 enabled = true
 ```
 
 ```bash
-codex mcp add centurion -- wsl.exe -e /mnt/c/Workspace/CENTURION/scripts/mcp-stdio.sh
+codex mcp add centurion -- wsl.exe -e /chemin/vers/CENTURION/scripts/mcp-stdio.sh
 ```
 
 Si l'hôte tourne **dans WSL**, remplace `wsl.exe -e …` par le chemin direct du

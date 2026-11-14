@@ -8,7 +8,7 @@
 
 **Technologies :** Node.js 22.12+, npm, React 19, Vite 8, Fastify 5, `better-sqlite3`, `@fastify/multipart`, ExcelJS, Zod, `@fastify/cookie`, `fflate`, `cross-env`, `concurrently`, Tailwind CSS v4, shadcn/ui base-nova, Vitest, Testing Library, Playwright, Poppins OFL. Épingler toutes les dépendances directes sans `^`/`~` et versionner `package-lock.json`. Lancer `npm view <paquet> version` pour figer les correctifs stables au moment de l'installation ; ne pas prendre de versions alpha/beta/canary. Node minimum Vite 8 : `22.12` ([support Node officiel](https://vite.dev/blog/announcing-vite8)).
 
-**Conception :** `docs/superpowers/specs/2026-10-02-centurion-design.md`
+**Conception :** `docs/process/specs/2026-10-02-centurion-design.md`
 
 ## Décisions fermées
 
