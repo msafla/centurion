@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CENTURION — planche de marque</title>
+    <style>
+      :root {
+        --violet: #451dc7;
+        --deep: #360058;
+        --green: #04f06a;
+        --ink: #111111;
+        --soft: #f7f5fc;
+        --border: #e5e0f0;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 32px 40px 64px;
+        background: #ffffff;
+        color: var(--ink);
+        font-family: ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+      }
+      h1 { font-size: 24px; font-weight: 600; margin: 0 0 4px; }
+      h2 {
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #625b70;
+        margin: 40px 0 12px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 6px;
+      }
+      p.sub { margin: 0 0 8px; color: #625b70; font-size: 14px; }
+      .row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; }
+      .cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+      .cell .tag { font-size: 11px; color: #625b70; font-variant-numeric: tabular-nums; }
+      .stage {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #ffffff;
+      }
+      .stage.dark { background: var(--deep); border-color: var(--deep); }
+      .stage img { display: block; image-rendering: auto; }
+      .s16 { width: 16px; height: 16px; }
+      .s32 { width: 32px; height: 32px; }
+      .s64 { width: 64px; height: 64px; }
+      .s128 { width: 128px; height: 128px; }
+      .logo-light { width: 287px; height: 64px; }
+      .logo-dark { width: 287px; height: 64px; }
+      .tabstrip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #dee1e6;
+        border-radius: 8px 8px 0 0;
+        padding: 8px 12px 0;
+      }
+      .tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #ffffff;
+        border-radius: 6px 6px 0 0;
+        padding: 5px 12px;
+        font-size: 12px;
+        color: var(--ink);
+      }
+      .tab img { width: 16px; height: 16px; display: block; }
+      .swatches { display: flex; gap: 12px; margin-top: 8px; }
+      .sw { width: 96px; }
+      .sw .chip { height: 40px; border-radius: 8px; border: 1px solid var(--border); }
+      .sw .code { font-size: 11px; color: #625b70; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    </style>
+  </head>
+  <body>
+    <h1>CENTURION — planche de marque</h1>
+    <p class="sub">Explorations et déclinaisons du signe. Tailles de test : 16, 32, 64, 128 px.</p>
+
+    <h2>Explorations — symbole seul</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="stage s128"><img class="s128" src="explorations/piste-a-cimier.svg" alt="Piste A — cimier à 12 barres" /></div>
+        <span class="tag">A · cimier 12 barres</span>
+      </div>
+      <div class="cell">
+        <div class="stage s128"><img class="s128" src="explorations/piste-b-anneau.svg" alt="Piste B — anneau de 12 segments et coche" /></div>
+        <span class="tag">B · anneau 12 segments + coche</span>
+      </div>
+      <div class="cell">
+        <div class="stage s128"><img class="s128" src="explorations/piste-c-ligne.svg" alt="Piste C — ligne du plan annuel" /></div>
+        <span class="tag">C · ligne du plan + coche</span>
+      </div>
+    </div>
+
+    <h2>Lisibilité — 16 / 32 / 64 px (fond clair puis fond sombre)</h2>
+    <div class="row">
+      <div class="cell"><div class="stage s16"><img class="s16" src="explorations/piste-a-cimier.svg" alt="" /></div><span class="tag">A · 16</span></div>
+      <div class="cell"><div class="stage s32"><img class="s32" src="explorations/piste-a-cimier.svg" alt="" /></div><span class="tag">A · 32</span></div>
+      <div class="cell"><div class="stage s64"><img class="s64" src="explorations/piste-a-cimier.svg" alt="" /></div><span class="tag">A · 64</span></div>
+      <div class="cell"><div class="stage s16 dark"><img class="s16" src="explorations/piste-a-cimier.svg" alt="" /></div><span class="tag">A · 16 sombre</span></div>
+      <div class="cell"><div class="stage s32 dark"><img class="s32" src="explorations/piste-a-cimier.svg" alt="" /></div><span class="tag">A · 32 sombre</span></div>
+      <div class="cell"><div class="stage s64 dark"><img class="s64" src="explorations/piste-a-cimier.svg" alt="" /></div><span class="tag">A · 64 sombre</span></div>
+    </div>
+    <div class="row" style="margin-top:24px">
+      <div class="cell"><div class="stage s16"><img class="s16" src="explorations/piste-b-anneau.svg" alt="" /></div><span class="tag">B · 16</span></div>
+      <div class="cell"><div class="stage s32"><img class="s32" src="explorations/piste-b-anneau.svg" alt="" /></div><span class="tag">B · 32</span></div>
+      <div class="cell"><div class="stage s64"><img class="s64" src="explorations/piste-b-anneau.svg" alt="" /></div><span class="tag">B · 64</span></div>
+      <div class="cell"><div class="stage s16 dark"><img class="s16" src="explorations/piste-b-anneau.svg" alt="" /></div><span class="tag">B · 16 sombre</span></div>
+      <div class="cell"><div class="stage s32 dark"><img class="s32" src="explorations/piste-b-anneau.svg" alt="" /></div><span class="tag">B · 32 sombre</span></div>
+      <div class="cell"><div class="stage s64 dark"><img class="s64" src="explorations/piste-b-anneau.svg" alt="" /></div><span class="tag">B · 64 sombre</span></div>
+    </div>
+    <div class="row" style="margin-top:24px">
+      <div class="cell"><div class="stage s16"><img class="s16" src="explorations/piste-c-ligne.svg" alt="" /></div><span class="tag">C · 16</span></div>
+      <div class="cell"><div class="stage s32"><img class="s32" src="explorations/piste-c-ligne.svg" alt="" /></div><span class="tag">C · 32</span></div>
+      <div class="cell"><div class="stage s64"><img class="s64" src="explorations/piste-c-ligne.svg" alt="" /></div><span class="tag">C · 64</span></div>
+      <div class="cell"><div class="stage s16 dark"><img class="s16" src="explorations/piste-c-ligne.svg" alt="" /></div><span class="tag">C · 16 sombre</span></div>
+      <div class="cell"><div class="stage s32 dark"><img class="s32" src="explorations/piste-c-ligne.svg" alt="" /></div><span class="tag">C · 32 sombre</span></div>
+      <div class="cell"><div class="stage s64 dark"><img class="s64" src="explorations/piste-c-ligne.svg" alt="" /></div><span class="tag">C · 64 sombre</span></div>
+    </div>
+
+    <h2>Déclinaisons retenues</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="stage" style="padding:24px"><img class="logo-light" src="centurion-logo.svg" alt="CENTURION" /></div>
+        <span class="tag">centurion-logo.svg · fond clair</span>
+      </div>
+      <div class="cell">
+        <div class="stage dark" style="padding:24px"><img class="logo-dark" src="centurion-logo-dark.svg" alt="CENTURION" /></div>
+        <span class="tag">centurion-logo-dark.svg · fond sombre</span>
+      </div>
+    </div>
+    <div class="row" style="margin-top:24px">
+      <div class="cell">
+        <div class="stage s128"><img class="s128" src="centurion-mark.svg" alt="Symbole CENTURION" /></div>
+        <span class="tag">centurion-mark.svg · 128</span>
+      </div>
+      <div class="cell">
+        <div class="stage s64"><img class="s64" src="centurion-mark.svg" alt="" /></div>
+        <span class="tag">mark · 64</span>
+      </div>
+      <div class="cell">
+        <div class="stage s32"><img class="s32" src="centurion-mark.svg" alt="" /></div>
+        <span class="tag">mark · 32</span>
+      </div>
+      <div class="cell">
+        <div class="stage s16"><img class="s16" src="centurion-mark.svg" alt="" /></div>
+        <span class="tag">mark · 16</span>
+      </div>
+      <div class="cell">
+        <div class="stage s128 dark"><img class="s128" src="centurion-mark.svg" alt="" /></div>
+        <span class="tag">mark · 128 sombre</span>
+      </div>
+    </div>
+
+    <h2>Favicon — onglet de navigateur</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="tabstrip">
+          <span class="tab"><img src="favicon.svg" alt="" /> CENTURION</span>
+        </div>
+        <span class="tag">favicon.svg · 16 px dans l'onglet</span>
+      </div>
+      <div class="cell"><div class="stage s16"><img class="s16" src="favicon.svg" alt="" /></div><span class="tag">favicon · 16</span></div>
+      <div class="cell"><div class="stage s32"><img class="s32" src="favicon.svg" alt="" /></div><span class="tag">favicon · 32</span></div>
+      <div class="cell"><div class="stage s64"><img class="s64" src="favicon.svg" alt="" /></div><span class="tag">favicon · 64</span></div>
+    </div>
+
+    <h2>Palette</h2>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#451dc7"></div><div class="code">#451DC7 · violet</div></div>
+      <div class="sw"><div class="chip" style="background:#360058"></div><div class="code">#360058 · violet profond</div></div>
+      <div class="sw"><div class="chip" style="background:#04f06a"></div><div class="code">#04F06A · vert (fond sombre)</div></div>
+      <div class="sw"><div class="chip" style="background:#111111"></div><div class="code">#111111 · encre</div></div>
+    </div>
+  </body>
+</html>

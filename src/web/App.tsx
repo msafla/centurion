@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom';
 import type { Page, PlanDto } from '../shared/schemas';
+import { BrandMark } from './components/BrandMark';
 import { api } from './lib/api';
 import { PlanContext, type PlanState } from './lib/plan-context';
 import { AnnualPlan } from './pages/AnnualPlan';
@@ -75,9 +76,10 @@ export function App() {
         <div className="min-h-full bg-[var(--color-surface-soft)] text-[var(--color-ink)]">
           <header className="border-b border-[var(--color-border-brand)] bg-white">
             <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-6 py-3">
-              <span className="text-lg font-semibold tracking-tight text-[var(--color-brand-primary)]">
-                CENTURION
-              </span>
+              <div className="flex items-center gap-2.5 text-[var(--color-brand-primary)]">
+                <BrandMark className="h-7 w-7" />
+                <span className="text-lg font-semibold tracking-tight">CENTURION</span>
+              </div>
               <nav aria-label="Navigation principale" className="flex flex-wrap gap-1 text-sm">
                 {NAV.map((item) => (
                   <NavLink

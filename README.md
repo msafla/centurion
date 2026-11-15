@@ -1,4 +1,4 @@
-# CENTURION
+# <picture><source srcset="docs/brand/centurion-logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="docs/brand/centurion-logo.svg" alt="CENTURION" width="320"></picture>
 
 **C**ontrôles, **É**chéances, **N**ormes, **T**raçabilité : **U**n **R**egistre **I**ndépendant, **O**uvert, **N**atif
 
