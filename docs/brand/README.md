@@ -11,13 +11,17 @@ ouvert ; aucune police externe n'est embarquée dans les SVG.
 
 | Fichier | Usage |
 | --- | --- |
-| `centurion-mark.svg` | Symbole seul, carré (viewBox 64×64) |
+| `centurion-mark.svg` | Symbole seul, carré (viewBox 64×64), fond clair |
+| `centurion-mark-dark.svg` | Symbole seul, fond sombre (barres blanches, ligne de base verte) |
 | `centurion-logo.svg` | Symbole + logotype, pour fond clair |
 | `centurion-logo-dark.svg` | Symbole + logotype, pour fond sombre (accent vert sur la ligne de base) |
-| `favicon.svg` | Version simplifiée (6 barres), lisible à 16 px |
+| `favicon.svg` | Version petite taille : 5 barres de 2 px sur la grille 16×16 (espaces 1 px, base pleine 2 px), lisible à 16 px ; variante `prefers-color-scheme: dark` intégrée (barres blanches, base verte) |
 | `explorations/piste-a-cimier.svg` | Piste A — cimier à 12 barres (retenue) |
+| `explorations/piste-a-cimier-dark.svg` | Piste A sur fond sombre (barres blanches, base verte) |
 | `explorations/piste-b-anneau.svg` | Piste B — anneau de 12 segments avec coche (non retenue) |
+| `explorations/piste-b-anneau-dark.svg` | Piste B sur fond sombre (anneau blanc, coche verte) |
 | `explorations/piste-c-ligne.svg` | Piste C — ligne du plan annuel avec coche (non retenue) |
+| `explorations/piste-c-ligne-dark.svg` | Piste C sur fond sombre (ligne blanche, coche verte) |
 | `preview.html` | Planche autonome : explorations et déclinaisons, fonds clair/sombre, 16/32/64/128 px |
 
 ## Couleurs
@@ -32,6 +36,12 @@ ouvert ; aucune police externe n'est embarquée dans les SVG.
 
 Ne jamais utiliser le vert vif sur fond clair, et ne jamais introduire d'autre
 teinte : les barres « à venir » restent en contour du violet principal.
+
+Sur fond sombre, le violet principal `#451DC7` est illisible (contraste ≈ 1,7:1
+sur `#360058`) : toute déclinaison sur fond sombre utilise des barres claires
+(blanc `#FFFFFF`, contraste ≈ 16,2:1 sur `#360058`) avec le vert `#04F06A` en
+accent (contraste ≈ 10,5:1 sur `#360058`). Contraste symbole/fond exigé :
+≥ 3:1 dans toutes les déclinaisons.
 
 ## Zone de protection et tailles minimales
 

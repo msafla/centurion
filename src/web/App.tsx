@@ -77,7 +77,7 @@ export function App() {
           <header className="border-b border-[var(--color-border-brand)] bg-white">
             <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-6 py-3">
               <div className="flex items-center gap-2.5 text-[var(--color-brand-primary)]">
-                <BrandMark className="h-7 w-7" />
+                <BrandMark className="h-7.5 w-7.5" />
                 <span className="text-lg font-semibold tracking-tight">CENTURION</span>
               </div>
               <nav aria-label="Navigation principale" className="flex flex-wrap gap-1 text-sm">

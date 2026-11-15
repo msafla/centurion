@@ -1,9 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="CENTURION">
-  <rect x="2" y="22" width="28" height="3.6" rx="1.8" fill="#451DC7"/>
-  <rect x="3" y="17" width="3" height="5" rx="1" fill="#451DC7"/>
-  <rect x="7.6" y="13.8" width="3" height="8.2" rx="1" fill="#451DC7"/>
-  <rect x="12.2" y="12.2" width="3" height="9.8" rx="1" fill="#451DC7"/>
-  <rect x="16.8" y="12.2" width="3" height="9.8" rx="1" fill="none" stroke="#451DC7" stroke-width="1.6"/>
-  <rect x="21.4" y="13.8" width="3" height="8.2" rx="1" fill="none" stroke="#451DC7" stroke-width="1.6"/>
-  <rect x="26" y="17" width="3" height="5" rx="1" fill="none" stroke="#451DC7" stroke-width="1.6"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" role="img" aria-label="CENTURION">
+  <style>
+    .bar { fill: #451DC7; }
+    .base { fill: #451DC7; }
+    @media (prefers-color-scheme: dark) {
+      .bar { fill: #FFFFFF; }
+      .base { fill: #04F06A; }
+    }
+  </style>
+  <rect class="base" x="0" y="14" width="16" height="2"/>
+  <rect class="bar" x="1" y="9" width="2" height="5"/>
+  <rect class="bar" x="4" y="5" width="2" height="9"/>
+  <rect class="bar" x="7" y="3" width="2" height="11"/>
+  <rect class="bar" x="10" y="5" width="2" height="9"/>
+  <rect class="bar" x="13" y="9" width="2" height="5"/>
 </svg>
